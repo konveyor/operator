@@ -89,7 +89,7 @@ spec:
               command:
                 - /bin/sh
                 - '-c'
-                - '[ -f /run/nginx.pid ] && ps -A | grep nginx'
+                - 'ps -A | grep node'
             initialDelaySeconds: 10
             timeoutSeconds: 1
             periodSeconds: 5
