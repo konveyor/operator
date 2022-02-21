@@ -1,0 +1,94 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ pathfinder_api_deployment_name }}
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/name: {{ pathfinder_api_service_name }}
+    app.kubernetes.io/component: {{ pathfinder_api_component_name }}
+    app.kubernetes.io/part-of: {{ app_name }}
+  annotations:
+    app.openshift.io/connects-to: >-
+      [
+        { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ pathfinder_database_deployment_name }}" }
+{% if feature_auth_enabled|bool and feature_auth_provider == 'keycloak' %}
+        { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ keycloak_sso_deployment_name }}" }
+{% endif %}
+      ]
+    prometheus.io/path: /q/metrics
+    prometheus.io/port: '8080'
+    prometheus.io/scheme: http
+    prometheus.io/scrape: 'true'
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ pathfinder_api_service_name }}
+      app.kubernetes.io/component: {{ pathfinder_api_component_name }}
+      app.kubernetes.io/part-of: {{ app_name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ pathfinder_api_service_name }}
+        app.kubernetes.io/component: {{ pathfinder_api_component_name }}
+        app.kubernetes.io/part-of: {{ app_name }}
+      annotations:
+        prometheus.io/path: /q/metrics
+        prometheus.io/port: '8080'
+        prometheus.io/scheme: http
+        prometheus.io/scrape: 'true'
+    spec:
+      containers:
+        - name: {{ pathfinder_api_container_name }}
+          image: "{{ pathfinder_api_image_fqin }}"
+          imagePullPolicy: "{{ image_pull_policy }}"
+          env:
+            - name: KUBERNETES_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: QUARKUS_DATASOURCE_JDBC_URL
+              value: jdbc:postgresql://{{ pathfinder_database_service_name }}:5432/{{ pathfinder_database_db_name }}
+            - name: QUARKUS_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ pathfinder_database_secret_name }}
+                  key: database-user
+            - name: QUARKUS_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ pathfinder_database_secret_name }}
+                  key: database-password
+            - name: QUARKUS_OIDC_AUTH_SERVER_URL
+              value: https://{{ keycloak_sso_service_name }}:8443/auth/realms/{{ app_name }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          resources:
+            limits:
+              cpu: {{ pathfinder_api_container_limits_cpu }}
+              memory: {{ pathfinder_api_container_limits_memory }}
+            requests:
+              cpu: {{ pathfinder_api_container_requests_cpu }}
+              memory: {{ pathfinder_api_container_requests_memory }}
+          livenessProbe:
+            httpGet:
+              path: /pathfinder/q/health/live
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 60
+            timeoutSeconds: 10
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /pathfinder/q/health/ready
+              port: 8080
+              scheme: HTTP
+            timeoutSeconds: 10
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 3

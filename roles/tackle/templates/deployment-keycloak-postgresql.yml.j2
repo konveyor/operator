@@ -1,0 +1,85 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ keycloak_database_deployment_name }}
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/name: {{ keycloak_database_service_name }}
+    app.kubernetes.io/component: {{ keycloak_database_component_name }}
+    app.kubernetes.io/part-of: {{ app_name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ keycloak_database_service_name }}
+      app.kubernetes.io/component: {{ keycloak_database_component_name }}
+      app.kubernetes.io/part-of: {{ app_name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ keycloak_database_service_name }}
+        app.kubernetes.io/component: {{ keycloak_database_component_name }}
+        app.kubernetes.io/part-of: {{ app_name }}
+    spec:
+      containers:
+        - name: {{ keycloak_database_container_name }}
+          image: "{{ keycloak_database_image_fqin }}"
+          imagePullPolicy: "{{ image_pull_policy }}"
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ keycloak_database_secret_name }}
+                  key: database-user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ keycloak_database_secret_name }}
+                  key: database-password
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: {{ keycloak_database_secret_name }}
+                  key: database-name
+          ports:
+            - containerPort: 5432
+              protocol: TCP
+          resources:
+            limits:
+              cpu: {{ keycloak_database_container_limits_cpu }}
+              memory: {{ keycloak_database_container_limits_memory }}
+            requests:
+              cpu: {{ keycloak_database_container_requests_cpu }}
+              memory: {{ keycloak_database_container_requests_memory }}
+          volumeMounts:
+            - name: {{ keycloak_database_data_volume_name }}
+              mountPath: {{ keycloak_database_data_volume_path }}
+          livenessProbe:
+            exec:
+              command:
+                - "/bin/sh"
+                - "-c"
+                - 'psql -U $POSTGRES_USER -d $POSTGRES_DB -c ''SELECT 1'' '
+            initialDelaySeconds: 60
+            timeoutSeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - "/bin/sh"
+                - "-c"
+                - 'psql -U $POSTGRES_USER -d $POSTGRES_DB -c ''SELECT 1'' '
+            initialDelaySeconds: 10
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          terminationMessagePath: "/dev/termination-log"
+          terminationMessagePolicy: File
+      volumes:
+        - name: {{ keycloak_database_data_volume_name }}
+          persistentVolumeClaim:
+            claimName: {{ keycloak_database_data_volume_claim_name }}

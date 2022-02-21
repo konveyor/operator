@@ -1,0 +1,23 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ keycloak_database_data_volume_claim_name }}
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/name: {{ keycloak_database_service_name }}
+    app.kubernetes.io/component: {{ keycloak_database_component_name }}
+    app.kubernetes.io/part-of: {{ app_name }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ keycloak_database_data_volume_size }}
+{% if keycloak_database_data_volume_claim_storageclass is defined %}
+{% if keycloak_database_data_volume_claim_storageclass|length %}
+  storageClassName: {{ keycloak_database_data_volume_claim_storageclass }}
+{% else %}
+  storageClassName: ""
+{% endif %}
+{% endif %}

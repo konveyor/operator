@@ -1,0 +1,27 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: {{ ui_service_name }}
+    app.kubernetes.io/component: {{ ui_component_name }}
+    app.kubernetes.io/part-of: {{ app_name }}
+  name: {{ ui_service_name }}
+  namespace: {{ app_namespace }}
+spec:
+  ports:
+{% if ui_tls_enabled|bool %}
+    - name: https
+      port: 8443
+      targetPort: 8443
+      protocol: TCP
+{% else %}
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+{% endif %}
+  selector:
+    app.kubernetes.io/name: {{ ui_service_name }}
+    app.kubernetes.io/component: {{ ui_component_name }}
+    app.kubernetes.io/part-of: {{ app_name }}

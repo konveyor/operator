@@ -1,0 +1,23 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ hub_database_volume_claim_name }}
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/name: {{ hub_service_name }}
+    app.kubernetes.io/component: {{ hub_component_name }}
+    app.kubernetes.io/part-of: {{ app_name }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ hub_database_volume_size }}
+{% if hub_database_volume_claim_storageclass is defined %}
+{% if hub_database_volume_claim_storageclass|length %}
+  storageClassName: {{ hub_database_volume_claim_storageclass }}
+{% else %}
+  storageClassName: ""
+{% endif %}
+{% endif %}

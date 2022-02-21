@@ -1,0 +1,10 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: konveyor-tackle
+  namespace: openshift-marketplace
+spec:
+  displayName: Tackle Operator
+  publisher: Konveyor
+  sourceType: grpc
+  image: quay.io/fbladilo/tackle-operator-index:latest

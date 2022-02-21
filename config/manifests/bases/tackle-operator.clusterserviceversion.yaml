@@ -1,0 +1,42 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: '[]'
+    capabilities: Basic Install
+  name: tackle-operator.v0.0.0
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions: {}
+  description: The Konveyor Tackle Operator fully manages the deployment and life
+    cycle of Tackle on Kubernetes.
+  displayName: Tackle Operator
+  icon:
+  - base64data: ""
+    mediatype: ""
+  install:
+    spec:
+      deployments: null
+    strategy: ""
+  installModes:
+  - supported: false
+    type: OwnNamespace
+  - supported: false
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+  - modernization
+  links:
+  - name: Tackle Operator
+    url: https://tackle-operator.domain
+  maintainers:
+  - email: openshift-operators@redhat.com'
+    name: '''Red Hat'
+  maturity: alpha
+  provider:
+    name: Red Hat, Inc
+  version: 0.0.0
