@@ -7,4 +7,4 @@ spec:
   displayName: Tackle Operator
   publisher: Konveyor
   sourceType: grpc
-  image: quay.io/fbladilo/tackle-operator-index:latest
+  image: quay.io/konveyor/tackle2-operator-index:latest

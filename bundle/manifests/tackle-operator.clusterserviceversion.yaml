@@ -10,8 +10,8 @@ metadata:
     categories: 'Modernization & Migration'
     certified: "false"
     support: Red Hat
-    repository: https://github.com/konveyor/tackle-operator
-    containerImage: quay.io/konveyor/tackle-operator:latest
+    repository: https://github.com/konveyor/tackle2-operator
+    containerImage: quay.io/konveyor/tackle2-operator:latest
     olm.skipRange: '>=0.0.0 <99.0.0'
     alm-examples: |-
       [
@@ -146,19 +146,19 @@ spec:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
                 - name: TACKLE_HUB_IMAGE
-                  value: quay.io/jortel/tackle-hub:latest
+                  value: quay.io/konveyor/tackle2-hub:latest
                 - name: PATHFINDER_DATABASE_IMAGE
                   value: postgres:12
                 - name: PATHFINDER_API_IMAGE
-                  value: quay.io/konveyor/tackle-pathfinder:1.1.0-native
+                  value: quay.io/konveyor/tackle-pathfinder:1.2.0-native
                 - name: KEYCLOAK_DATABASE_IMAGE
                   value: postgres:12
                 - name: KEYCLOAK_SSO_IMAGE
-                  value: quay.io/keycloak/keycloak:12.0.4
+                  value: quay.io/keycloak/keycloak:16.1.1
                 - name: TACKLE_UI_IMAGE
-                  value: quay.io/konveyor/tackle-ui:1.1.0
+                  value: quay.io/konveyor/tackle2-ui:latest
                 name: tackle-operator
-                image: quay.io/fbladilo/tackle-operator:latest
+                image: quay.io/konveyor/tackle2-operator:latest
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
@@ -294,17 +294,17 @@ spec:
   - name: Konveyor Tackle Documentation
     url: https://tackle-docs.konveyor.io
   - name: Konveyor Tackle Operator
-    url: https://github.com/konveyor/tackle-operator
+    url: https://github.com/konveyor/tackle2-operator
   relatedImages:
   - name: tackle-hub
-    image: quay.io/konveyor/tackle-hub:latest
+    image: quay.io/konveyor/tackle2-hub:latest
   - name: tackle-postgres
-    image: postgres:10
+    image: postgres:12
   - name: tackle-pathfinder
-    image: quay.io/konveyor/tackle-pathfinder:1.1.0-native
+    image: quay.io/konveyor/tackle-pathfinder:1.2.0-native
   - name: tackle-keycloak
-    image: quay.io/keycloak/keycloak:12.0.4
+    image: quay.io/keycloak/keycloak:16.1.1
   - name: tackle-ui
-    image: quay.io/konveyor/tackle-ui:1.1.0
+    image: quay.io/konveyor/tackle2-ui:latest
   version: 99.0.0
   minKubeVersion: 1.20.0
