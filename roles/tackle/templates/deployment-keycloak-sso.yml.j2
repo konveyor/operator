@@ -1,0 +1,125 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ keycloak_sso_deployment_name }}
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/name: {{ keycloak_sso_service_name }}
+    app.kubernetes.io/component: {{ keycloak_sso_component_name }}
+    app.kubernetes.io/part-of: {{ app_name }}
+  annotations:
+    app.openshift.io/connects-to: >-
+      [
+        { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ keycloak_database_deployment_name }}" }
+      ]
+
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ keycloak_sso_service_name }}
+      app.kubernetes.io/component: {{ keycloak_sso_component_name }}
+      app.kubernetes.io/part-of: {{ app_name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ keycloak_sso_service_name }}
+        app.kubernetes.io/component: {{ keycloak_sso_component_name }}
+        app.kubernetes.io/part-of: {{ app_name }}
+    spec:
+      initContainers:
+        - name: keycloak-sso-theme
+          image: busybox:1.32.1
+          command:
+            - wget
+            - '-P'
+            - /deployments
+            - https://raw.githubusercontent.com/konveyor/tackle-keycloak-theme/main/tackle-keycloak-theme-0.1-SNAPSHOT.jar
+          resources: {}
+          volumeMounts:
+            - name: {{ keycloak_sso_service_name }}-theme
+              mountPath: /deployments
+      containers:
+        - name: {{ keycloak_sso_container_name }}
+          image: "{{ keycloak_sso_image_fqin }}"
+          imagePullPolicy: "{{ image_pull_policy }}"
+          env:
+            - name: KEYCLOAK_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ keycloak_sso_secret_name }}
+                  key: admin-username
+            - name: KEYCLOAK_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ keycloak_sso_secret_name }}
+                  key: admin-password
+            - name: PROXY_ADDRESS_FORWARDING
+              value: 'true'
+            - name: KEYCLOAK_IMPORT
+              value: /etc/config/quarkus-realm.json
+            - name: DB_VENDOR
+              value: postgres
+            - name: DB_ADDR
+              value: {{ keycloak_database_service_name }}
+            - name: DB_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ keycloak_database_secret_name }}
+                  key: database-name
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ keycloak_database_secret_name }}
+                  key: database-user
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ keycloak_database_secret_name }}
+                  key: database-password
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: https
+              containerPort: 8443
+              protocol: TCP
+          resources:
+            limits:
+              cpu: {{ keycloak_sso_container_limits_cpu }}
+              memory: {{ keycloak_sso_container_limits_memory }}
+            requests:
+              cpu: {{ keycloak_sso_container_requests_cpu }}
+              memory: {{ keycloak_sso_container_requests_memory }}
+          livenessProbe:
+            httpGet:
+              path: /auth/realms/{{ app_name }}
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 60
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 20
+          readinessProbe:
+            httpGet:
+              path: /auth/realms/{{ app_name }}
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 60
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 20
+          volumeMounts:
+            - name: {{ keycloak_sso_service_name }}-config
+              mountPath: /etc/config
+            - name: {{ keycloak_sso_service_name }}-theme
+              mountPath: /opt/jboss/keycloak/standalone/deployments
+      volumes:
+        - name: {{ keycloak_sso_service_name }}-config
+          configMap:
+            name: {{ keycloak_sso_configmap_name }}
+            defaultMode: 420
+        - name: {{ keycloak_sso_service_name }}-theme
+          emptyDir: {}

@@ -1,0 +1,115 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ hub_deployment_name }}
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/name: {{ hub_service_name }}
+    app.kubernetes.io/component: {{ hub_component_name }}
+    app.kubernetes.io/part-of: {{ app_name }}
+  annotations:
+    app.openshift.io/connects-to: >-
+      [
+{% if feature_auth_enabled|bool and feature_auth_provider == 'keycloak' %}
+        { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ keycloak_sso_deployment_name }}" }
+{% endif %}
+      ]
+
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ hub_service_name }}
+      app.kubernetes.io/component: {{ hub_component_name }}
+      app.kubernetes.io/part-of: {{ app_name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ hub_service_name }}
+        app.kubernetes.io/component: {{ hub_component_name }}
+        app.kubernetes.io/part-of: {{ app_name }}
+    spec:
+      serviceAccountName: {{ hub_serviceaccount_name }}
+      containers:
+        - name: {{ hub_container_name }}
+          image: "{{ hub_image_fqin }}"
+          imagePullPolicy: "{{ image_pull_policy }}"
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+{% if hub_tls_enabled|bool %}
+            - name: HUB_TLS_ENABLED
+              value: 'true'
+            - name: HUB_TLS_CERTIFICATE
+              value: "/var/run/secrets/{{ hub_tls_secret_name }}/tls.crt"
+            - name: HUB_TLS_KEY
+              value: "/var/run/secrets/{{ hub_tls_secret_name }}/tls.key"
+            - name: HUB_BASE_URL
+              value: "https://{{ hub_service_name }}.{{ app_namespace }}.svc:8443"
+{% else %}
+            - name: HUB_TLS_ENABLED
+              value: 'false'
+            - name: HUB_BASE_URL
+              value: "http://{{ hub_service_name }}.{{ app_namespace }}.svc:8080"
+{% endif %}
+            - name: ADDON_SECRET_PATH
+              value: "/var/run/secrets/tackle-addon"
+            - name: DB_PATH
+              value: "{{ hub_database_volume_path }}/{{ hub_database_filename }}"
+            - name: DB_SEED_PATH
+              value: "{{ hub_seed_configmap_path }}"
+            - name: BUCKET_PATH
+              value: "{{ hub_bucket_volume_path }}"
+            - name: BUCKET_PVC
+              value: "{{ hub_bucket_volume_claim_name }}"
+            - name: ENCRYPTION_PASSPHRASE
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ hub_secret_name }}"
+                  key: passphrase
+          ports:
+{% if hub_tls_enabled|bool %}
+            - containerPort: 8443
+{% else %}
+            - containerPort: 8080
+{% endif %}
+              protocol: TCP
+          resources:
+            limits:
+              cpu: {{ hub_container_limits_cpu }}
+              memory: {{ hub_container_limits_memory }}
+            requests:
+              cpu: {{ hub_container_requests_cpu }}
+              memory: {{ hub_container_requests_memory }}
+# TODO: Add liveness and readiness probes
+          volumeMounts:
+            - name: {{ hub_database_volume_name }}
+              mountPath: {{ hub_database_volume_path }}
+            - name: {{ hub_bucket_volume_name }}
+              mountPath: {{ hub_bucket_volume_path }}
+            - name: {{ hub_seed_configmap_name }}
+              mountPath: {{ hub_seed_configmap_path }}
+              readOnly: true
+{% if hub_tls_enabled|bool %}
+            - name: {{ hub_tls_secret_name }}
+              mountPath: /var/run/secrets/{{ hub_tls_secret_name }}/tls.crt
+{% endif %}
+      volumes:
+        - name: {{ hub_database_volume_name }}
+          persistentVolumeClaim:
+            claimName: {{ hub_database_volume_claim_name }}
+        - name: {{ hub_bucket_volume_name }}
+          persistentVolumeClaim:
+            claimName: {{ hub_bucket_volume_claim_name }}
+        - name: {{ hub_seed_configmap_name }}
+          configMap:
+            name: {{ hub_seed_configmap_name }}
+{% if hub_tls_enabled|bool %}
+        - name: {{ hub_tls_secret_name }}
+          secret:
+            secretName: {{ hub_tls_secret_name }}
+            defaultMode: 420
+{% endif %}

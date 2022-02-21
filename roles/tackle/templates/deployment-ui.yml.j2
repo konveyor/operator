@@ -1,0 +1,122 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ ui_deployment_name }}
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/name: {{ ui_service_name }}
+    app.kubernetes.io/component: {{ ui_component_name }}
+    app.kubernetes.io/part-of: {{ app_name }}
+  annotations:
+    app.openshift.io/connects-to: >-
+      [
+        { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ hub_deployment_name }}" },
+        { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ pathfinder_api_deployment_name }}" },
+{% if feature_auth_enabled|bool and feature_auth_provider == 'keycloak' %}
+        { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ keycloak_sso_deployment_name }}" }
+{% endif %}
+      ]
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ ui_service_name }}
+      app.kubernetes.io/component: {{ ui_component_name }}
+      app.kubernetes.io/part-of: {{ app_name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ ui_service_name }}
+        app.kubernetes.io/component: {{ ui_component_name }}
+        app.kubernetes.io/part-of: {{ app_name }}
+    spec:
+      containers:
+        - name: {{ ui_container_name }}
+          image: "{{ ui_image_fqin }}"
+          imagePullPolicy: "{{ image_pull_policy }}"
+          env:
+            - name: CONTROLS_API_URL
+{% if hub_tls_enabled|bool %}
+              value: "https://{{ hub_service_name }}:8443"
+{% else %}
+              value: "http://{{ hub_service_name }}:8080"
+{% endif %}
+            - name: APPLICATION_INVENTORY_API_URL
+{% if hub_tls_enabled|bool %}
+              value: "https://{{ hub_service_name }}:8443"
+{% else %}
+              value: "http://{{ hub_service_name }}:8080"
+{% endif %}
+            - name: PATHFINDER_API_URL
+{% if pathfinder_api_tls_enabled|bool %}
+              value: "http://{{ pathfinder_api_service_name }}:8443"
+{% else %}
+              value: "http://{{ pathfinder_api_service_name }}:8080"
+{% endif %}
+            - name: SSO_SERVER_URL
+              value: http://{{ keycloak_sso_service_name }}:8080
+            - name: SSO_REALM
+              value: {{ app_name }}
+            - name: SSO_CLIENT_ID
+              value: {{ ui_service_name }}
+{% if ui_tls_enabled|bool %}
+            - name: UI_TLS_ENABLED
+              value: 'true'
+            - name: UI_TLS_CERTIFICATE
+              value: "/var/run/secrets/{{ ui_tls_secret_name }}/tls.crt"
+            - name: UI_TLS_KEY
+              value: "/var/run/secrets/{{ ui_tls_secret_name }}/tls.key"
+{% else %}
+            - name: UI_TLS_ENABLED
+              value: 'false'
+{% endif %}
+          ports:
+{% if ui_tls_enabled|bool %}
+            - containerPort: 8443
+{% else %}
+            - containerPort: 8080
+{% endif %}
+              protocol: TCP
+          resources:
+            limits:
+              cpu: {{ ui_container_limits_cpu }}
+              memory: {{ ui_container_limits_memory }}
+            requests:
+              cpu: {{ ui_container_requests_cpu }}
+              memory: {{ ui_container_requests_memory }}
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - '-c'
+                - '[ -f /run/nginx.pid ] && ps -A | grep nginx'
+            initialDelaySeconds: 10
+            timeoutSeconds: 1
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+{% if ui_tls_enabled|bool %}
+              port: 8443
+              scheme: HTTPS
+{% else %}
+              port: 8080
+              scheme: HTTP
+{% endif %}
+            initialDelaySeconds: 10
+            timeoutSeconds: 1
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+{% if ui_tls_enabled|bool %}
+          volumeMounts:
+            - name: {{ ui_tls_secret_name }}
+              mountPath: /var/run/secrets/{{ ui_tls_secret_name }}/tls.crt
+      volumes:
+        - name: {{ ui_tls_secret_name }}
+          secret:
+            secretName: {{ ui_tls_secret_name }}
+            defaultMode: 420
+{% endif %}
