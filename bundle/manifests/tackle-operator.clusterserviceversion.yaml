@@ -146,19 +146,19 @@ spec:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
                 - name: TACKLE_HUB_IMAGE
-                  value: quay.io/jortel/tackle-hub:latest
+                  value: quay.io/konveyor/tackle2-hub:latest
                 - name: PATHFINDER_DATABASE_IMAGE
                   value: postgres:12
                 - name: PATHFINDER_API_IMAGE
-                  value: quay.io/konveyor/tackle-pathfinder:1.1.0-native
+                  value: quay.io/konveyor/tackle-pathfinder:1.2.0-native
                 - name: KEYCLOAK_DATABASE_IMAGE
                   value: postgres:12
                 - name: KEYCLOAK_SSO_IMAGE
-                  value: quay.io/keycloak/keycloak:12.0.4
+                  value: quay.io/keycloak/keycloak:16.1.1
                 - name: TACKLE_UI_IMAGE
-                  value: quay.io/konveyor/tackle-ui:1.1.0
+                  value: quay.io/konveyor/tackle2-ui:latest
                 name: tackle-operator
-                image: quay.io/fbladilo/tackle-operator:latest
+                image: quay.io/konveyor/tackle2-operator:latest
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
