@@ -206,6 +206,12 @@ spec:
           verbs:
           - '*'
         - apiGroups:
+          - networking.k8s.io
+          resources:
+          - ingresses
+          verbs:
+          - '*'
+        - apiGroups:
           - apps
           resources:
           - deployments
@@ -236,7 +242,7 @@ spec:
         - apiGroups:
           - apps
           resourceNames:
-          - forklift-operator
+          - tackle-operator
           resources:
           - deployments/finalizers
           verbs:
