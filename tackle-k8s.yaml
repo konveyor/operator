@@ -11,7 +11,7 @@ metadata:
   namespace: konveyor-tackle
 spec:
   displayName: Tackle Operator
-  publisher: Red Hat
+  publisher: Konveyor
   sourceType: grpc
   image: quay.io/konveyor/tackle2-operator-index:latest
 ---
