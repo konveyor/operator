@@ -23,6 +23,10 @@ Installing latest requires creating a new catalog source.
 1. Locate _Tackle_ on the top menu and click on it.
 1. Adjust settings if desired and click Create instance.
 
+### Installing _latest_ on Kubernetes (or Minikube)
+
+See [k8s.md](./docs/k8s.md) for details.
+
 ## Customize Settings
 
 Custom settings can be applied by editing the `Tackle` CR.
