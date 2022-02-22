@@ -25,7 +25,7 @@ For details and official instructions in how to add OLM support to kubernetes an
 
 Deploy Tackle using manifest:
 
-`$ kubectl apply -f https://raw.githubusercontent.com/konveyor/tackle2-operator/main/tackle-k8s.yml`
+`$ kubectl apply -f https://raw.githubusercontent.com/konveyor/tackle2-operator/main/tackle-k8s.yaml`
 
 ### Creating a _Tackle_ CR
 ```
