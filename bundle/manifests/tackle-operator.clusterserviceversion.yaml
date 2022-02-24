@@ -149,7 +149,7 @@ spec:
                   value: quay.io/konveyor/tackle2-hub:latest
                 - name: PATHFINDER_DATABASE_IMAGE
                   value: postgres:12
-                - name: PATHFINDER_API_IMAGE
+                - name: PATHFINDER_IMAGE
                   value: quay.io/konveyor/tackle-pathfinder:1.2.0-native
                 - name: KEYCLOAK_DATABASE_IMAGE
                   value: postgres:12

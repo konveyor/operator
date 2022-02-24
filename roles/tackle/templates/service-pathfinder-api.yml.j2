@@ -3,16 +3,16 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    service.beta.openshift.io/serving-cert-secret-name: {{ pathfinder_api_tls_secret_name }}
+    service.beta.openshift.io/serving-cert-secret-name: {{ pathfinder_tls_secret_name }}
   labels:
-    app.kubernetes.io/name: {{ pathfinder_api_service_name }}
-    app.kubernetes.io/component: {{ pathfinder_api_component_name }}
+    app.kubernetes.io/name: {{ pathfinder_service_name }}
+    app.kubernetes.io/component: {{ pathfinder_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
-  name: {{ pathfinder_api_service_name }}
+  name: {{ pathfinder_service_name }}
   namespace: {{ app_namespace }}
 spec:
   ports:
-{% if pathfinder_api_tls_enabled|bool %}
+{% if pathfinder_tls_enabled|bool %}
     - name: api-https
       port: 8443
       targetPort: 8443
@@ -24,7 +24,7 @@ spec:
       protocol: TCP
 {% endif %}
   selector:
-    app.kubernetes.io/name: {{ pathfinder_api_service_name }}
-    app.kubernetes.io/component: {{ pathfinder_api_component_name }}
+    app.kubernetes.io/name: {{ pathfinder_service_name }}
+    app.kubernetes.io/component: {{ pathfinder_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
   type: ClusterIP

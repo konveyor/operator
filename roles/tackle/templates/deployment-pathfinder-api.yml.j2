@@ -2,11 +2,11 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ pathfinder_api_deployment_name }}
+  name: {{ pathfinder_deployment_name }}
   namespace: {{ app_namespace }}
   labels:
-    app.kubernetes.io/name: {{ pathfinder_api_service_name }}
-    app.kubernetes.io/component: {{ pathfinder_api_component_name }}
+    app.kubernetes.io/name: {{ pathfinder_service_name }}
+    app.kubernetes.io/component: {{ pathfinder_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
   annotations:
     app.openshift.io/connects-to: >-
@@ -23,14 +23,14 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ pathfinder_api_service_name }}
-      app.kubernetes.io/component: {{ pathfinder_api_component_name }}
+      app.kubernetes.io/name: {{ pathfinder_service_name }}
+      app.kubernetes.io/component: {{ pathfinder_component_name }}
       app.kubernetes.io/part-of: {{ app_name }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ pathfinder_api_service_name }}
-        app.kubernetes.io/component: {{ pathfinder_api_component_name }}
+        app.kubernetes.io/name: {{ pathfinder_service_name }}
+        app.kubernetes.io/component: {{ pathfinder_component_name }}
         app.kubernetes.io/part-of: {{ app_name }}
       annotations:
         prometheus.io/path: /q/metrics
@@ -39,8 +39,8 @@ spec:
         prometheus.io/scrape: 'true'
     spec:
       containers:
-        - name: {{ pathfinder_api_container_name }}
-          image: "{{ pathfinder_api_image_fqin }}"
+        - name: {{ pathfinder_container_name }}
+          image: "{{ pathfinder_image_fqin }}"
           imagePullPolicy: "{{ image_pull_policy }}"
           env:
             - name: KUBERNETES_NAMESPACE
@@ -68,11 +68,11 @@ spec:
               protocol: TCP
           resources:
             limits:
-              cpu: {{ pathfinder_api_container_limits_cpu }}
-              memory: {{ pathfinder_api_container_limits_memory }}
+              cpu: {{ pathfinder_container_limits_cpu }}
+              memory: {{ pathfinder_container_limits_memory }}
             requests:
-              cpu: {{ pathfinder_api_container_requests_cpu }}
-              memory: {{ pathfinder_api_container_requests_memory }}
+              cpu: {{ pathfinder_container_requests_cpu }}
+              memory: {{ pathfinder_container_requests_memory }}
           livenessProbe:
             httpGet:
               path: /pathfinder/q/health/live
