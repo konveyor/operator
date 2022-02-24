@@ -35,13 +35,7 @@ spec:
           image: "{{ ui_image_fqin }}"
           imagePullPolicy: "{{ image_pull_policy }}"
           env:
-            - name: CONTROLS_API_URL
-{% if hub_tls_enabled|bool %}
-              value: "https://{{ hub_service_name }}:8443"
-{% else %}
-              value: "http://{{ hub_service_name }}:8080"
-{% endif %}
-            - name: APPLICATION_INVENTORY_API_URL
+            - name: TACKLE_HUB_URL
 {% if hub_tls_enabled|bool %}
               value: "https://{{ hub_service_name }}:8443"
 {% else %}
