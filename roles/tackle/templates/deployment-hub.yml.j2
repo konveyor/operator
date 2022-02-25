@@ -57,6 +57,8 @@ spec:
 {% endif %}
             - name: ADDON_SECRET_PATH
               value: "/var/run/secrets/tackle-addon"
+            - name: ADDON_WORKING_DIR
+              value: "{{ hub_addon_working_path }}"
             - name: DB_PATH
               value: "{{ hub_database_volume_path }}/{{ hub_database_filename }}"
             - name: DB_SEED_PATH
