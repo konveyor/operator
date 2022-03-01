@@ -2,18 +2,18 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ hub_bucket_volume_claim_name }}
+  name: {{ windup_data_volume_claim_name }}
   namespace: {{ app_namespace }}
   labels:
-    app.kubernetes.io/name: {{ hub_service_name }}
-    app.kubernetes.io/component: {{ hub_component_name }}
+    app.kubernetes.io/name: {{ windup_service_name }}
+    app.kubernetes.io/component: {{ windup_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
 spec:
   accessModes:
     - ReadWriteMany
   resources:
     requests:
-      storage: {{ hub_bucket_volume_size }}
+      storage: {{ windup_data_volume_size }}
 {% if rwx_storage_class is defined %}
 {% if rwx_storage_class|length %}
   storageClassName: {{ rwx_storage_class }}

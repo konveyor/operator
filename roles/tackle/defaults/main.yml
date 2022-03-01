@@ -124,3 +124,10 @@ ui_route_name: "{{ app_name }}"
 ui_tls_enabled: false
 ui_route_tls_termination: "edge"
 ui_tls_secret_name: "{{ ui_service_name }}-serving-cert"
+
+windup_fqin: "{{ lookup('env', 'ADDON_WINDUP_IMAGE') }}"
+windup_name: "windup"
+windup_component_name: "addon"
+windup_service_name: "{{ app_name }}-{{ windup_name }}-{{ windup_component_name }}"
+windup_data_volume_size: "100Gi"
+windup_data_volume_claim_name: "{{ windup_service_name }}-volume-claim"

@@ -14,9 +14,9 @@ spec:
   resources:
     requests:
       storage: {{ hub_database_volume_size }}
-{% if hub_database_volume_claim_storageclass is defined %}
-{% if hub_database_volume_claim_storageclass|length %}
-  storageClassName: {{ hub_database_volume_claim_storageclass }}
+{% if rwo_storage_class is defined %}
+{% if rwo_storage_class|length %}
+  storageClassName: {{ rwo_storage_class }}
 {% else %}
   storageClassName: ""
 {% endif %}
