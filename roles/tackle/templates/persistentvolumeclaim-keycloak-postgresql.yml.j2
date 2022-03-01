@@ -14,9 +14,9 @@ spec:
   resources:
     requests:
       storage: {{ keycloak_database_data_volume_size }}
-{% if tackle_rwo_storage_class is defined %}
-{% if tackle_rwo_storage_class|length %}
-  storageClassName: {{ tackle_rwo_storage_class }}
+{% if rwo_storage_class is defined %}
+{% if rwo_storage_class|length %}
+  storageClassName: {{ rwo_storage_class }}
 {% else %}
   storageClassName: ""
 {% endif %}

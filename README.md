@@ -47,8 +47,8 @@ hub_bucket_volume_size | 100gi | Size requested for Hub bucket volume
 keycloak_database_data_volume_size | 1Gi | Size requested for Keycloak DB volume
 pathfinder_database_data_volume_size | 1Gi | Size requested for Pathfinder DB volume
 windup_data_volume_size | 100Gi | Size requested for Windup maven m2 repository volume
-tackle_rwx_storage_class | N/A | Storage class requested for Tackle RWX volumes
-tackle_rwo_storage_class | N/A | Storage class requested for Tackle RWO volumes
+rwx_storage_class | N/A | Storage class requested for Tackle RWX volumes
+rwo_storage_class | N/A | Storage class requested for Tackle RWO volumes
 
 ## Tackle CR Customize Settings
 
@@ -80,7 +80,7 @@ metadata:
   namespace: konveyor-tackle
 spec:
   hub_bucket_volume_size: "50Gi"
-  tackle_rwx_storage_class: "nfs"
+  rwx_storage_class: "nfs"
 ```
 
 ## Tackle Documentation

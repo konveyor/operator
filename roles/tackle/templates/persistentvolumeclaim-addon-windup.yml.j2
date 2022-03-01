@@ -14,9 +14,9 @@ spec:
   resources:
     requests:
       storage: {{ windup_data_volume_size }}
-{% if tackle_rwx_storage_class is defined %}
-{% if tackle_rwx_storage_class|length %}
-  storageClassName: {{ tackle_rwx_storage_class }}
+{% if rwx_storage_class is defined %}
+{% if rwx_storage_class|length %}
+  storageClassName: {{ rwx_storage_class }}
 {% else %}
   storageClassName: ""
 {% endif %}
