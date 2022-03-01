@@ -1,6 +1,6 @@
-# Konveyor Tackle Operator
+# Tackle Operator
 
-The Konveyor Tackle Operator fully manages the deployment and life cycle of Tackle on OpenShift and Kubernetes.
+The Tackle Operator fully manages the deployment and life cycle of Tackle on OpenShift and Kubernetes.
 
 ## Prerequisites
 
@@ -9,7 +9,7 @@ Please ensure the following requirements are met prior installation.
 * [__OpenShift 4.7+__](https://www.openshift.com/) or [__k8s v1.20+__](https://kubernetes.io/)
 * [__Persistent Storage__](https://kubernetes.io/docs/concepts/storage/persistent-volumes/)
 
-## Konveyor Tackle Operator Installation
+## Tackle Operator Installation
 
 ### Installing _latest_ on OpenShift
 
@@ -70,7 +70,7 @@ windup | 100Gi | RWX | Windup maven m2 repository
 
 ### Tackle Storage Custom Settings Example
 
-The example below requests a custom hub bucket volume size and also a classless RWX storage class
+The example below requests a custom hub bucket volume size and RWX storage class
 
 ```
 kind: Tackle
@@ -85,4 +85,4 @@ spec:
 
 ## Tackle Documentation
 
-See the [Konveyor Tackle Documentation](https://tackle-docs.konveyor.io/) for detailed installation instructions as well as how to use Konveyor Tackle.
+See the [Konveyor Tackle Documentation](https://tackle-docs.konveyor.io/) for detailed installation instructions as well as how to use Tackle.
