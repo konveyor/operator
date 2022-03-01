@@ -62,11 +62,11 @@ Tackle requires a total of 5 persistent volumes (PVs) used by different componen
 
 Name | Default Size | Access Mode | Description
 --- | --- | --- | ---
-hub database | 5Gi | RWO | Hub internal DB
-hub bucket | 100Gi | RWX | Hub internal cache
+hub database | 5Gi | RWO | Hub DB
+hub bucket | 100Gi | RWX | Hub file storage
 keycloak postgresql | 1Gi | RWO | Keycloak backend DB
 pathfinder postgresql | 1Gi | RWO | Pathfinder backend DB
-windup | 100Gi | RWX | Windup addon maven cache
+windup | 100Gi | RWX | Windup maven m2 repository
 
 ### Tackle Storage Custom Settings Example
 
