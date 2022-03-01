@@ -230,3 +230,13 @@
         k8s:
           state: present
           definition: "{{ lookup('template', 'route-ui.yml.j2') }}"
+
+  - name: "Setup Windup Addon PersistentVolumeClaim"
+    k8s:
+      state: present
+      definition: "{{ lookup('template', 'persistentvolumeclaim-addon-windup.yml.j2') }}"
+
+  - name: "Create Windup Addon CR"
+    k8s:
+      state: present
+      definition: "{{ lookup('template', 'customresource-addon-windup.yml.j2') }}"

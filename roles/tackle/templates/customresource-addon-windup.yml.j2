@@ -1,0 +1,15 @@
+---
+kind: Addon
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  name: {{ windup_name }}
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/name: {{ windup_service_name }}
+    app.kubernetes.io/component: {{ windup_component_name }}
+    app.kubernetes.io/part-of: {{ app_name }}
+spec:
+  image: {{ windup_fqin }}
+  mounts:
+  - claim: {{ windup_data_volume_claim_name }}
+    name: m2
