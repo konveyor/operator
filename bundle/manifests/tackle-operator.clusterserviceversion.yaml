@@ -13,29 +13,6 @@ metadata:
     repository: https://github.com/konveyor/tackle2-operator
     containerImage: quay.io/konveyor/tackle2-operator:latest
     olm.skipRange: '>=0.0.0 <99.0.0'
-    alm-examples: |-
-      [
-        {
-          "apiVersion": "tackle.konveyor.io/v1alpha1",
-          "kind": "Tackle",
-          "metadata": {
-            "name": "tackle",
-            "namespace": "konveyor-tackle"
-          },
-          "spec": {}
-        },
-        {
-          "apiVersion": "tackle.konveyor.io/v1alpha1",
-          "kind": "Addon",
-          "metadata": {
-            "name": "move2kube-plan",
-            "namespace": "konveyor-tackle"
-          },
-          "spec": {
-            "image": "quay.io/konveyor/tackle-addon-move2kube-plan:latest"
-          }
-        }
-      ]
     operatorframework.io/initialization-resource: |-
       {
         "apiVersion": "tackle.io/v1alpha1",
@@ -103,7 +80,7 @@ spec:
     Documentation can be found on our [website](https://tackle-docs.konveyor.io).
 
     ### Getting help
-    If you encounter any issues while using Tackle operator, you can create an issue on our [Github repo](https://github.com/konveyor/tackle-operator/issues), for bugs, enhancements or other requests.
+    If you encounter any issues while using Tackle operator, you can create an issue on our [Github repo](https://github.com/konveyor/tackle2-operator/issues), for bugs, enhancements or other requests.
 
     ### Contributing
     You can contribute by:
