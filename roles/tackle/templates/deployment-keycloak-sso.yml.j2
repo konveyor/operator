@@ -15,6 +15,7 @@ metadata:
       ]
 
 spec:
+  replicas: {{ keycloak_sso_deployment_replicas }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ keycloak_sso_service_name }}

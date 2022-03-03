@@ -18,6 +18,7 @@ metadata:
 {% endif %}
       ]
 spec:
+  replicas: {{ ui_deployment_replicas }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ ui_service_name }}

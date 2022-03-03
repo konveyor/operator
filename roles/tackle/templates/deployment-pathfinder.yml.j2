@@ -21,6 +21,7 @@ metadata:
     prometheus.io/scheme: http
     prometheus.io/scrape: 'true'
 spec:
+  replicas: {{ pathfinder_deployment_replicas }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ pathfinder_service_name }}

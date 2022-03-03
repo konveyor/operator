@@ -15,13 +15,15 @@ metadata:
         { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ keycloak_sso_deployment_name }}" }
 {% endif %}
       ]
-
 spec:
+  replicas: {{ hub_deployment_replicas }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ hub_service_name }}
       app.kubernetes.io/component: {{ hub_component_name }}
       app.kubernetes.io/part-of: {{ app_name }}
+  strategy:
+    type: {{ hub_deployment_strategy }}
   template:
     metadata:
       labels:
