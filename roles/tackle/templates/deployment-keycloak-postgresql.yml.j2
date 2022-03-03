@@ -15,6 +15,8 @@ spec:
       app.kubernetes.io/name: {{ keycloak_database_service_name }}
       app.kubernetes.io/component: {{ keycloak_database_component_name }}
       app.kubernetes.io/part-of: {{ app_name }}
+  strategy:
+    type: {{ keycloak_database_deployment_strategy }}
   template:
     metadata:
       labels:
@@ -27,17 +29,17 @@ spec:
           image: "{{ keycloak_database_image_fqin }}"
           imagePullPolicy: "{{ image_pull_policy }}"
           env:
-            - name: POSTGRES_USER
+            - name: POSTGRESQL_USER
               valueFrom:
                 secretKeyRef:
                   name: {{ keycloak_database_secret_name }}
                   key: database-user
-            - name: POSTGRES_PASSWORD
+            - name: POSTGRESQL_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ keycloak_database_secret_name }}
                   key: database-password
-            - name: POSTGRES_DB
+            - name: POSTGRESQL_DATABASE
               valueFrom:
                 secretKeyRef:
                   name: {{ keycloak_database_secret_name }}
@@ -60,7 +62,7 @@ spec:
               command:
                 - "/bin/sh"
                 - "-c"
-                - 'psql -U $POSTGRES_USER -d $POSTGRES_DB -c ''SELECT 1'' '
+                - 'psql -U $POSTGRESQL_USER -d $POSTGRESQL_DATABASE -c ''SELECT 1'' '
             initialDelaySeconds: 60
             timeoutSeconds: 10
             periodSeconds: 10
@@ -71,7 +73,7 @@ spec:
               command:
                 - "/bin/sh"
                 - "-c"
-                - 'psql -U $POSTGRES_USER -d $POSTGRES_DB -c ''SELECT 1'' '
+                - 'psql -U $POSTGRESQL_USER -d $POSTGRESQL_DATABASE -c ''SELECT 1'' '
             initialDelaySeconds: 10
             timeoutSeconds: 1
             periodSeconds: 10
