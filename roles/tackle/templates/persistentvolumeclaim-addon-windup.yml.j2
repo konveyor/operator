@@ -8,6 +8,7 @@ metadata:
     app.kubernetes.io/name: {{ windup_service_name }}
     app.kubernetes.io/component: {{ windup_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
+    volume: {{ windup_data_volume_name }}
 spec:
   accessModes:
     - ReadWriteMany

@@ -8,6 +8,7 @@ metadata:
     app.kubernetes.io/name: {{ pathfinder_database_service_name }}
     app.kubernetes.io/component: {{ pathfinder_database_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
+    volume: {{ pathfinder_database_data_volume_name }}
 spec:
   accessModes:
     - ReadWriteOnce
