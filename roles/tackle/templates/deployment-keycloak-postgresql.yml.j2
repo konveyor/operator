@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/component: {{ keycloak_database_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
 spec:
-  replicas: 1
+  replicas: {{ keycloak_database_deployment_replicas }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ keycloak_database_service_name }}

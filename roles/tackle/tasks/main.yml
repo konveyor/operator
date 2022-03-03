@@ -199,15 +199,15 @@
       state: present
       definition: "{{ lookup('template', 'deployment-pathfinder-postgresql.yml.j2') }}"
 
-  - name: "Setup PathFinder API Service"
+  - name: "Setup PathFinder Service"
     k8s:
       state: present
-      definition: "{{ lookup('template', 'service-pathfinder-api.yml.j2') }}"
+      definition: "{{ lookup('template', 'service-pathfinder.yml.j2') }}"
 
-  - name: "Setup PathFinder API Deployment"
+  - name: "Setup PathFinder Deployment"
     k8s:
       state: present
-      definition: "{{ lookup('template', 'deployment-pathfinder-api.yml.j2') }}"
+      definition: "{{ lookup('template', 'deployment-pathfinder.yml.j2') }}"
 
   - when: feature_ui_enabled|bool
     block:
