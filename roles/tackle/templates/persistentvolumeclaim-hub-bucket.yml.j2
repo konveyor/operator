@@ -8,6 +8,7 @@ metadata:
     app.kubernetes.io/name: {{ hub_service_name }}
     app.kubernetes.io/component: {{ hub_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
+    volume: {{ hub_bucket_volume_name }}
 spec:
   accessModes:
     - ReadWriteMany

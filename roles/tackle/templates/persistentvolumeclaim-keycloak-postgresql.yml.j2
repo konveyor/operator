@@ -8,6 +8,7 @@ metadata:
     app.kubernetes.io/name: {{ keycloak_database_service_name }}
     app.kubernetes.io/component: {{ keycloak_database_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
+    volume: {{ keycloak_database_data_volume_name }}
 spec:
   accessModes:
     - ReadWriteOnce
