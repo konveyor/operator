@@ -1,5 +1,7 @@
 # Tackle Operator
 
+[![Operator Repository on Quay](https://quay.io/repository/konveyor/tackle2-operator/status "Operator Repository on Quay")](https://quay.io/repository/konveyor/tackle2-operator) [![License](http://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html) [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/konveyor/tackle2-operator/pulls)
+
 The Tackle Operator fully manages the deployment and life cycle of Tackle on OpenShift and Kubernetes.
 
 ## Prerequisites
