@@ -55,6 +55,8 @@ spec:
                 secretKeyRef:
                   name: {{ keycloak_sso_secret_name }}
                   key: admin-password
+            - name: JAVA_OPTS
+              value: {{ keycloak_sso_java_opts }}
             - name: PROXY_ADDRESS_FORWARDING
               value: 'true'
             - name: KEYCLOAK_IMPORT
