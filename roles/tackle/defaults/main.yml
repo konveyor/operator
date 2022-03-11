@@ -116,6 +116,7 @@ keycloak_sso_tls_enabled: false
 keycloak_sso_tls_secret_name: "{{ keycloak_sso_service_name }}-serving-cert"
 keycloak_sso_admin_username: "admin"
 keycloak_sso_admin_username_b64: "{{ keycloak_sso_admin_username | b64encode }}"
+keycloak_sso_java_opts: "-Dcom.redhat.fips=false"
 
 ui_image_fqin: "{{ lookup('env', 'TACKLE_UI_IMAGE') }}"
 ui_component_name: "ui"
