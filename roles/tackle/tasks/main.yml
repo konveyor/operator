@@ -84,12 +84,14 @@
               keycloak_database_db_username: "user-{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=4') }}"
               keycloak_database_db_password: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=16') }}"
               keycloak_sso_admin_password: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=16') }}"
+              keycloak_sso_hub_client_secret: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=32') }}"
 
           - name: "Encode Keycloak PostgreSQL and SSO username and password"
             set_fact:
               keycloak_database_db_username_b64: "{{ keycloak_database_db_username | b64encode }}"
               keycloak_database_db_password_b64: "{{ keycloak_database_db_password | b64encode }}"
               keycloak_sso_admin_password_b64: "{{ keycloak_sso_admin_password | b64encode }}"
+              keycloak_sso_hub_client_secret_b64: "{{ keycloak_sso_hub_client_secret | b64encode }}"
 
           - name: "Setup Keycloak SSO Secret"
             k8s:
@@ -143,6 +145,14 @@
       - name: "Encode Tackle Hub AES passphrase"
         set_fact:
           hub_aes_passphrase_b64: "{{ hub_aes_passphrase | b64encode }}"
+
+      - name: "Generate Tackle Hub addon token"
+        set_fact:
+          hub_addon_token: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=32') }}"
+
+      - name: "Encode Tackle Hub addon token"
+        set_fact:
+          hub_addon_token_b64: "{{ hub_addon_token | b64encode }}"
 
       - name: "Setup Tackle Hub Secret"
         k8s:
