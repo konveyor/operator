@@ -1,0 +1,18 @@
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ hub_route_name }}
+  namespace: {{ app_namespace }}
+  annotations:
+    haproxy.router.openshift.io/timeout: 300s
+  labels:
+    app.kubernetes.io/name: {{ hub_service_name }}
+    app.kubernetes.io/component: route
+    app.kubernetes.io/part-of: {{ app_name }}
+spec:
+  to:
+    kind: Service
+    name: {{ hub_service_name }}
+  tls:
+    termination: {{ hub_route_tls_termination }}

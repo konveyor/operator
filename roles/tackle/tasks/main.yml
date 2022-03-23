@@ -159,6 +159,18 @@
       state: present
       definition: "{{ lookup('template', 'deployment-hub.yml.j2') }}"
 
+  - when: not openshift_cluster|bool
+    name: "Setup Tackle Hub Ingress"
+    k8s:
+      state: present
+      definition: "{{ lookup('template', 'ingress-hub.yml.j2') }}"
+
+  - when: openshift_cluster|bool
+    name: "Setup Tackle Hub Route"
+    k8s:
+      state: present
+      definition: "{{ lookup('template', 'route-hub.yml.j2') }}"
+
   - name: "Setup PathFinder PostgreSQL PersistentVolume"
     k8s:
       state: present
@@ -222,11 +234,13 @@
           definition: "{{ lookup('template', 'deployment-ui.yml.j2') }}"
 
       - when: not openshift_cluster|bool
+        name: "Setup Tackle UI Ingress"
         k8s:
           state: present
           definition: "{{ lookup('template', 'ingress-ui.yml.j2') }}"
 
       - when: openshift_cluster|bool
+        name: "Setup Tackle UI Route"
         k8s:
           state: present
           definition: "{{ lookup('template', 'route-ui.yml.j2') }}"

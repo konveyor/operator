@@ -42,6 +42,8 @@ hub_bucket_volume_claim_name: "{{ hub_service_name }}-bucket-volume-claim"
 hub_seed_configmap_name: "{{ hub_service_name }}-seed"
 hub_seed_configmap_path: "/seed"
 hub_addon_working_path: "/working"
+hub_route_name: "{{ hub_component_name }}"
+hub_route_tls_termination: "edge"
 hub_tls_enabled: false
 hub_tls_secret_name: "{{ hub_service_name }}-serving-cert"
 hub_log_level: 3
@@ -129,10 +131,9 @@ ui_container_limits_cpu: "500m"
 ui_container_limits_memory: "800Mi"
 ui_container_requests_cpu: "100m"
 ui_container_requests_memory: "350Mi"
-ui_ingress_name: "{{ app_name }}"
-ui_route_name: "{{ app_name }}"
-ui_tls_enabled: false
+ui_route_name: "{{ ui_component_name }}"
 ui_route_tls_termination: "edge"
+ui_tls_enabled: false
 ui_tls_secret_name: "{{ ui_service_name }}-serving-cert"
 
 windup_fqin: "{{ lookup('env', 'ADDON_WINDUP_IMAGE') }}"
