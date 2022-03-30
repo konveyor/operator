@@ -1015,6 +1015,14 @@ data:
             "tackle-architect",
             "tackle-admin"
           ]
+        },
+        {
+          "clientScope": "adoptionplans:post",
+          "roles": [
+            "tackle-architect",
+            "tackle-admin",
+            "tackle-migrator"
+          ]
         }
       ],
       "clientScopeMappings": {
@@ -1610,7 +1618,8 @@ data:
             "assessments:get",
             "assessments:post",
             "assessments:put",
-            "assessments:delete"
+            "assessments:delete",
+            "adoptionplans:post"
           ],
           "optionalClientScopes": [
             "address",
@@ -2117,6 +2126,12 @@ data:
         {
           "id": "0ddf01b0-5b7a-4118-9006-385042731793",
           "name": "assessments:delete",
+          "protocol": "openid-connect",
+          "attributes": {}
+        },
+        {
+          "id": "e04452e6-29af-4650-a00a-a64a3a055388",
+          "name": "adoptionplans:post",
           "protocol": "openid-connect",
           "attributes": {}
         },
