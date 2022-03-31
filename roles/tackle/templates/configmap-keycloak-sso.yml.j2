@@ -556,7 +556,8 @@ data:
           "clientScope": "tasks:delete",
           "roles": [
             "tackle-architect",
-            "tackle-admin"
+            "tackle-admin",
+            "tackle-migrator"
           ]
         },
         {
@@ -570,7 +571,8 @@ data:
           "clientScope": "tasks:put",
           "roles": [
             "tackle-architect",
-            "tackle-admin"
+            "tackle-admin",
+            "tackle-migrator"
           ]
         },
         {
@@ -967,6 +969,35 @@ data:
         },
         {
           "clientScope": "reviews:post",
+          "roles": [
+            "tackle-architect",
+            "tackle-admin"
+          ]
+        },
+        {
+          "clientScope": "assessments:get",
+          "roles": [
+            "tackle-architect",
+            "tackle-admin",
+            "tackle-migrator"
+          ]
+        },
+        {
+          "clientScope": "assessments:post",
+          "roles": [
+            "tackle-architect",
+            "tackle-admin"
+          ]
+        },
+        {
+          "clientScope": "assessments:put",
+          "roles": [
+            "tackle-architect",
+            "tackle-admin"
+          ]
+        }
+        {
+          "clientScope": "assessments:delete",
           "roles": [
             "tackle-architect",
             "tackle-admin"
@@ -1562,7 +1593,11 @@ data:
             "tags:post",
             "reviews:get",
             "tagtypes:delete",
-            "dependencies:post"
+            "dependencies:post",
+            "assessments:get",
+            "assessments:post",
+            "assessments:put",
+            "assessments:delete"
           ],
           "optionalClientScopes": [
             "address",
@@ -2045,6 +2080,30 @@ data:
         {
           "id": "39873bf3-1ba4-4456-a7ee-02b5f489c94d",
           "name": "tasks:get",
+          "protocol": "openid-connect",
+          "attributes": {}
+        },
+        {
+          "id": "86fd064b-0179-438c-86ff-e0a54ca34ed7",
+          "name": "assessments:get",
+          "protocol": "openid-connect",
+          "attributes": {}
+        },
+        {
+          "id": "8f7bf2db-b5f4-4d28-83c7-1803e952a335",
+          "name": "assessments:post",
+          "protocol": "openid-connect",
+          "attributes": {}
+        },
+        {
+          "id": "124823ca-1d84-49fe-899e-9bc6e6042ae8",
+          "name": "assessments:put",
+          "protocol": "openid-connect",
+          "attributes": {}
+        },
+        {
+          "id": "0ddf01b0-5b7a-4118-9006-385042731793",
+          "name": "assessments:delete",
           "protocol": "openid-connect",
           "attributes": {}
         },
