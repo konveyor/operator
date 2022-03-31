@@ -112,6 +112,8 @@ keycloak_sso_container_limits_cpu: "1000m"
 keycloak_sso_container_limits_memory: "1Gi"
 keycloak_sso_container_requests_cpu: "100m"
 keycloak_sso_container_requests_memory: "350Mi"
+keycloak_sso_liveness_init_delay: "60"
+keycloak_sso_readiness_init_delay: "60"
 keycloak_sso_tls_enabled: false
 keycloak_sso_tls_secret_name: "{{ keycloak_sso_service_name }}-serving-cert"
 keycloak_sso_admin_username: "admin"

@@ -99,7 +99,7 @@ spec:
               path: /auth/realms/{{ app_name }}
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 60
+            initialDelaySeconds: {{ keycloak_sso_liveness_init_delay }}
             timeoutSeconds: 1
             periodSeconds: 10
             successThreshold: 1
@@ -109,7 +109,7 @@ spec:
               path: /auth/realms/{{ app_name }}
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: 60
+            initialDelaySeconds: {{ keycloak_sso_readiness_init_delay }}
             timeoutSeconds: 1
             periodSeconds: 10
             successThreshold: 1
