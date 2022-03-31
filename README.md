@@ -22,6 +22,7 @@ We strongly suggest OLM support for Tackle deployments, in some production kuber
 #### Minikube:
 
 `$ minikube addons enable olm`
+
 `$ minikube addons enable ingress`
 
 #### Kubernetes:
@@ -56,22 +57,22 @@ EOF
 
 **Note:** Please review storage requirements **prior** creating the Tackle CR in case you need to adjust settings.
 
-### Verify deployment
+### Verify _Tackle_ Deployment
 
 Depending on your hardware it should take around 1-3 minutes to deploy Tackle, below is a sample output of a successful deployment
 
 ```
 $ kubectl get pods
-NAME                                                              READY   STATUS      RESTARTS   AGE
-c4af2f0f9eab63b6ac49c81b0e517eb37c2efe1bb2ede02e8642cd--1-ghq6d   0/1     Completed   0          134m
-konveyor-tackle-rm6jb                                             1/1     Running     0          134m
-tackle-hub-6b6ff674dd-c6xbr                                       1/1     Running     0          130m
-tackle-keycloak-postgresql-57f5c44bcc-r9w9s                       1/1     Running     0          131m
-tackle-keycloak-sso-c65cd79bf-6j4xr                               1/1     Running     0          130m
-tackle-operator-6b65fccb7f-q9lpf                                  1/1     Running     0          133m
-tackle-pathfinder-6c58447d8f-rd6rr                                1/1     Running     0          130m
-tackle-pathfinder-postgresql-5fff469bcc-bc5z2                     1/1     Running     0          130m
-tackle-ui-5f694bddcb-scbh5                                        1/1     Running     0          130m
+NAME                                                           READY   STATUS      RESTARTS   AGE
+c4af2f0f9eab63b6ac49c81b0e517eb37c2efe1bb2ede02e8642cd--1-ghq  0/1     Completed   0          134m
+konveyor-tackle-rm6jb                                          1/1     Running     0          134m
+tackle-hub-6b6ff674dd-c6xbr                                    1/1     Running     0          130m
+tackle-keycloak-postgresql-57f5c44bcc-r9w9s                    1/1     Running     0          131m
+tackle-keycloak-sso-c65cd79bf-6j4xr                            1/1     Running     0          130m
+tackle-operator-6b65fccb7f-q9lpf                               1/1     Running     0          133m
+tackle-pathfinder-6c58447d8f-rd6rr                             1/1     Running     0          130m
+tackle-pathfinder-postgresql-5fff469bcc-bc5z2                  1/1     Running     0          130m
+tackle-ui-5f694bddcb-scbh5                                     1/1     Running     0          130m
 ```
 
 ### Installing _latest_ on OpenShift
