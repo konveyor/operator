@@ -79,6 +79,9 @@ spec:
                 secretKeyRef:
                   name: "{{ hub_secret_name }}"
                   key: addon_token
+            - name: AUTH_REQUIRED
+              value: '{{ feature_auth_enabled|lower }}'
+{% if feature_auth_enabled|bool %}
             - name: KEYCLOAK_REALM
               value: "{{ keycloak_sso_realm }}"
             - name: KEYCLOAK_HOST
@@ -90,6 +93,7 @@ spec:
                 secretKeyRef:
                   name: "{{ hub_secret_name }}"
                   key: keycloak_client_secret
+{% endif %}
             - name: TASK_SA
               value: "{{ hub_task_sa }}"
 {% if hub_task_reap_created is defined %}

@@ -20,11 +20,6 @@
         set_fact:
           k8s_cluster_version: "{{ lookup('k8s', cluster_info='version').kubernetes.gitVersion }}"
 
-  - name: "Setup the webhook secret"
-    k8s:
-      state: present
-      definition: "{{ lookup('template', 'secret-webhook-server-secret.yml.j2') }}"
-
   - when:
       - feature_auth_enabled|bool
       - feature_auth_provider == "keycloak"
