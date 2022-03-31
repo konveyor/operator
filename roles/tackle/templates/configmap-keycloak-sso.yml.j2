@@ -501,7 +501,29 @@ data:
       "webAuthnPolicyPasswordlessCreateTimeout": 0,
       "webAuthnPolicyPasswordlessAvoidSameAuthenticatorRegister": false,
       "webAuthnPolicyPasswordlessAcceptableAaguids": [],
-      "users": [
+      "users": [ {
+          "id" : "7749cf8a-bb8a-43c7-a689-80c90e6023eb",
+          "createdTimestamp" : 1623676722008,
+          "username" : "admin",
+          "enabled" : true,
+          "totp" : false,
+          "emailVerified" : false,
+          "credentials" : [ {
+            "id" : "00f322ed-e01e-4032-bb9d-c737486a127c",
+            "type" : "password",
+            "createdDate" : 1623676739455,
+            "secretData" : "{\"value\":\"EJkbUZ740P1pMIMYd+iXjSSdYKPxLM2tB4q+0vp25fUjqWEHNTuznr7bPbhAlh7arLEJccUNdFlf8rmtd0YwkA==\",\"salt\":\"BUA3TOrO9EFmFRRulU/yNA==\",\"additionalParameters\":{}}",
+            "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
+          } ],
+          "disableableCredentialTypes" : [ ],
+          "requiredActions" : [ "UPDATE_PASSWORD" ],
+          "realmRoles" : [ "tackle-admin", "admin" ],
+          "clientRoles" : {
+            "account" : [ "view-profile", "manage-account" ]
+          },
+          "notBefore" : 0,
+          "groups" : [ ]
+        },
         {
           "id": "948c59ec-46ed-4d99-aa43-02900029b930",
           "createdTimestamp": 1554245880023,
@@ -601,7 +623,6 @@ data:
         {
           "clientScope": "identities:post",
           "roles": [
-            "tackle-architect",
             "tackle-admin"
           ]
         },
@@ -650,7 +671,6 @@ data:
         {
           "clientScope": "identities:put",
           "roles": [
-            "tackle-architect",
             "tackle-admin"
           ]
         },
@@ -715,7 +735,6 @@ data:
         {
           "clientScope": "proxies:post",
           "roles": [
-            "tackle-architect",
             "tackle-admin"
           ]
         },
@@ -729,7 +748,6 @@ data:
         {
           "clientScope": "settings:put",
           "roles": [
-            "tackle-architect",
             "tackle-admin"
           ]
         },
@@ -772,7 +790,6 @@ data:
         {
           "clientScope": "identities:delete",
           "roles": [
-            "tackle-architect",
             "tackle-admin"
           ]
         },
@@ -810,7 +827,6 @@ data:
         {
           "clientScope": "proxies:put",
           "roles": [
-            "tackle-architect",
             "tackle-admin"
           ]
         },
@@ -832,7 +848,6 @@ data:
         {
           "clientScope": "settings:delete",
           "roles": [
-            "tackle-architect",
             "tackle-admin"
           ]
         },
@@ -877,7 +892,6 @@ data:
         {
           "clientScope": "proxies:delete",
           "roles": [
-            "tackle-architect",
             "tackle-admin"
           ]
         },
@@ -928,7 +942,6 @@ data:
         {
           "clientScope": "settings:post",
           "roles": [
-            "tackle-architect",
             "tackle-admin"
           ]
         },
@@ -1001,6 +1014,14 @@ data:
           "roles": [
             "tackle-architect",
             "tackle-admin"
+          ]
+        },
+        {
+          "clientScope": "adoptionplans:post",
+          "roles": [
+            "tackle-architect",
+            "tackle-admin",
+            "tackle-migrator"
           ]
         }
       ],
@@ -1597,7 +1618,8 @@ data:
             "assessments:get",
             "assessments:post",
             "assessments:put",
-            "assessments:delete"
+            "assessments:delete",
+            "adoptionplans:post"
           ],
           "optionalClientScopes": [
             "address",
@@ -2104,6 +2126,12 @@ data:
         {
           "id": "0ddf01b0-5b7a-4118-9006-385042731793",
           "name": "assessments:delete",
+          "protocol": "openid-connect",
+          "attributes": {}
+        },
+        {
+          "id": "e04452e6-29af-4650-a00a-a64a3a055388",
+          "name": "adoptionplans:post",
           "protocol": "openid-connect",
           "attributes": {}
         },
