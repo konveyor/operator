@@ -73,25 +73,25 @@
         k8s_info:
           api_version: v1
           kind: Secret
-          name: "{{ keycloak_sso_secret_name }}"
+          name: "{{ keycloak_secret_name }}"
           namespace: "{{ app_namespace }}"
-        register: keycloak_sso_secret_status
+        register: keycloak_secret_status
 
-      - when: (keycloak_sso_secret_status.resources | length) == 0
+      - when: (keycloak_secret_status.resources | length) == 0
         block:
           - name: "Generate random values for Keycloak PostgreSQL and SSO username and password"
             set_fact:
               keycloak_database_db_username: "user-{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=4') }}"
               keycloak_database_db_password: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=16') }}"
-              keycloak_sso_admin_password: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=16') }}"
-              keycloak_sso_hub_client_secret: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=32') }}"
+              keycloak_admin_password: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=16') }}"
+              keycloak_hub_client_secret: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=32') }}"
 
           - name: "Encode Keycloak PostgreSQL and SSO username and password"
             set_fact:
               keycloak_database_db_username_b64: "{{ keycloak_database_db_username | b64encode }}"
               keycloak_database_db_password_b64: "{{ keycloak_database_db_password | b64encode }}"
-              keycloak_sso_admin_password_b64: "{{ keycloak_sso_admin_password | b64encode }}"
-              keycloak_sso_hub_client_secret_b64: "{{ keycloak_sso_hub_client_secret | b64encode }}"
+              keycloak_admin_password_b64: "{{ keycloak_admin_password | b64encode }}"
+              keycloak_hub_client_secret_b64: "{{ keycloak_hub_client_secret | b64encode }}"
 
           - name: "Setup Keycloak SSO Secret"
             k8s:

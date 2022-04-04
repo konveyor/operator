@@ -2,11 +2,11 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ keycloak_sso_deployment_name }}
+  name: {{ keycloak_deployment_name }}
   namespace: {{ app_namespace }}
   labels:
-    app.kubernetes.io/name: {{ keycloak_sso_service_name }}
-    app.kubernetes.io/component: {{ keycloak_sso_component_name }}
+    app.kubernetes.io/name: {{ keycloak_service_name }}
+    app.kubernetes.io/component: {{ keycloak_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
   annotations:
     app.openshift.io/connects-to: >-
@@ -15,17 +15,17 @@ metadata:
       ]
 
 spec:
-  replicas: {{ keycloak_sso_deployment_replicas }}
+  replicas: {{ keycloak_deployment_replicas }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ keycloak_sso_service_name }}
-      app.kubernetes.io/component: {{ keycloak_sso_component_name }}
+      app.kubernetes.io/name: {{ keycloak_service_name }}
+      app.kubernetes.io/component: {{ keycloak_component_name }}
       app.kubernetes.io/part-of: {{ app_name }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ keycloak_sso_service_name }}
-        app.kubernetes.io/component: {{ keycloak_sso_component_name }}
+        app.kubernetes.io/name: {{ keycloak_service_name }}
+        app.kubernetes.io/component: {{ keycloak_component_name }}
         app.kubernetes.io/part-of: {{ app_name }}
     spec:
       initContainers:
@@ -38,25 +38,25 @@ spec:
             - https://raw.githubusercontent.com/konveyor/tackle-keycloak-theme/main/tackle-keycloak-theme-0.1-SNAPSHOT.jar
           resources: {}
           volumeMounts:
-            - name: {{ keycloak_sso_service_name }}-theme
+            - name: {{ keycloak_service_name }}-theme
               mountPath: /deployments
       containers:
-        - name: {{ keycloak_sso_container_name }}
-          image: "{{ keycloak_sso_image_fqin }}"
+        - name: {{ keycloak_container_name }}
+          image: "{{ keycloak_image_fqin }}"
           imagePullPolicy: "{{ image_pull_policy }}"
           env:
             - name: KEYCLOAK_USER
               valueFrom:
                 secretKeyRef:
-                  name: {{ keycloak_sso_secret_name }}
+                  name: {{ keycloak_secret_name }}
                   key: admin-username
             - name: KEYCLOAK_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ keycloak_sso_secret_name }}
+                  name: {{ keycloak_secret_name }}
                   key: admin-password
             - name: JAVA_OPTS
-              value: {{ keycloak_sso_java_opts }}
+              value: {{ keycloak_java_opts }}
             - name: PROXY_ADDRESS_FORWARDING
               value: 'true'
             - name: KEYCLOAK_IMPORT
@@ -89,17 +89,17 @@ spec:
               protocol: TCP
           resources:
             limits:
-              cpu: {{ keycloak_sso_container_limits_cpu }}
-              memory: {{ keycloak_sso_container_limits_memory }}
+              cpu: {{ keycloak_container_limits_cpu }}
+              memory: {{ keycloak_container_limits_memory }}
             requests:
-              cpu: {{ keycloak_sso_container_requests_cpu }}
-              memory: {{ keycloak_sso_container_requests_memory }}
+              cpu: {{ keycloak_container_requests_cpu }}
+              memory: {{ keycloak_container_requests_memory }}
           livenessProbe:
             httpGet:
               path: /auth/realms/{{ app_name }}
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: {{ keycloak_sso_liveness_init_delay }}
+            initialDelaySeconds: {{ keycloak_liveness_init_delay }}
             timeoutSeconds: 1
             periodSeconds: 10
             successThreshold: 1
@@ -109,20 +109,20 @@ spec:
               path: /auth/realms/{{ app_name }}
               port: 8080
               scheme: HTTP
-            initialDelaySeconds: {{ keycloak_sso_readiness_init_delay }}
+            initialDelaySeconds: {{ keycloak_readiness_init_delay }}
             timeoutSeconds: 1
             periodSeconds: 10
             successThreshold: 1
             failureThreshold: 20
           volumeMounts:
-            - name: {{ keycloak_sso_service_name }}-config
+            - name: {{ keycloak_service_name }}-config
               mountPath: /etc/config
-            - name: {{ keycloak_sso_service_name }}-theme
+            - name: {{ keycloak_service_name }}-theme
               mountPath: /opt/jboss/keycloak/standalone/deployments
       volumes:
-        - name: {{ keycloak_sso_service_name }}-config
+        - name: {{ keycloak_service_name }}-config
           configMap:
-            name: {{ keycloak_sso_configmap_name }}
+            name: {{ keycloak_configmap_name }}
             defaultMode: 420
-        - name: {{ keycloak_sso_service_name }}-theme
+        - name: {{ keycloak_service_name }}-theme
           emptyDir: {}

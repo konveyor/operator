@@ -12,7 +12,7 @@ metadata:
     app.openshift.io/connects-to: >-
       [
 {% if feature_auth_enabled|bool and feature_auth_provider == 'keycloak' %}
-        { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ keycloak_sso_deployment_name }}" }
+        { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ keycloak_deployment_name }}" }
 {% endif %}
       ]
 spec:
@@ -80,11 +80,11 @@ spec:
                   name: "{{ hub_secret_name }}"
                   key: addon_token
             - name: KEYCLOAK_REALM
-              value: "{{ keycloak_sso_realm }}"
+              value: "{{ keycloak_realm }}"
             - name: KEYCLOAK_HOST
-              value: "{{ keycloak_sso_host }}"
+              value: "{{ keycloak_host }}"
             - name: KEYCLOAK_CLIENT_ID
-              value: "{{ keycloak_sso_hub_client_id }}"
+              value: "{{ keycloak_hub_client_id }}"
             - name: KEYCLOAK_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:

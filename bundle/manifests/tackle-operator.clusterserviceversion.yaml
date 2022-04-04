@@ -130,7 +130,7 @@ spec:
                   value: quay.io/konveyor/tackle-pathfinder:1.2.0-native
                 - name: KEYCLOAK_DATABASE_IMAGE
                   value: quay.io/centos7/postgresql-12-centos7:latest
-                - name: KEYCLOAK_SSO_IMAGE
+                - name: KEYCLOAK_IMAGE
                   value: quay.io/keycloak/keycloak:16.1.1
                 - name: TACKLE_UI_IMAGE
                   value: quay.io/konveyor/tackle2-ui:latest

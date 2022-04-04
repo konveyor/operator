@@ -2,9 +2,9 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   labels:
-    app.kubernetes.io/component: {{ keycloak_sso_component_name }}
+    app.kubernetes.io/component: {{ keycloak_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
-  name: {{ keycloak_sso_configmap_name }}
+  name: {{ keycloak_configmap_name }}
   namespace: {{ app_namespace }}
 data:
   quarkus-realm.json: |
@@ -1450,7 +1450,7 @@ data:
           "enabled": true,
           "alwaysDisplayInConsole": false,
           "clientAuthenticatorType": "client-secret",
-          "secret": "{{ keycloak_sso_hub_client_secret }}",
+          "secret": "{{ keycloak_hub_client_secret }}",
           "redirectUris": [
             "localhost"
           ],
