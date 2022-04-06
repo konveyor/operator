@@ -13,7 +13,7 @@ metadata:
       [
         { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ hub_deployment_name }}" },
         { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ pathfinder_deployment_name }}" },
-{% if feature_auth_enabled|bool and feature_auth_provider == 'keycloak' %}
+{% if feature_auth_required|bool and feature_auth_provider == 'keycloak' %}
         { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ keycloak_sso_deployment_name }}" }
 {% endif %}
       ]
@@ -49,8 +49,8 @@ spec:
               value: "http://{{ pathfinder_service_name }}:8080"
 {% endif %}
             - name: AUTH_REQUIRED
-              value: "{{ feature_auth_enabled|lower }}"
-{% if feature_auth_enabled|bool %}
+              value: "{{ feature_auth_required|lower }}"
+{% if feature_auth_required|bool %}
             - name: KEYCLOAK_SERVER_URL
               value: http://{{ keycloak_sso_service_name }}:8080
 {% endif %}

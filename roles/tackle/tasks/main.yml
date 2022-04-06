@@ -21,7 +21,7 @@
           k8s_cluster_version: "{{ lookup('k8s', cluster_info='version').kubernetes.gitVersion }}"
 
   - when:
-      - feature_auth_enabled|bool
+      - feature_auth_required|bool
       - feature_auth_provider == "keycloak"
     block:
       - name: "Setup Keycloak PostgreSQL PersistentVolumeClaim"
