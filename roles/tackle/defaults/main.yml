@@ -42,6 +42,7 @@ hub_bucket_volume_claim_name: "{{ hub_service_name }}-bucket-volume-claim"
 hub_seed_configmap_name: "{{ hub_service_name }}-seed"
 hub_seed_configmap_path: "/seed"
 hub_addon_working_path: "/working"
+hub_task_sa: "tackle-hub"
 hub_tls_enabled: false
 hub_tls_secret_name: "{{ hub_service_name }}-serving-cert"
 hub_log_level: 3
