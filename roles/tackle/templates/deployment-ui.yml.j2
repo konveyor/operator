@@ -53,6 +53,10 @@ spec:
 {% if feature_auth_required|bool %}
             - name: KEYCLOAK_SERVER_URL
               value: http://{{ keycloak_sso_service_name }}:8080
+            - name: KEYCLOAK_REALM
+              value: {{ app_name }}
+            - name: KEYCLOAK_CLIENT_ID
+              value: {{ ui_service_name }}
 {% endif %}
 {% if ui_tls_enabled|bool %}
             - name: UI_TLS_ENABLED
