@@ -29,14 +29,8 @@ spec:
         app.kubernetes.io/part-of: {{ app_name }}
     spec:
       initContainers:
-        - name: keycloak-sso-theme
-          image: quay.io/quay/busybox
-          command:
-            - wget
-            - '-P'
-            - /deployments
-            - https://raw.githubusercontent.com/konveyor/tackle-keycloak-theme/main/tackle-keycloak-theme-0.1-SNAPSHOT.jar
-          resources: {}
+        - name: keycloak-theme
+          image: quay.io/konveyor/tackle-keycloak-init:1.2.0
           volumeMounts:
             - name: {{ keycloak_sso_service_name }}-theme
               mountPath: /deployments
