@@ -13,3 +13,7 @@ spec:
   mounts:
   - claim: {{ windup_data_volume_claim_name }}
     name: m2
+  resources:
+    requests:
+      cpu: {{ windup_container_requests_cpu }}
+      memory: {{ windup_container_requests_memory }}
