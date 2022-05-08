@@ -12,7 +12,7 @@ metadata:
     app.openshift.io/connects-to: >-
       [
         { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ pathfinder_database_deployment_name }}" }
-{% if feature_auth_enabled|bool and feature_auth_provider == 'keycloak' %}
+{% if feature_auth_required|bool and feature_auth_provider == 'keycloak' %}
         { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ keycloak_sso_deployment_name }}" }
 {% endif %}
       ]
@@ -63,6 +63,10 @@ spec:
                   key: database-password
             - name: QUARKUS_OIDC_AUTH_SERVER_URL
               value: https://{{ keycloak_sso_service_name }}:8443/auth/realms/{{ app_name }}
+{% if not feature_auth_required|bool %}
+            - name: QUARKUS_PROFILE
+              value: noauth
+{% endif %}
           ports:
             - name: http
               containerPort: 8080

@@ -100,6 +100,7 @@ If operator defaults need to be altered, the Tackle CR spec can be customized to
 
 Name | Default | Description
 --- | --- | ---
+feature_auth_required | true | Enable keycloak auth or false (single user/noauth)
 hub_database_volume_size | 5Gi | Size requested for Hub database volume
 hub_bucket_volume_size | 100gi | Size requested for Hub bucket volume
 keycloak_database_data_volume_size | 1Gi | Size requested for Keycloak DB volume
