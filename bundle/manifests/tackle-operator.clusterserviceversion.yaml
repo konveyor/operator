@@ -131,13 +131,13 @@ spec:
                 - name: KEYCLOAK_DATABASE_IMAGE
                   value: quay.io/centos7/postgresql-12-centos7:latest
                 - name: KEYCLOAK_SSO_IMAGE
-                  value: quay.io/keycloak/keycloak:16.1.1
+                  value: quay.io/fbladilo/keycloak:latest
                 - name: TACKLE_UI_IMAGE
                   value: quay.io/konveyor/tackle2-ui:latest
                 - name: ADDON_WINDUP_IMAGE
                   value: quay.io/konveyor/tackle2-addon-windup:latest
                 name: tackle-operator
-                image: quay.io/konveyor/tackle2-operator:latest
+                image: quay.io/fbladilo/tackle2-operator:latest
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
@@ -289,7 +289,7 @@ spec:
   - name: tackle-pathfinder
     image: quay.io/konveyor/tackle-pathfinder:1.2.0-native
   - name: tackle-keycloak
-    image: quay.io/keycloak/keycloak:16.1.1
+    image: quay.io/fbladilo/keycloak:latest
   - name: tackle-ui
     image: quay.io/konveyor/tackle2-ui:latest
   - name: tackle-addon-windup

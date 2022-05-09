@@ -38,42 +38,42 @@ spec:
         - name: {{ keycloak_sso_container_name }}
           image: "{{ keycloak_sso_image_fqin }}"
           imagePullPolicy: "{{ image_pull_policy }}"
+          args: {{ keycloak_sso_container_args }}
           env:
-            - name: KEYCLOAK_USER
+            - name: KEYCLOAK_ADMIN
               valueFrom:
                 secretKeyRef:
                   name: {{ keycloak_sso_secret_name }}
                   key: admin-username
-            - name: KEYCLOAK_PASSWORD
+            - name: KEYCLOAK_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ keycloak_sso_secret_name }}
                   key: admin-password
-            - name: JAVA_OPTS
-              value: {{ keycloak_sso_java_opts }}
-            - name: PROXY_ADDRESS_FORWARDING
+            - name: KC_HOSTNAME
+              value: {{ keycloak_sso_host }}
+{% if keycloak_sso_container_http_enabled|bool %}
+            - name: KC_HTTP_ENABLED
               value: 'true'
-            - name: KEYCLOAK_IMPORT
-              value: /etc/config/quarkus-realm.json
-            - name: DB_VENDOR
-              value: postgres
-            - name: DB_ADDR
-              value: {{ keycloak_database_service_name }}
-            - name: DB_DATABASE
-              valueFrom:
-                secretKeyRef:
-                  name: {{ keycloak_database_secret_name }}
-                  key: database-name
-            - name: DB_USER
+{% endif %}
+            - name: KC_DB_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: {{ keycloak_database_secret_name }}
                   key: database-user
-            - name: DB_PASSWORD
+            - name: KC_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ keycloak_database_secret_name }}
                   key: database-password
+            - name: KC_DB_URL
+              value: {{ keycloak_sso_db_url }}
+            - name: KC_PROXY
+              value: {{ keycloak_sso_proxy_mode }}
+            - name: KC_REALM_CONFIG
+              value: {{ keycloak_sso_realm_file_name }}
+            - name: JAVA_OPTS_APPEND
+              value: {{ keycloak_sso_java_opts }}
           ports:
             - name: http
               containerPort: 8080
@@ -90,7 +90,7 @@ spec:
               memory: {{ keycloak_sso_container_requests_memory }}
           livenessProbe:
             httpGet:
-              path: /auth/realms/{{ app_name }}
+              path: /health/live
               port: 8080
               scheme: HTTP
             initialDelaySeconds: {{ keycloak_sso_liveness_init_delay }}
@@ -100,7 +100,7 @@ spec:
             failureThreshold: 20
           readinessProbe:
             httpGet:
-              path: /auth/realms/{{ app_name }}
+              path: /health/ready
               port: 8080
               scheme: HTTP
             initialDelaySeconds: {{ keycloak_sso_readiness_init_delay }}
@@ -110,7 +110,7 @@ spec:
             failureThreshold: 20
           volumeMounts:
             - name: {{ keycloak_sso_service_name }}-config
-              mountPath: /etc/config
+              mountPath: {{ keycloak_sso_import_path }}
             - name: {{ keycloak_sso_service_name }}-theme
               mountPath: /opt/jboss/keycloak/standalone/deployments
       volumes:
