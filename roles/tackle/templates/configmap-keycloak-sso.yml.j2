@@ -1023,6 +1023,26 @@ data:
             "tackle-admin",
             "tackle-migrator"
           ]
+        },
+        {
+          "clientScope": "volumes:get",
+          "roles": [
+            "tackle-architect",
+            "tackle-admin",
+            "tackle-migrator"
+          ]
+        },
+        {
+          "clientScope": "volumes:post",
+          "roles": [
+            "tackle-admin"
+          ]
+        },
+        {
+          "clientScope": "volumes:put",
+          "roles": [
+            "tackle-admin"
+          ]
         }
       ],
       "clientScopeMappings": {
@@ -1619,7 +1639,10 @@ data:
             "assessments:post",
             "assessments:put",
             "assessments:delete",
-            "adoptionplans:post"
+            "adoptionplans:post",
+            "volumes:get",
+            "volumes:post",
+            "volumes:put"
           ],
           "optionalClientScopes": [
             "address",
