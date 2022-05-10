@@ -244,10 +244,10 @@
       namespace: "{{ app_namespace }}"
     register: windup_cr_status
 
-  - name: "Setup Windup Addon PersistentVolumeClaim"
+  - name: "Setup Maven PersistentVolumeClaim"
     k8s:
       state: present
-      definition: "{{ lookup('template', 'persistentvolumeclaim-addon-windup.yml.j2') }}"
+      definition: "{{ lookup('template', 'persistentvolumeclaim-maven.yml.j2') }}"
 
   - name: "Create Windup Addon CR"
     k8s:
