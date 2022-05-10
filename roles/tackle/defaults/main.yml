@@ -142,6 +142,13 @@ ui_tls_enabled: false
 ui_route_tls_termination: "edge"
 ui_tls_secret_name: "{{ ui_service_name }}-serving-cert"
 
+admin_fqin: "{{ lookup('env', 'ADDON_ADMIN_IMAGE') }}"
+admin_name: "admin"
+admin_component_name: "addon"
+admin_service_name: "{{ app_name }}-{{ admin_name }}-{{ admin_component_name }}"
+admin_container_requests_cpu: "50m"
+admin_container_requests_memory: "50Mi"
+
 windup_fqin: "{{ lookup('env', 'ADDON_WINDUP_IMAGE') }}"
 windup_name: "windup"
 windup_component_name: "addon"

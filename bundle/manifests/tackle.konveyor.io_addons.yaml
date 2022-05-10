@@ -85,10 +85,55 @@ spec:
           status:
             description: AddonStatus defines the observed state of Addon
             properties:
+              conditions:
+                description: Conditions.
+                properties:
+                  conditions:
+                    description: List of conditions.
+                    items:
+                      description: Condition
+                      properties:
+                        category:
+                          description: The condition category.
+                          type: string
+                        durable:
+                          description: The condition is durable - never un-staged.
+                          type: boolean
+                        items:
+                          description: A list of items referenced in the `Message`.
+                          items:
+                            type: string
+                          type: array
+                        lastTransitionTime:
+                          description: When the last status transition occurred.
+                          format: date-time
+                          type: string
+                        message:
+                          description: The human readable description of the condition.
+                          type: string
+                        reason:
+                          description: The reason for the condition or transition.
+                          type: string
+                        status:
+                          description: The condition status [true,false].
+                          type: string
+                        type:
+                          description: The condition type.
+                          type: string
+                      required:
+                      - category
+                      - lastTransitionTime
+                      - status
+                      - type
+                      type: object
+                    type: array
+                type: object
               observedGeneration:
                 description: The most recent generation observed by the controller.
                 format: int64
                 type: integer
+            required:
+            - conditions
             type: object
         type: object
     served: true

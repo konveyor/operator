@@ -134,6 +134,8 @@ spec:
                   value: quay.io/keycloak/keycloak:16.1.1
                 - name: TACKLE_UI_IMAGE
                   value: quay.io/konveyor/tackle2-ui:latest
+                - name: ADDON_ADMIN_IMAGE
+                  value: quay.io/konveyor/tackle2-addon:latest
                 - name: ADDON_WINDUP_IMAGE
                   value: quay.io/konveyor/tackle2-addon-windup:latest
                 name: tackle-operator
@@ -284,15 +286,17 @@ spec:
   relatedImages:
   - name: tackle-hub
     image: quay.io/konveyor/tackle2-hub:latest
-  - name: tackle-postgres
-    image: quay.io/centos7/postgresql-12-centos7:latest
+  - name: tackle-ui
+    image: quay.io/konveyor/tackle2-ui:latest
+  - name: tackle-addon
+    image: quay.io/konveyor/tackle2-addon:latest
+  - name: tackle-addon-windup
+    image: quay.io/konveyor/tackle2-addon-windup:latest
   - name: tackle-pathfinder
     image: quay.io/konveyor/tackle-pathfinder:noauthentication
   - name: tackle-keycloak
     image: quay.io/keycloak/keycloak:16.1.1
-  - name: tackle-ui
-    image: quay.io/konveyor/tackle2-ui:latest
-  - name: tackle-addon-windup
-    image: quay.io/konveyor/tackle2-addon-windup:latest
+  - name: tackle-postgres
+    image: quay.io/centos7/postgresql-12-centos7:latest
   version: 99.0.0
   minKubeVersion: 1.20.0
