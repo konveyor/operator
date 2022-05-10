@@ -236,6 +236,25 @@
           state: present
           definition: "{{ lookup('template', 'route-ui.yml.j2') }}"
 
+  - name: "Setup Maven PersistentVolumeClaim"
+    k8s:
+      state: present
+      definition: "{{ lookup('template', 'persistentvolumeclaim-maven.yml.j2') }}"
+
+  - name: "Check if Admin Addon CR exists already so we don't update it"
+    k8s_info:
+      api_version: tackle.konveyor.io/v1alpha1
+      kind: Addon
+      name: "{{ admin_name }}"
+      namespace: "{{ app_namespace }}"
+    register: admin_cr_status
+
+  - name: "Create Admin Addon CR"
+    k8s:
+      state: present
+      definition: "{{ lookup('template', 'customresource-addon-admin.yml.j2') }}"
+    when: (admin_cr_status.resources | length) == 0
+
   - name: "Check if Windup Addon CR exists already so we don't update it"
     k8s_info:
       api_version: tackle.konveyor.io/v1alpha1
@@ -243,11 +262,6 @@
       name: "{{ windup_name }}"
       namespace: "{{ app_namespace }}"
     register: windup_cr_status
-
-  - name: "Setup Maven PersistentVolumeClaim"
-    k8s:
-      state: present
-      definition: "{{ lookup('template', 'persistentvolumeclaim-maven.yml.j2') }}"
 
   - name: "Create Windup Addon CR"
     k8s:
