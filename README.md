@@ -105,7 +105,7 @@ hub_database_volume_size | 5Gi | Size requested for Hub database volume
 hub_bucket_volume_size | 100gi | Size requested for Hub bucket volume
 keycloak_database_data_volume_size | 1Gi | Size requested for Keycloak DB volume
 pathfinder_database_data_volume_size | 1Gi | Size requested for Pathfinder DB volume
-windup_data_volume_size | 100Gi | Size requested for Windup maven m2 repository volume
+maven_data_volume_size | 100Gi | Size requested for maven m2 repository volume
 rwx_storage_class | N/A | Storage class requested for Tackle RWX volumes
 rwo_storage_class | N/A | Storage class requested for Tackle RWO volumes
 
@@ -125,7 +125,7 @@ hub database | 5Gi | RWO | Hub DB
 hub bucket | 100Gi | RWX | Hub file storage
 keycloak postgresql | 1Gi | RWO | Keycloak backend DB
 pathfinder postgresql | 1Gi | RWO | Pathfinder backend DB
-windup | 100Gi | RWX | Windup maven m2 repository
+maven | 100Gi | RWX | maven m2 repository
 
 ### Tackle Storage Custom Settings Example
 
