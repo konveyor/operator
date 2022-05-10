@@ -64,6 +64,19 @@
           state: present
           definition: "{{ lookup('template', 'deployment-keycloak-postgresql.yml.j2') }}"
 
+      - name: "Check status of Keycloak PostgreSQL Deployment"
+        k8s_info:
+          api_version: v1
+          kind: Pod
+          namespace: "{{ app_namespace }}"
+          label_selectors:
+             - app.kubernetes.io/name = {{ keycloak_database_service_name }}
+        register: pod
+        until: pod.resources[0].status.phase == "Running"
+        retries: 4
+        delay: 10
+        ignore_errors: true
+
       - name: "Check if Keycloak SSO Secret exists already so we don't update it"
         k8s_info:
           api_version: v1
@@ -203,6 +216,19 @@
     k8s:
       state: present
       definition: "{{ lookup('template', 'deployment-pathfinder-postgresql.yml.j2') }}"
+
+  - name: "Check status of PathFinder PostgreSQL Deployment"
+    k8s_info:
+      api_version: v1
+      kind: Pod
+      namespace: "{{ app_namespace }}"
+      label_selectors:
+        - app.kubernetes.io/name = {{ pathfinder_database_service_name }}
+    register: pod
+    until: pod.resources[0].status.phase == "Running"
+    retries: 4
+    delay: 10
+    ignore_errors: true
 
   - name: "Setup PathFinder Service"
     k8s:
