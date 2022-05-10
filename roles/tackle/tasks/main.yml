@@ -73,8 +73,8 @@
              - app.kubernetes.io/name = {{ keycloak_database_service_name }}
         register: pod
         until: pod.resources[0].status.phase == "Running"
-        retries: 4
-        delay: 10
+        retries: 20
+        delay: 2
         ignore_errors: true
 
       - name: "Check if Keycloak SSO Secret exists already so we don't update it"
@@ -226,8 +226,8 @@
         - app.kubernetes.io/name = {{ pathfinder_database_service_name }}
     register: pod
     until: pod.resources[0].status.phase == "Running"
-    retries: 4
-    delay: 10
+    retries: 20
+    delay: 2
     ignore_errors: true
 
   - name: "Setup PathFinder Service"
