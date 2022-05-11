@@ -1,7 +1,7 @@
 apiVersion: operators.coreos.com/v1alpha1
 kind: ClusterServiceVersion
 metadata:
-  name: tackle-operator.v99.0.0
+  name: tackle-operator.v2.0.0-beta.0
   namespace: konveyor-tackle
   annotations:
     capabilities: Seamless Upgrades
@@ -12,7 +12,7 @@ metadata:
     support: Red Hat
     repository: https://github.com/konveyor/tackle2-operator
     containerImage: quay.io/konveyor/tackle2-operator:latest
-    olm.skipRange: '>=0.0.0 <99.0.0'
+    olm.skipRange: '>=0.0.0 <2.0.0-beta.0'
     operatorframework.io/initialization-resource: |-
       {
         "apiVersion": "tackle.io/v1alpha1",
@@ -123,7 +123,7 @@ spec:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
                 - name: TACKLE_HUB_IMAGE
-                  value: quay.io/konveyor/tackle2-hub:latest
+                  value: quay.io/konveyor/tackle2-hub:v2.0.0-beta.0
                 - name: PATHFINDER_DATABASE_IMAGE
                   value: quay.io/centos7/postgresql-12-centos7:latest
                 - name: PATHFINDER_IMAGE
@@ -133,13 +133,13 @@ spec:
                 - name: KEYCLOAK_SSO_IMAGE
                   value: quay.io/keycloak/keycloak:16.1.1
                 - name: TACKLE_UI_IMAGE
-                  value: quay.io/konveyor/tackle2-ui:latest
+                  value: quay.io/konveyor/tackle2-ui:v2.0.0-beta.0
                 - name: ADDON_ADMIN_IMAGE
-                  value: quay.io/konveyor/tackle2-addon:latest
+                  value: quay.io/konveyor/tackle2-addon:v2.0.0-beta.0
                 - name: ADDON_WINDUP_IMAGE
-                  value: quay.io/konveyor/tackle2-addon-windup:latest
+                  value: quay.io/konveyor/tackle2-addon-windup:v2.0.0-beta.0
                 name: tackle-operator
-                image: quay.io/konveyor/tackle2-operator:latest
+                image: quay.io/konveyor/tackle2-operator:v2.0.0-beta.0
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
@@ -285,18 +285,18 @@ spec:
     url: https://github.com/konveyor/tackle2-operator
   relatedImages:
   - name: tackle-hub
-    image: quay.io/konveyor/tackle2-hub:latest
+    image: quay.io/konveyor/tackle2-hub:v2.0.0-beta.0
   - name: tackle-ui
-    image: quay.io/konveyor/tackle2-ui:latest
+    image: quay.io/konveyor/tackle2-ui:v2.0.0-beta.0
   - name: tackle-addon
-    image: quay.io/konveyor/tackle2-addon:latest
+    image: quay.io/konveyor/tackle2-addon:v2.0.0-beta.0
   - name: tackle-addon-windup
-    image: quay.io/konveyor/tackle2-addon-windup:latest
+    image: quay.io/konveyor/tackle2-addon-windup:v2.0.0-beta.0
   - name: tackle-pathfinder
     image: quay.io/konveyor/tackle-pathfinder:noauthentication
   - name: tackle-keycloak
     image: quay.io/keycloak/keycloak:16.1.1
   - name: tackle-postgres
     image: quay.io/centos7/postgresql-12-centos7:latest
-  version: 99.0.0
+  version: 2.0.0-beta.0
   minKubeVersion: 1.20.0
