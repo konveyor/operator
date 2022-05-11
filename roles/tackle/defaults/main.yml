@@ -153,7 +153,7 @@ windup_fqin: "{{ lookup('env', 'ADDON_WINDUP_IMAGE') }}"
 windup_name: "windup"
 windup_component_name: "addon"
 windup_service_name: "{{ app_name }}-{{ windup_name }}-{{ windup_component_name }}"
-windup_container_requests_cpu: "1"
+windup_container_requests_cpu: "500m"
 windup_container_requests_memory: "2Gi"
 
 maven_name: "maven"
