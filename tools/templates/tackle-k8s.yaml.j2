@@ -1,0 +1,37 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ namespace }}
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: konveyor-tackle
+  namespace: {{ namespace }}
+spec:
+  displayName: Tackle Operator
+  publisher: Konveyor
+  sourceType: grpc
+  image: quay.io/konveyor/tackle2-operator-index:latest
+---
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: konveyor-tackle
+  namespace: {{ namespace }}
+spec:
+  targetNamespaces:
+    - {{ namespace }}
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: tackle-operator
+  namespace: konveyor-tackle
+spec:
+  channel: {{ channel }}
+  installPlanApproval: Automatic
+  name: tackle-operator
+  source: konveyor-tackle
+  sourceNamespace: {{ namespace }}
