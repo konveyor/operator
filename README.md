@@ -79,7 +79,7 @@ tackle-ui-5f694bddcb-scbh5                                     1/1     Running  
 
 Installing latest requires creating a new catalog source.
 
-1. `oc create -f tackle-operator-catalog.yaml`
+1. `oc apply -f https://raw.githubusercontent.com/konveyor/tackle2-operator/main/tackle-operator-catalog.yaml`
 1. Visit the OpenShift Web Console.
 1. Navigate to _Operators => OperatorHub_.
 1. Search for _Tackle_.
