@@ -43,6 +43,12 @@ Deploy Tackle using manifest:
 
 This step will create the konveyor-tackle namespace, catalogsource and other OLM related objects.
 
+### Installing _beta_ on k8s (or special branches)
+
+If you need to deploy a beta release (or special branch) please replace the *main* branch in URL with the desired beta branch:
+
+`$ kubectl apply -f https://raw.githubusercontent.com/konveyor/tackle2-operator/v2.0.0-beta.0/tackle-k8s.yaml`
+
 ### Creating a _Tackle_ CR
 ```
 $ cat << EOF | kubectl apply -f -
