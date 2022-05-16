@@ -45,7 +45,7 @@ This step will create the konveyor-tackle namespace, catalogsource and other OLM
 
 ### Installing _beta_ on k8s (or special branches)
 
-If you need to deploy a beta release (or special branch) please replace the *main* branch in URL with the desired beta branch:
+If you need to deploy a beta release (or special branch) please replace the *main* branch in URL with the desired beta branch (i.e v2.0.0-beta.0):
 
 `$ kubectl apply -f https://raw.githubusercontent.com/konveyor/tackle2-operator/v2.0.0-beta.0/tackle-k8s.yaml`
 
