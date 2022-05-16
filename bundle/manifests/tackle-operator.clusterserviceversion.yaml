@@ -8,9 +8,9 @@ metadata:
     description: >-
       Tackle contains tools that support the modernization and migration of applications to OpenShift and Kubernetes
     categories: 'Modernization & Migration'
-    certified: "false"
-    support: Red Hat
+    support: https://github.com/konveyor/tackle2-operator/issues
     repository: https://github.com/konveyor/tackle2-operator
+    certified: "false"
     containerImage: quay.io/konveyor/tackle2-operator:latest
     olm.skipRange: '>=0.0.0 <99.0.0'
     operatorframework.io/initialization-resource: |-
@@ -46,8 +46,6 @@ metadata:
           }
         }
       ]
-    certified: "false"
-    support: https://github.com/konveyor/tackle2-operator/issues
     operatorframework.io/suggested-namespace: konveyor-tackle
 spec:
   apiservicedefinitions: {}
