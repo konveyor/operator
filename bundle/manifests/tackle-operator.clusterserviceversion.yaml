@@ -6,7 +6,7 @@ metadata:
   annotations:
     capabilities: Seamless Upgrades
     description: >-
-      Tackle contains tools that support the modernization and migration of applications to OpenShift and Kubernetes
+      Tackle contains tools that support the modernization and migration of applications to Kubernetes and OpenShift
     categories: 'Modernization & Migration'
     support: https://github.com/konveyor/tackle2-operator/issues
     repository: https://github.com/konveyor/tackle2-operator
@@ -62,7 +62,14 @@ spec:
       displayName: Addon
       description: Tackle Addon
   description: |+
-    The Tackle Operator fully manages the deployment and life cycle of Tackle on Openshift and Kubernetes.
+    Tackle is a collection of tools that supports large-scale application modernization and migration projects to Kubernetes and OpenShift.
+
+
+    Tackle allows users to maintain their portfolio of applications with a full set of metadata and to assess their suitability for modernization leveraging a questionnaire based approach.
+
+
+    Tackle is a project within the [Konveyor community](https://www.konveyor.io/).
+
 
     ### Install
     Once you have successfully installed the Operator, proceed to deploy components by creating the required Tackle CR.
