@@ -128,6 +128,8 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
+                - name: ANSIBLE_GATHERING
+                  value: explicit
                 - name: TACKLE_HUB_IMAGE
                   value: quay.io/konveyor/tackle2-hub:latest
                 - name: PATHFINDER_DATABASE_IMAGE
