@@ -12,6 +12,7 @@ metadata:
     repository: https://github.com/konveyor/tackle2-operator
     certified: "false"
     containerImage: quay.io/konveyor/tackle2-operator:latest
+    createdAt: 2022-05-19
     olm.skipRange: '>=0.0.0 <99.0.0'
     operatorframework.io/initialization-resource: |-
       {
