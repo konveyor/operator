@@ -24,6 +24,8 @@ args = parser.parse_args()
 
 # Define templating func
 def template(rendered_file_name, template_file_name):
+
+    print ("Rendering %s" % rendered_file_name)
     rendered_file_path = os.path.join(args.project_path, rendered_file_name)
 
     environment = jinja2.Environment(loader=jinja2.FileSystemLoader(args.templates_path),
