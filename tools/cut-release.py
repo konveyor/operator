@@ -3,6 +3,7 @@
 import os
 import argparse
 import jinja2
+import datetime
 
 # Files to template, the template name to be used and target file path relative to --project-path
 files = { 1: {'template': 'clusterserviceversion.yaml.j2', 'path': 'bundle/manifests/tackle-operator.clusterserviceversion.yaml'},
@@ -57,12 +58,17 @@ if not args.channel:
    short_version = args.version.rsplit(".",1)[0]
    args.channel = args.release_prefix + short_version
 
+# Set creation time (utc iso formatted)
+t = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None).isoformat()
+date = t[:-7] + 'Z'
+
 # Init rendering vars
 render_vars = {}
 
 render_vars["version"] = args.version
 render_vars["release_prefix"] = args.release_prefix
 render_vars["channel"] = args.channel
+render_vars["date"] = date
 render_vars["namespace"] = "konveyor-tackle"
 
 # Walk all values and print before templating

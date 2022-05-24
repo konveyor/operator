@@ -12,7 +12,7 @@ metadata:
     support: https://github.com/konveyor/tackle2-operator/issues
     repository: https://github.com/konveyor/tackle2-operator
     containerImage: quay.io/konveyor/tackle2-operator:latest
-    createdAt: 2022-05-19
+    createdAt: {{ date }}
     olm.skipRange: '>=0.0.0 <{{ version }}'
     operatorframework.io/initialization-resource: |-
       {
@@ -261,6 +261,14 @@ spec:
           - '*'
           verbs:
           - '*'
+        - apiGroups:
+          - security.openshift.io
+          resourceNames:
+          - anyuid
+          resources:
+          - securitycontextconstraints
+          verbs:
+          - use
       clusterPermissions:
       - serviceAccountName: tackle-operator
         rules:
