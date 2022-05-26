@@ -5,6 +5,7 @@ app_namespace: "{{ lookup('env', 'WATCH_NAMESPACE') or 'konveyor-tackle' }}"
 # Feature defaults
 feature_ui_enabled: true
 feature_auth_required: true
+feature_isolate_namespace: true
 feature_auth_provider: "keycloak"
 
 openshift_cluster: false

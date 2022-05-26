@@ -27,6 +27,8 @@ spec:
         app.kubernetes.io/name: {{ keycloak_sso_service_name }}
         app.kubernetes.io/component: {{ keycloak_sso_component_name }}
         app.kubernetes.io/part-of: {{ app_name }}
+        app: {{ app_name }}
+        role: {{ keycloak_sso_service_name }}
     spec:
       initContainers:
         - name: keycloak-theme

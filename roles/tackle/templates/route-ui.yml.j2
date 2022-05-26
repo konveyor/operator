@@ -10,6 +10,7 @@ metadata:
     app.kubernetes.io/name: {{ ui_service_name }}
     app.kubernetes.io/component: route
     app.kubernetes.io/part-of: {{ app_name }}
+    app: {{ app_name }}
 spec:
   to:
     kind: Service

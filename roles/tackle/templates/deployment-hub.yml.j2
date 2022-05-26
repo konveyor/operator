@@ -30,6 +30,8 @@ spec:
         app.kubernetes.io/name: {{ hub_service_name }}
         app.kubernetes.io/component: {{ hub_component_name }}
         app.kubernetes.io/part-of: {{ app_name }}
+        app: {{ app_name }}
+        role: {{ hub_service_name }}
     spec:
       serviceAccountName: {{ hub_serviceaccount_name }}
       containers:

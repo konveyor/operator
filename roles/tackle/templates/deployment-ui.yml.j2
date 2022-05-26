@@ -30,6 +30,8 @@ spec:
         app.kubernetes.io/name: {{ ui_service_name }}
         app.kubernetes.io/component: {{ ui_component_name }}
         app.kubernetes.io/part-of: {{ app_name }}
+        app: {{ app_name }}
+        role: {{ ui_service_name }}
     spec:
       containers:
         - name: {{ ui_container_name }}

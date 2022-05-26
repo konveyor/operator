@@ -33,6 +33,8 @@ spec:
         app.kubernetes.io/name: {{ pathfinder_service_name }}
         app.kubernetes.io/component: {{ pathfinder_component_name }}
         app.kubernetes.io/part-of: {{ app_name }}
+        app: {{ app_name }}
+        role: {{ pathfinder_service_name }}
       annotations:
         prometheus.io/path: /q/metrics
         prometheus.io/port: '8080'
