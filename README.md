@@ -35,7 +35,11 @@ For details and official instructions in how to add OLM support to kubernetes an
 
 **Note:** Please wait a few minutes for OLM support to become available if this is a new deployment.
 
-### Installing _latest_ on k8s (or minikube)
+### Installing _released versions_ on k8s
+
+Released (or public betas) of Tackle are installable on Kubernetes via [OperatorHub](https://operatorhub.io/operator/tackle-operator).
+
+### Installing _latest_ on k8s
 
 Deploy Tackle using manifest:
 
@@ -43,7 +47,7 @@ Deploy Tackle using manifest:
 
 This step will create the konveyor-tackle namespace, catalogsource and other OLM related objects.
 
-### Installing _beta_ on k8s (or special branches)
+### Installing _beta_ (or special branches) on k8s
 
 If you need to deploy a beta release (or special branch) please replace the *main* branch in URL with the desired beta branch (i.e v2.0.0-beta.0):
 
@@ -56,7 +60,7 @@ kind: Tackle
 apiVersion: tackle.konveyor.io/v1alpha1
 metadata:
   name: tackle
-  namespace: konveyor-tackle
+  namespace: <your-tackle-namespace>
 spec:
 EOF
 ```
@@ -80,6 +84,10 @@ tackle-pathfinder-6c58447d8f-rd6rr                             1/1     Running  
 tackle-pathfinder-postgresql-5fff469bcc-bc5z2                  1/1     Running     0          130m
 tackle-ui-5f694bddcb-scbh5                                     1/1     Running     0          130m
 ```
+
+### Installing _released versions_ on OpenShift
+
+Released (or public betas) of Tackle are installable on OpenShift via community operators which appear in [OCP](https://openshift.com/) and [OKD](https://www.okd.io/).
 
 ### Installing _latest_ on OpenShift
 
@@ -119,7 +127,7 @@ rwo_storage_class | N/A | Storage class requested for Tackle RWO volumes
 
 Custom settings can be applied by editing the `Tackle` CR.
 
-`oc edit tackle -n <tackle-namespace>`
+`oc edit tackle -n <your-tackle-namespace>`
 
 ## Tackle Storage Requirements
 
@@ -142,7 +150,7 @@ kind: Tackle
 apiVersion: tackle.konveyor.io/v1alpha1
 metadata:
   name: tackle
-  namespace: konveyor-tackle
+  namespace: <your-tackle-namespace>
 spec:
   hub_bucket_volume_size: "50Gi"
   rwx_storage_class: "nfs"

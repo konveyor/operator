@@ -2,7 +2,7 @@ apiVersion: operators.coreos.com/v1alpha1
 kind: ClusterServiceVersion
 metadata:
   name: tackle-operator.{{ release_prefix}}{{ version }}
-  namespace: konveyor-tackle
+  namespace: {{ namespace }}
   annotations:
     capabilities: Seamless Upgrades
     description: >-
@@ -12,7 +12,7 @@ metadata:
     support: https://github.com/konveyor/tackle2-operator/issues
     repository: https://github.com/konveyor/tackle2-operator
     containerImage: quay.io/konveyor/tackle2-operator:latest
-    createdAt: 2022-05-19
+    createdAt: {{ date }}
     olm.skipRange: '>=0.0.0 <{{ version }}'
     operatorframework.io/initialization-resource: |-
       {
@@ -20,7 +20,7 @@ metadata:
         "kind": "Tackle",
         "metadata": {
           "name": "tackle",
-          "namespace": "konveyor-tackle"
+          "namespace": "{{ namespace }}"
         },
         "spec": {}
       }
@@ -31,7 +31,7 @@ metadata:
           "kind": "Tackle",
           "metadata": {
             "name": "tackle",
-            "namespace": "konveyor-tackle"
+            "namespace": "{{ namespace }}"
           },
           "spec": {}
         },
@@ -40,14 +40,14 @@ metadata:
           "kind": "Addon",
           "metadata": {
             "name": "move2kube-plan",
-            "namespace": "konveyor-tackle"
+            "namespace": "{{ namespace }}"
           },
           "spec": {
             "image": "quay.io/konveyor/tackle-addon-move2kube-plan:latest"
           }
         }
       ]
-    operatorframework.io/suggested-namespace: konveyor-tackle
+    operatorframework.io/suggested-namespace: {{ namespace }}
 spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
@@ -261,6 +261,14 @@ spec:
           - '*'
           verbs:
           - '*'
+        - apiGroups:
+          - security.openshift.io
+          resourceNames:
+          - anyuid
+          resources:
+          - securitycontextconstraints
+          verbs:
+          - use
       clusterPermissions:
       - serviceAccountName: tackle-operator
         rules:
