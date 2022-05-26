@@ -12,8 +12,7 @@ Please ensure the following requirements are met prior installation.
 * [__Persistent Storage__](https://kubernetes.io/docs/concepts/storage/persistent-volumes/)
 * [__Operator Lifecycle Manager (OLM) support__](https://olm.operatorframework.io/)
 * [__Ingress support__](https://kubernetes.io/docs/concepts/services-networking/ingress/)
-
-## Tackle Operator Installation
+* [__Network policy support__](https://kubernetes.io/docs/concepts/services-networking/network-policies/)
 
 ### Installing OLM support
 
@@ -34,6 +33,14 @@ We strongly suggest OLM support for Tackle deployments, in some production kuber
 For details and official instructions in how to add OLM support to kubernetes and customize your installation see [here](https://github.com/operator-framework/operator-lifecycle-manager/blob/master/doc/install/install.md)
 
 **Note:** Please wait a few minutes for OLM support to become available if this is a new deployment.
+
+#### Kubernetes Network Policies
+
+Tackle can provide namespace network isolation if a supported CNI, such as [Calico](https://minikube.sigs.k8s.io/docs/handbook/network_policy/#further-reading), is installed.
+
+`$ minikube start --network-plugin=cni --cni=calico`
+
+## Tackle Operator Installation
 
 ### Installing _released versions_ on k8s
 
@@ -115,6 +122,7 @@ If operator defaults need to be altered, the Tackle CR spec can be customized to
 Name | Default | Description
 --- | --- | ---
 feature_auth_required | true | Enable keycloak auth or false (single user/noauth)
+feature_isolate_namespace | true | Enable namespace isolation via network policies
 hub_database_volume_size | 5Gi | Size requested for Hub database volume
 hub_bucket_volume_size | 100gi | Size requested for Hub bucket volume
 keycloak_database_data_volume_size | 1Gi | Size requested for Keycloak DB volume

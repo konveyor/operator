@@ -23,6 +23,8 @@ spec:
         app.kubernetes.io/name: {{ pathfinder_database_service_name }}
         app.kubernetes.io/component: {{ pathfinder_database_component_name }}
         app.kubernetes.io/part-of: {{ app_name }}
+        app: {{ app_name }}
+        role: {{ pathfinder_database_service_name }}
     spec:
       containers:
         - name: {{ pathfinder_database_container_name }}
