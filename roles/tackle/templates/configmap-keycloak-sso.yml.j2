@@ -64,6 +64,15 @@ data:
             "attributes": {}
           },
           {
+            "id": "a329180a-5036-4946-a07b-04c76fdaa66d",
+            "name": "user",
+            "description": "Required by: Pathfinder.",
+            "composite": false,
+            "clientRole": false,
+            "containerId": "11d78bf6-6d10-4484-baba-a1388379d68b",
+            "attributes": {}
+          },
+          {
             "id": "39eb64c8-66a9-4983-9c81-27ea7e2f6273",
             "name": "uma_authorization",
             "description": "${role_uma_authorization}",
@@ -121,7 +130,8 @@ data:
             "composites": {
               "realm": [
                 "offline_access",
-                "uma_authorization"
+                "uma_authorization",
+                "user"
               ],
               "client": {
                 "account": [
@@ -1018,6 +1028,13 @@ data:
           ]
         },
         {
+          "clientScope": "assessments:patch",
+          "roles": [
+            "tackle-architect",
+            "tackle-admin"
+          ]
+        },
+        {
           "clientScope": "assessments:delete",
           "roles": [
             "tackle-architect",
@@ -1647,6 +1664,7 @@ data:
             "assessments:get",
             "assessments:post",
             "assessments:put",
+            "assessments:patch",
             "assessments:delete",
             "adoptionplans:post",
             "volumes:get",
@@ -2170,6 +2188,13 @@ data:
         {
           "id": "124823ca-1d84-49fe-899e-9bc6e6042ae8",
           "name": "assessments:put",
+          "protocol": "openid-connect",
+          "attributes": {}
+        },
+        {
+          "id": "c951a897-d950-4dc5-989d-b055e2b03389",
+          "name": "assessments:patch",
+          "description": "",
           "protocol": "openid-connect",
           "attributes": {}
         },
