@@ -1,8 +1,20 @@
 ---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ app_name }}-deny-all
+  namespace: {{ app_namespace }}
+  labels:
+    app: {{ app_name }}
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+---
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
-  name: {{ app_name }}-ingress
+  name: {{ app_name }}-namespace
   namespace: {{ app_namespace }}
   labels:
     app: {{ app_name }}
@@ -13,3 +25,19 @@ spec:
     - namespaceSelector:
         matchLabels:
           kubernetes.io/metadata.name: {{ app_namespace }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ app_name }}-external
+  namespace: {{ app_namespace }}
+  labels:
+    app: {{ app_name }}
+spec:
+  podSelector:
+    matchLabels:
+      role: tackle-ui
+  ingress:
+  - ports:
+    - port: 8080
+    - port: 8443
