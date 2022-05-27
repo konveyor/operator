@@ -46,12 +46,6 @@ spec:
 {% else %}
               value: "http://{{ hub_service_name }}:8080"
 {% endif %}
-            - name: PATHFINDER_URL
-{% if pathfinder_tls_enabled|bool %}
-              value: "http://{{ pathfinder_service_name }}:8443"
-{% else %}
-              value: "http://{{ pathfinder_service_name }}:8080"
-{% endif %}
             - name: AUTH_REQUIRED
               value: "{{ feature_auth_required|lower }}"
 {% if feature_auth_required|bool %}
