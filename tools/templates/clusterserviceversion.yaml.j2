@@ -11,19 +11,9 @@ metadata:
     certified: "false"
     support: https://github.com/konveyor/tackle2-operator/issues
     repository: https://github.com/konveyor/tackle2-operator
-    containerImage: quay.io/konveyor/tackle2-operator:latest
+    containerImage: quay.io/konveyor/tackle2-operator:{{ release_prefix}}{{ version }}
     createdAt: {{ date }}
     olm.skipRange: '>=0.0.0 <{{ version }}'
-    operatorframework.io/initialization-resource: |-
-      {
-        "apiVersion": "tackle.io/v1alpha1",
-        "kind": "Tackle",
-        "metadata": {
-          "name": "tackle",
-          "namespace": "{{ namespace }}"
-        },
-        "spec": {}
-      }
     alm-examples: |-
       [
         {
@@ -47,6 +37,16 @@ metadata:
           }
         }
       ]
+    operatorframework.io/initialization-resource: |-
+      {
+        "apiVersion": "tackle.konveyor.io/v1alpha1",
+        "kind": "Tackle",
+        "metadata": {
+          "name": "tackle",
+          "namespace": "{{ namespace }}"
+        },
+        "spec": {}
+      }
     operatorframework.io/suggested-namespace: {{ namespace }}
 spec:
   apiservicedefinitions: {}
@@ -115,6 +115,7 @@ spec:
               labels:
                 app: tackle
                 name: tackle-operator
+                role: tackle-operator
             spec:
               serviceAccountName: tackle-operator
               containers:
@@ -198,6 +199,7 @@ spec:
           - networking.k8s.io
           resources:
           - ingresses
+          - networkpolicies
           verbs:
           - '*'
         - apiGroups:
@@ -315,4 +317,4 @@ spec:
   - name: tackle-postgres
     image: quay.io/centos7/postgresql-12-centos7:latest
   version: {{ version }}
-  minKubeVersion: 1.20.0
+  minKubeVersion: 1.22.0
