@@ -14,16 +14,6 @@ metadata:
     containerImage: quay.io/konveyor/tackle2-operator:latest
     createdAt: 2022-05-19
     olm.skipRange: '>=0.0.0 <99.0.0'
-    operatorframework.io/initialization-resource: |-
-      {
-        "apiVersion": "tackle.io/v1alpha1",
-        "kind": "Tackle",
-        "metadata": {
-          "name": "tackle",
-          "namespace": "konveyor-tackle"
-        },
-        "spec": {}
-      }
     alm-examples: |-
       [
         {
@@ -47,6 +37,16 @@ metadata:
           }
         }
       ]
+    operatorframework.io/initialization-resource: |-
+      {
+        "apiVersion": "tackle.konveyor.io/v1alpha1",
+        "kind": "Tackle",
+        "metadata": {
+          "name": "tackle",
+          "namespace": "konveyor-tackle"
+        },
+        "spec": {}
+      }
     operatorframework.io/suggested-namespace: konveyor-tackle
 spec:
   apiservicedefinitions: {}
