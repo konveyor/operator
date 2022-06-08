@@ -60,7 +60,7 @@ If you need to deploy a beta release (or special branch) please replace the *mai
 
 `$ kubectl apply -f https://raw.githubusercontent.com/konveyor/tackle2-operator/v2.0.0-beta.0/tackle-k8s.yaml`
 
-**Note:** Upgrades between beta releases are **not guaranteed** , once installed, we strongly suggest to edit your subscription and switch to Manual upgrade mode for beta releases: `$ oc edit subscription` -> installPlanApproval: Manual
+**Note:** Upgrades between beta releases are **not guaranteed** , once installed, we strongly suggest to edit your subscription and switch to Manual upgrade mode for beta releases: `$ kubectl edit subscription` -> installPlanApproval: Manual
 
 ### Creating a _Tackle_ CR
 ```
