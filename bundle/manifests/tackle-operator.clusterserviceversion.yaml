@@ -291,15 +291,15 @@ spec:
     type: AllNamespaces
   keywords: ['modernization', 'konveyor', 'tackle']
   maintainers:
-  - name: Tackle by Konveyor community
+  - name: Tackle by Konveyor Community
     email: tackle-dev@googlegroups.com
   maturity: beta
   provider:
     name: Konveyor
   links:
-  - name: Konveyor Tackle Documentation
-    url: https://tackle-docs.konveyor.io
-  - name: Konveyor Tackle Operator
+  - name: Tackle Documentation
+    url: https://konveyor.github.io/tackle
+  - name: Tackle Operator
     url: https://github.com/konveyor/tackle2-operator
   relatedImages:
   - name: tackle-hub
