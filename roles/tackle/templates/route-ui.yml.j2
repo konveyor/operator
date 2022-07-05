@@ -17,4 +17,4 @@ spec:
     name: {{ ui_service_name }}
   tls:
     termination: {{ ui_route_tls_termination }}
-    insecureEdgeTerminationPolicy: Redirect
+    insecureEdgeTerminationPolicy: {{ ui_route_tls_insecure_termination_policy }}
