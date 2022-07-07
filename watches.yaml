@@ -4,5 +4,4 @@
   group: tackle.konveyor.io
   kind: Tackle
   role: tackle
-  reconcilePeriod: 30m
 #+kubebuilder:scaffold:watch
