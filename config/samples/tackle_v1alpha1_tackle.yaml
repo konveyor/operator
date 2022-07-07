@@ -1,6 +1,0 @@
-apiVersion: tackle.konveyor.io/v1alpha1
-kind: Tackle
-metadata:
-  name: tackle-sample
-spec:
-  # TODO(user): Add fields here

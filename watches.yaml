@@ -1,8 +1,0 @@
----
-# Use the 'create api' subcommand to add watches to this file.
-- version: v1alpha1
-  group: tackle.konveyor.io
-  kind: Tackle
-  role: tackle
-  reconcilePeriod: 30m
-#+kubebuilder:scaffold:watch

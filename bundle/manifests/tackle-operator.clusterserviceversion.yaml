@@ -23,7 +23,7 @@ metadata:
             "name": "tackle",
             "namespace": "konveyor-tackle"
           },
-          "spec": {}
+          "spec": null
         },
         {
           "apiVersion": "tackle.konveyor.io/v1alpha1",
@@ -148,7 +148,7 @@ spec:
                 - name: ADDON_WINDUP_IMAGE
                   value: quay.io/konveyor/tackle2-addon-windup:latest
                 name: tackle-operator
-                image: quay.io/konveyor/tackle2-operator:latest
+                image: quay.io/fbladilo/tackle2-operator:latest
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
@@ -253,6 +253,18 @@ spec:
           - patch
           - update
           - watch
+        - apiGroups:
+          - coordination.k8s.io
+          resources:
+          - leases
+          verbs:
+          - get
+          - list
+          - watch
+          - create
+          - update
+          - patch
+          - delete
       - serviceAccountName: tackle-hub
         rules:
         - apiGroups:
@@ -296,6 +308,7 @@ spec:
   maturity: beta
   provider:
     name: Konveyor
+    url: https://www.konveyor.io
   links:
   - name: Tackle Documentation
     url: https://konveyor.github.io/tackle
