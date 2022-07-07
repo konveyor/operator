@@ -1,0 +1,45 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: '[]'
+    capabilities: Basic Install
+  name: tackle-operator.v0.0.0
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions: {}
+  description: Tackle contains tools that support the modernization and migration
+    of applications to Kubernetes and OpenShift
+  displayName: Tackle Operator
+  icon:
+  - base64data: ""
+    mediatype: ""
+  install:
+    spec:
+      deployments: null
+    strategy: ""
+  installModes:
+  - supported: false
+    type: OwnNamespace
+  - supported: false
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+  - tackle
+  - konveyor
+  - modernization
+  links:
+  - name: Tackle Operator
+    url: https://tackle-operator.domain
+  maintainers:
+  - email: tackle-dev@googlegroups.com
+    name: Tackle by Konveyor Community
+  maturity: alpha
+  provider:
+    name: Konveyor
+    url: https://www.konveyor.io/
+  version: 0.0.0

@@ -12,7 +12,7 @@ metadata:
     repository: https://github.com/konveyor/tackle2-operator
     certified: "false"
     containerImage: quay.io/konveyor/tackle2-operator:latest
-    createdAt: 2022-05-19
+    createdAt: 2022-07-07
     olm.skipRange: '>=0.0.0 <99.0.0'
     alm-examples: |-
       [
@@ -83,7 +83,7 @@ spec:
     * Keycloak, to manage authentication, including with 3rd-party providers.
 
     ### Documentation
-    Documentation can be found on our [website](https://tackle-docs.konveyor.io).
+    Documentation can be found on our [website](https://konveyor.github.io/tackle).
 
     ### Getting help
     If you encounter any issues while using Tackle operator, you can create an issue on our [Github repo](https://github.com/konveyor/tackle2-operator/issues), for bugs, enhancements or other requests.
@@ -148,7 +148,7 @@ spec:
                 - name: ADDON_WINDUP_IMAGE
                   value: quay.io/konveyor/tackle2-addon-windup:latest
                 name: tackle-operator
-                image: quay.io/fbladilo/tackle2-operator:latest
+                image: quay.io/konveyor/tackle2-operator:latest
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:

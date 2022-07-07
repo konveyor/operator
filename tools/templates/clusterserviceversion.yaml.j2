@@ -23,7 +23,7 @@ metadata:
             "name": "tackle",
             "namespace": "{{ namespace }}"
           },
-          "spec": {}
+          "spec": null
         },
         {
           "apiVersion": "tackle.konveyor.io/v1alpha1",
@@ -83,7 +83,7 @@ spec:
     * Keycloak, to manage authentication, including with 3rd-party providers.
 
     ### Documentation
-    Documentation can be found on our [website](https://tackle-docs.konveyor.io).
+    Documentation can be found on our [website](https://konveyor.github.io/tackle).
 
     ### Getting help
     If you encounter any issues while using Tackle operator, you can create an issue on our [Github repo](https://github.com/konveyor/tackle2-operator/issues), for bugs, enhancements or other requests.
@@ -253,6 +253,18 @@ spec:
           - patch
           - update
           - watch
+        - apiGroups:
+          - coordination.k8s.io
+          resources:
+          - leases
+          verbs:
+          - get
+          - list
+          - watch
+          - create
+          - update
+          - patch
+          - delete
       - serviceAccountName: tackle-hub
         rules:
         - apiGroups:
@@ -296,6 +308,7 @@ spec:
   maturity: beta
   provider:
     name: Konveyor
+    url: https://www.konveyor.io
   links:
   - name: Tackle Documentation
     url: https://konveyor.github.io/tackle
