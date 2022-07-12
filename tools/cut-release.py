@@ -53,10 +53,19 @@ if not args.project_path:
 if not args.templates_path:
     args.templates_path = os.path.join(script_path, "templates")
 
-# Set channel defaults if not supplied
+# Set channel defaults if not supplied and special cases
+if args.version == "latest":
+    args.channel = "development"
 if not args.channel:
    short_version = args.version.rsplit(".",1)[0]
    args.channel = args.release_prefix + short_version
+
+# Handle tags and version special cases
+if args.version == "latest":
+    tag = "latest"
+    args.version = "99.0.0"
+else:
+    tag = args.release_prefix + args.version
 
 # Set creation time (utc iso formatted)
 t = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None).isoformat()
@@ -67,6 +76,7 @@ render_vars = {}
 
 render_vars["version"] = args.version
 render_vars["release_prefix"] = args.release_prefix
+render_vars["tag"] = tag
 render_vars["channel"] = args.channel
 render_vars["date"] = date
 render_vars["namespace"] = "konveyor-tackle"
