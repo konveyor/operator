@@ -166,6 +166,10 @@ spec:
   rwx_storage_class: "nfs"
 ```
 
+## Development
+
+See [development.md](docs/development.md) for details in how to contribute to Tackle operator.
+
 ## Tackle Documentation
 
 See the [Konveyor Tackle Documentation](https://tackle-docs.konveyor.io/) for detailed installation instructions as well as how to use Tackle.
