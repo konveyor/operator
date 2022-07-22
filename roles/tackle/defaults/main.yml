@@ -123,6 +123,7 @@ keycloak_sso_admin_username_b64: "{{ keycloak_sso_admin_username | b64encode }}"
 keycloak_sso_java_opts: "-Dcom.redhat.fips=false"
 keycloak_sso_host: "http://{{ keycloak_sso_service_name }}.{{ app_namespace }}.svc:8080"
 keycloak_sso_realm: "tackle"
+keycloak_sso_req_passwd_update: true
 keycloak_sso_hub_client_id: "tackle-hub"
 keycloak_sso_hub_client_secret: "tackle"
 
@@ -162,4 +163,4 @@ windup_container_requests_memory: "2Gi"
 maven_name: "maven"
 maven_data_volume_size: "100Gi"
 maven_data_volume_name: "{{ app_name }}-{{ maven_name }}-data"
-maven_data_volume_claim_name: "{{ app_name}}-{{ maven_name }}-volume-claim"
+maven_data_volume_claim_name: "{{ app_name }}-{{ maven_name }}-volume-claim"

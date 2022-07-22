@@ -527,7 +527,9 @@ data:
             "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
           } ],
           "disableableCredentialTypes" : [ ],
+{% if keycloak_sso_req_passwd_update|bool %}
           "requiredActions" : [ "UPDATE_PASSWORD" ],
+{% endif %}
           "realmRoles" : [ "tackle-admin", "admin" ],
           "clientRoles" : {
             "account" : [ "view-profile", "manage-account" ]
