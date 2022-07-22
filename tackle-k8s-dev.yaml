@@ -1,0 +1,21 @@
+---
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: migration
+  namespace: konveyor-tackle
+spec:
+  targetNamespaces:
+    - konveyor-tackle
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: tackle-operator
+  namespace: konveyor-tackle
+spec:
+  channel: development
+  installPlanApproval: Automatic
+  name: tackle-operator
+  source: konveyor-tackle
+  sourceNamespace: konveyor-tackle
