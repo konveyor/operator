@@ -8,7 +8,7 @@ The Tackle Operator fully manages the deployment and life cycle of Tackle on Kub
 
 Please ensure the following requirements are met prior installation.
 
-* [__k8s v1.20+__](https://kubernetes.io/) or [__OpenShift 4.7+__](https://www.openshift.com/)
+* [__k8s v1.22+__](https://kubernetes.io/) or [__OpenShift 4.9+__](https://www.openshift.com/)
 * [__Persistent Storage__](https://kubernetes.io/docs/concepts/storage/persistent-volumes/)
 * [__Operator Lifecycle Manager (OLM) support__](https://olm.operatorframework.io/)
 * [__Ingress support__](https://kubernetes.io/docs/concepts/services-networking/ingress/)
@@ -40,13 +40,13 @@ Tackle can provide namespace network isolation if a supported CNI, such as [Cali
 
 `$ minikube start --network-plugin=cni --cni=calico`
 
-## Tackle Operator Installation
+## Tackle Operator Installation on k8s
 
-### Installing _released versions_ on k8s
+### Installing _released versions_
 
 Released (or public betas) of Tackle are installable on Kubernetes via [OperatorHub](https://operatorhub.io/operator/tackle-operator).
 
-### Installing _latest_ on k8s
+### Installing _latest_
 
 Deploy Tackle using manifest:
 
@@ -54,7 +54,7 @@ Deploy Tackle using manifest:
 
 This step will create the konveyor-tackle namespace, catalogsource and other OLM related objects.
 
-### Installing _beta_ (or special branches) on k8s
+### Installing _beta_ (or special branches)
 
 If you need to deploy a beta release (or special branch) please replace the *main* branch in URL with the desired beta branch (i.e v2.0.0-beta.0):
 
@@ -73,6 +73,8 @@ metadata:
 spec:
 EOF
 ```
+
+Once the CR is created, the operator will deploy the hub, UI and configure the rest of required components.
 
 **Note:** Please review storage requirements **prior** creating the Tackle CR in case you need to adjust settings.
 
@@ -94,13 +96,20 @@ tackle-pathfinder-postgresql-5fff469bcc-bc5z2                  1/1     Running  
 tackle-ui-5f694bddcb-scbh5                                     1/1     Running     0          130m
 ```
 
-### Installing _released versions_ on OpenShift
+## Tackle Operator Installation on OKD/OpenShift
+
+### Installing _released versions_
 
 Released (or public betas) of Tackle are installable on OpenShift via community operators which appear in [OCP](https://openshift.com/) and [OKD](https://www.okd.io/).
 
-### Installing _latest_ on OpenShift
+1. Visit the OpenShift Web Console.
+1. Navigate to _Operators => OperatorHub_.
+1. Search for _Tackle_.
+1. Install the desired _Tackle_ version.
 
-Installing latest requires creating a new catalog source.
+### Installing _latest_
+
+Installing latest is almost an identical procedure to released versions but requires creating a new catalog source.
 
 1. `oc apply -f https://raw.githubusercontent.com/konveyor/tackle2-operator/main/tackle-operator-catalog.yaml`
 1. Visit the OpenShift Web Console.
@@ -108,9 +117,9 @@ Installing latest requires creating a new catalog source.
 1. Search for _Tackle_.
 1. There should be two _Tackle_ available for installation now.
 1. Select the _Tackle_ **without** the _community_ tag.
-1. Proceed to install latest.
+1. Proceed to install latest using the _development_ channel in the subscription step.
 
-## Tackle CR Creation on OpenShift
+### Tackle CR Creation
 
 1. Visit OpenShift Web Console, navigate to _Operators => Installed Operators_.
 1. Select _Tackle_.
