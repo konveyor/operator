@@ -131,21 +131,21 @@ spec:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
                 - name: ANSIBLE_GATHERING
                   value: explicit
-                - name: TACKLE_HUB_IMAGE
+                - name: RELATED_IMAGE_TACKLE_HUB
                   value: quay.io/konveyor/tackle2-hub:v2.1.0
-                - name: PATHFINDER_DATABASE_IMAGE
+                - name: RELATED_IMAGE_PATHFINDER_DATABASE
                   value: quay.io/centos7/postgresql-12-centos7:latest
-                - name: PATHFINDER_IMAGE
+                - name: RELATED_IMAGE_PATHFINDER
                   value: quay.io/konveyor/tackle-pathfinder:1.3.0-native
-                - name: KEYCLOAK_DATABASE_IMAGE
+                - name: RELATED_IMAGE_KEYCLOAK_DATABASE
                   value: quay.io/centos7/postgresql-12-centos7:latest
-                - name: KEYCLOAK_SSO_IMAGE
+                - name: RELATED_IMAGE_KEYCLOAK_SSO
                   value: quay.io/keycloak/keycloak:16.1.1
-                - name: TACKLE_UI_IMAGE
+                - name: RELATED_IMAGE_TACKLE_UI
                   value: quay.io/konveyor/tackle2-ui:v2.1.0
-                - name: ADDON_ADMIN_IMAGE
+                - name: RELATED_IMAGE_ADDON_ADMIN
                   value: quay.io/konveyor/tackle2-addon:v2.1.0
-                - name: ADDON_WINDUP_IMAGE
+                - name: RELATED_IMAGE_ADDON_WINDUP
                   value: quay.io/konveyor/tackle2-addon-windup:v2.1.0
                 name: tackle-operator
                 image: quay.io/konveyor/tackle2-operator:v2.1.0
