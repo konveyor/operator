@@ -182,3 +182,6 @@ See [development.md](docs/development.md) for details in how to contribute to Ta
 ## Tackle Documentation
 
 See the [Konveyor Tackle Documentation](https://tackle-docs.konveyor.io/) for detailed installation instructions as well as how to use Tackle.
+
+## Code of Conduct
+Refer to Konveyor's Code of Conduct [here](https://github.com/konveyor/community/blob/main/CODE_OF_CONDUCT.md).
