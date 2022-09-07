@@ -192,3 +192,11 @@ catalog-build: opm ## Build a catalog image.
 .PHONY: catalog-push
 catalog-push: ## Push a catalog image.
 	$(MAKE) docker-push IMG=$(CATALOG_IMG)
+
+.PHONY: start-minikube
+start-minikube:
+	export PATH=$(shell pwd)/bin:$$PATH; $(shell pwd)/hack/start-minikube.sh
+
+.PHONY: install-tackle
+install-tackle:
+	export PATH=$(shell pwd)/bin:$$PATH; $(shell pwd)/hack/install-tackle.sh
