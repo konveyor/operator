@@ -11,7 +11,7 @@ metadata:
     support: https://github.com/konveyor/tackle2-operator/issues
     repository: https://github.com/konveyor/tackle2-operator
     certified: "false"
-    containerImage: quay.io/konveyor/tackle2-operator:latest
+    containerImage: quay.io/fbladilo/tackle2-operator:latest
     createdAt: 2022-07-07
     olm.skipRange: '>=0.0.0 <99.0.0'
     alm-examples: |-
@@ -131,6 +131,10 @@ spec:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
                 - name: ANSIBLE_GATHERING
                   value: explicit
+                - name: PROFILE
+                  value: konveyor
+                - name: VERSION
+                  value: 99.0.0
                 - name: RELATED_IMAGE_TACKLE_HUB
                   value: quay.io/konveyor/tackle2-hub:latest
                 - name: RELATED_IMAGE_PATHFINDER_DATABASE
@@ -148,7 +152,7 @@ spec:
                 - name: RELATED_IMAGE_ADDON_WINDUP
                   value: quay.io/konveyor/tackle2-addon-windup:latest
                 name: tackle-operator
-                image: quay.io/konveyor/tackle2-operator:latest
+                image: quay.io/fbladilo/tackle2-operator:latest
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
