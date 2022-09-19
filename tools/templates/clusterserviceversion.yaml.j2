@@ -131,6 +131,10 @@ spec:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
                 - name: ANSIBLE_GATHERING
                   value: explicit
+                - name: PROFILE
+                  value: konveyor
+                - name: VERSION
+                  value: {{ version }}
                 - name: RELATED_IMAGE_TACKLE_HUB
                   value: quay.io/konveyor/tackle2-hub:{{ tag }}
                 - name: RELATED_IMAGE_PATHFINDER_DATABASE
