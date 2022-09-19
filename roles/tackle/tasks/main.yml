@@ -87,17 +87,13 @@
 
       - when: (keycloak_sso_secret_status.resources | length) == 0
         block:
-          - name: "Generate random values for Keycloak PostgreSQL and SSO username and password"
+          - name: "Generate random values for Keycloak SSO username and password"
             set_fact:
-              keycloak_database_db_username: "user-{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=4') }}"
-              keycloak_database_db_password: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=16') }}"
               keycloak_sso_admin_password: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=16') }}"
               keycloak_sso_hub_client_secret: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=32') }}"
 
-          - name: "Encode Keycloak PostgreSQL and SSO username and password"
+          - name: "Encode Keycloak SSO username and password"
             set_fact:
-              keycloak_database_db_username_b64: "{{ keycloak_database_db_username | b64encode }}"
-              keycloak_database_db_password_b64: "{{ keycloak_database_db_password | b64encode }}"
               keycloak_sso_admin_password_b64: "{{ keycloak_sso_admin_password | b64encode }}"
               keycloak_sso_hub_client_secret_b64: "{{ keycloak_sso_hub_client_secret | b64encode }}"
 
@@ -111,6 +107,12 @@
           state: present
           definition: "{{ lookup('template', 'configmap-keycloak-sso.yml.j2') }}"
 
+  - when:
+      - profile == "KONVEYOR"
+      - feature_auth_required|bool
+      - feature_auth_provider == "keycloak"
+    block:
+### Modify here
       - name: "Setup Keycloak SSO Service"
         k8s:
           state: present
