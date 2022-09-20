@@ -5,10 +5,6 @@ app_namespace: "{{ lookup('env', 'WATCH_NAMESPACE') or 'konveyor-tackle' }}"
 app_profile: "{{ lookup('env', 'PROFILE') }}"
 app_version: "{{ lookup('env', 'VERSION') }}"
 
-# Operator deployment profile (KONVEYOR/MTA)
-profile: "{{ lookup('env', 'PROFILE') }}"
-version: "{{ lookup('env', 'VERSION') }}"
-
 # Feature defaults
 feature_ui_enabled: true
 feature_auth_required: true
