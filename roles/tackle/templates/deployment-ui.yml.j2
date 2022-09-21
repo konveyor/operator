@@ -38,6 +38,10 @@ spec:
           image: "{{ ui_image_fqin }}"
           imagePullPolicy: "{{ image_pull_policy }}"
           env:
+            - name: PROFILE
+              value: "{{ app_profile }}"
+            - name: VERSION
+              value: "{{ app_version }}"
             - name: UI_INGRESS_PROXY_BODY_SIZE
               value: '{{ui_ingress_proxy_body_size}}'
             - name: TACKLE_HUB_URL
