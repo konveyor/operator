@@ -44,6 +44,10 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: metadata.namespace
+            - name: PROFILE
+              value: "{{ app_profile }}"
+            - name: VERSION
+              value: "{{ app_version }}"
 {% if hub_tls_enabled|bool %}
             - name: HUB_TLS_ENABLED
               value: 'true'
