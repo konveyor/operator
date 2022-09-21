@@ -21,6 +21,7 @@
           k8s_cluster_version: "{{ lookup('k8s', cluster_info='version').kubernetes.gitVersion }}"
 
   - when:
+      - app_profile == "konveyor"
       - feature_auth_required|bool
       - feature_auth_provider == "keycloak"
     block:
@@ -107,12 +108,6 @@
           state: present
           definition: "{{ lookup('template', 'configmap-keycloak-sso.yml.j2') }}"
 
-  - when:
-      - profile == "KONVEYOR"
-      - feature_auth_required|bool
-      - feature_auth_provider == "keycloak"
-    block:
-### Modify here
       - name: "Setup Keycloak SSO Service"
         k8s:
           state: present
@@ -122,6 +117,35 @@
         k8s:
           state: present
           definition: "{{ lookup('template', 'deployment-keycloak-sso.yml.j2') }}"
+
+  - when:
+      - feature_auth_required|bool
+      - feature_auth_provider == "keycloak"
+      - app_profile == "mta"
+    block:
+      - name: "Check if RHSSO Keycloak CR exists already so we don't update it"
+        k8s_info:
+          api_version: keycloak.org/v1alpha1
+          kind: Keycloak
+          name: "{{ rhsso_service_name }}"
+          namespace: "{{ app_namespace }}"
+        register: rhsso_keycloak_status
+
+      - name: "Create RHSSO Keycloak CR"
+        k8s:
+          state: present
+          definition: "{{ lookup('template', 'customresource-rhsso-keycloak.yml.j2') }}"
+#        when: (rhsso_keycloak_status | length) == 0
+
+      - name: "Create RHSSO Keycloak Realm CR"
+        k8s:
+          state: present
+          definition: "{{ lookup('template', 'customresource-rhsso-realm.yml.j2') }}"
+
+      - name: "Create RHSSO Keycloak Users CR"
+        k8s:
+          state: present
+          definition: "{{ lookup('template', 'customresource-rhsso-users.yml.j2') }}"
 
   - name: "Setup Tackle Hub API Database PersistentVolumeClaim"
     k8s:

@@ -168,3 +168,8 @@ maven_name: "maven"
 maven_data_volume_size: "100Gi"
 maven_data_volume_name: "{{ app_name }}-{{ maven_name }}-data"
 maven_data_volume_claim_name: "{{ app_name }}-{{ maven_name }}-volume-claim"
+
+# RH-SSO
+rhsso_name: "rhsso"
+rhsso_service_name: "{{ app_name }}-{{ rhsso_name }}"
+rhsso_external_access: false

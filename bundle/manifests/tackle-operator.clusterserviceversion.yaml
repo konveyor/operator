@@ -132,7 +132,7 @@ spec:
                 - name: ANSIBLE_GATHERING
                   value: explicit
                 - name: PROFILE
-                  value: konveyor
+                  value: mta
                 - name: VERSION
                   value: 99.0.0
                 - name: RELATED_IMAGE_TACKLE_HUB
@@ -269,6 +269,19 @@ spec:
           - update
           - patch
           - delete
+        - apiGroups:
+          - keycloak.org
+          resources:
+          - keycloaks
+          - keycloakrealms
+          verbs:
+          - get
+          - list
+          - watch
+          - create
+          - update
+          - patch
+          - delete
       - serviceAccountName: tackle-hub
         rules:
         - apiGroups:
@@ -296,6 +309,21 @@ spec:
           - clusterversions
           verbs:
           - get
+        - apiGroups:
+          - keycloak.org
+          resources:
+          - keycloaks
+          - keycloakrealms
+          - keycloakclients
+          - keycloakusers
+          verbs:
+          - get
+          - list
+          - watch
+          - create
+          - update
+          - patch
+          - delete
   installModes:
   - supported: true
     type: OwnNamespace
