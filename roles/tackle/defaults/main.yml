@@ -147,6 +147,7 @@ ui_ingress_name: "{{ app_name }}"
 ui_ingress_proxy_body_size: "500m"
 ui_route_name: "{{ app_name }}"
 ui_tls_enabled: false
+ui_node_extra_ca_certs: "/opt/app-root/src/ca.crt"
 ui_route_tls_termination: "edge"
 ui_route_tls_insecure_termination_policy: "Redirect"
 ui_tls_secret_name: "{{ ui_service_name }}-serving-cert"

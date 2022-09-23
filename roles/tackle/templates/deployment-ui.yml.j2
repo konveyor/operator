@@ -70,6 +70,8 @@ spec:
               value: {{ keycloak_sso_ui_client_id }}
 {% endif %}
 {% endif %}
+            - name: NODE_EXTRA_CA_CERTS
+              value: {{ ui_node_extra_ca_certs }}
 {% if ui_tls_enabled|bool %}
             - name: UI_TLS_ENABLED
               value: 'true'
