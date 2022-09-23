@@ -96,6 +96,20 @@ spec:
 {% if feature_auth_required|bool %}
             - name: KEYCLOAK_REALM
               value: "{{ keycloak_sso_realm }}"
+{% if app_profile == 'mta' %}
+            - name: KEYCLOAK_HOST
+              value: "{{ rhsso_host }}"
+            - name: KEYCLOAK_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: "keycloak-client-secret-{{ keycloak_sso_hub_client_id }}"
+                  key: CLIENT_ID
+            - name: KEYCLOAK_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: "keycloak-client-secret-{{ keycloak_sso_hub_client_id }}"
+                  key: CLIENT_SECRET
+{% else %}
             - name: KEYCLOAK_HOST
               value: "{{ keycloak_sso_host }}"
             - name: KEYCLOAK_CLIENT_ID
@@ -105,6 +119,7 @@ spec:
                 secretKeyRef:
                   name: "{{ hub_secret_name }}"
                   key: keycloak_client_secret
+{% endif %}
 {% endif %}
             - name: TASK_SA
               value: "{{ hub_task_sa }}"

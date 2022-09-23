@@ -53,12 +53,22 @@ spec:
             - name: AUTH_REQUIRED
               value: "{{ feature_auth_required|lower }}"
 {% if feature_auth_required|bool %}
-            - name: KEYCLOAK_SERVER_URL
-              value: http://{{ keycloak_sso_service_name }}:8080
             - name: KEYCLOAK_REALM
-              value: {{ app_name }}
+              value: {{ keycloak_sso_realm }}
+{% if app_profile == 'mta' %}
+            - name: KEYCLOAK_SERVER_URL
+              value: {{ rhsso_host }}
             - name: KEYCLOAK_CLIENT_ID
-              value: {{ ui_service_name }}
+              valueFrom:
+                secretKeyRef:
+                  name: "keycloak-client-secret-{{ keycloak_sso_ui_client_id }}"
+                  key: CLIENT_ID
+{% else %}
+            - name: KEYCLOAK_SERVER_URL
+              value: "{{ keycloak_sso_host }}"
+            - name: KEYCLOAK_CLIENT_ID
+              value: {{ keycloak_sso_ui_client_id }}
+{% endif %}
 {% endif %}
 {% if ui_tls_enabled|bool %}
             - name: UI_TLS_ENABLED
