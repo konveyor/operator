@@ -1,24 +1,13 @@
 ---
 - block:
-
-  - name: "Set UI feature state"
-    set_fact:
-      ui_state: "present"
-    when: feature_ui_enabled|bool
-
   - name: "Load cluster API groups"
     set_fact:
       api_groups: "{{ lookup('k8s', cluster_info='api_groups') }}"
 
-  - when: "'route.openshift.io' in api_groups"
-    block:
-      - name: "Enable OpenShift cluster environment"
-        set_fact:
-          openshift_cluster: true
-
-      - name: "Obtain k8s cluster version"
-        set_fact:
-          k8s_cluster_version: "{{ lookup('k8s', cluster_info='version').kubernetes.gitVersion }}"
+  - name: "Enable OpenShift cluster environment"
+    set_fact:
+      openshift_cluster: true
+    when: "'route.openshift.io' in api_groups"
 
   - when:
       - app_profile == "konveyor"
@@ -132,29 +121,38 @@
             - app = {{ rhsso_service_name }}
         register: rhsso_keycloak_status
 
-      - when: (rhsso_keycloak_status.resources | length) == 0
-        block:
-          - name: "Create RHSSO Keycloak CR"
-            k8s:
-              state: present
-              definition: "{{ lookup('template', 'customresource-rhsso-keycloak.yml.j2') }}"
+      - name: "Create RHSSO Keycloak CR"
+        k8s:
+          state: present
+          definition: "{{ lookup('template', 'customresource-rhsso-keycloak.yml.j2') }}"
+        when: (rhsso_keycloak_status.resources | length) == 0
 
-          - name: "Check RHSSO for readiness"
-            k8s_info:
-              api_version: "{{ rhsso_api_version }}"
-              kind: Keycloak
-              namespace: "{{ app_namespace }}"
-              label_selectors:
-                - app = {{ rhsso_service_name }}
-            register: cr
-            until: true in (cr | json_query('resources[].status.ready'))
-            retries: 30
-            delay: 5
+      - name: "Check RHSSO for readiness"
+        k8s_info:
+          api_version: "{{ rhsso_api_version }}"
+          kind: Keycloak
+          namespace: "{{ app_namespace }}"
+          label_selectors:
+            - app = {{ rhsso_service_name }}
+        register: cr
+        until: true in (cr | json_query('resources[].status.ready'))
+        retries: 30
+        delay: 5
+
+      - name: "Check if RHSSO Realm CR exists already so we don't update it"
+        k8s_info:
+          api_version: "{{ rhsso_api_version }}"
+          kind: KeycloakRealm
+          namespace: "{{ app_namespace }}"
+          label_selectors:
+            - app = {{ rhsso_service_name }}
+        register: rhsso_realm_status
 
       - name: "Create RHSSO Keycloak Realm CR"
         k8s:
           state: present
           definition: "{{ lookup('template', 'customresource-rhsso-realm.yml.j2') }}"
+        when: (rhsso_realm_status.resources | length) == 0
 
       - name: "Check RHSSO Keycloak Realm for readiness"
         k8s_info:
@@ -168,10 +166,19 @@
         retries: 20
         delay: 3
 
-      - name: "Create RHSSO Keycloak Users CR"
+      - name: "Check if RHSSO Admin user CR exists already so we don't update it"
+        k8s_info:
+          api_version: "{{ rhsso_api_version }}"
+          kind: KeycloakUser
+          name: "{{ app_name }}-admin"
+          namespace: "{{ app_namespace }}"
+        register: rhsso_keycloak_user_status
+
+      - name: "Create RHSSO Admin user CR"
         k8s:
           state: present
           definition: "{{ lookup('template', 'customresource-rhsso-users.yml.j2') }}"
+        when: (rhsso_keycloak_user_status.resources | length) == 0
 
       - name: "Check if RHSSO Hub Client CR exists already so we don't update it"
         k8s_info:
@@ -312,27 +319,27 @@
       state: present
       definition: "{{ lookup('template', 'deployment-pathfinder.yml.j2') }}"
 
-  - when: feature_ui_enabled|bool
-    block:
-      - name: "Setup Tackle UI Service"
-        k8s:
-          state: present
-          definition: "{{ lookup('template', 'service-ui.yml.j2') }}"
+  - name: "Setup Tackle UI Service"
+    k8s:
+      state: present
+      definition: "{{ lookup('template', 'service-ui.yml.j2') }}"
 
-      - name: "Setup Tackle UI Deployment"
-        k8s:
-          state: present
-          definition: "{{ lookup('template', 'deployment-ui.yml.j2') }}"
+  - name: "Setup Tackle UI Deployment"
+    k8s:
+      state: present
+      definition: "{{ lookup('template', 'deployment-ui.yml.j2') }}"
 
-      - when: not openshift_cluster|bool
-        k8s:
-          state: present
-          definition: "{{ lookup('template', 'ingress-ui.yml.j2') }}"
+  - name: "Setup Tackle UI Ingress"
+    k8s:
+      state: present
+      definition: "{{ lookup('template', 'ingress-ui.yml.j2') }}"
+    when: not openshift_cluster|bool
 
-      - when: openshift_cluster|bool
-        k8s:
-          state: present
-          definition: "{{ lookup('template', 'route-ui.yml.j2') }}"
+  - name: "Setup Tackle UI Route"
+    k8s:
+      state: present
+      definition: "{{ lookup('template', 'route-ui.yml.j2') }}"
+    when: openshift_cluster|bool
 
   - name: "Setup Maven PersistentVolumeClaim"
     k8s:
