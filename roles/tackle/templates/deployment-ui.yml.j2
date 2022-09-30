@@ -38,6 +38,8 @@ spec:
           image: "{{ ui_image_fqin }}"
           imagePullPolicy: "{{ image_pull_policy }}"
           env:
+            - name: APP_NAME
+              value: "{{ app_name }}"
             - name: PROFILE
               value: "{{ app_profile }}"
             - name: VERSION
