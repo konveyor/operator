@@ -44,6 +44,8 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: metadata.namespace
+            - name: APP_NAME
+              value: "{{ app_name }}"
             - name: PROFILE
               value: "{{ app_profile }}"
             - name: VERSION
