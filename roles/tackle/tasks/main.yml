@@ -1,319 +1,300 @@
 ---
-- block:
+- name: "Load cluster API groups"
+  set_fact:
+    api_groups: "{{ lookup('k8s', cluster_info='api_groups') }}"
 
-  - name: "Set UI feature state"
-    set_fact:
-      ui_state: "present"
-    when: feature_ui_enabled|bool
+- name: "Enable OpenShift cluster environment"
+  set_fact:
+    openshift_cluster: true
+  when: "'route.openshift.io' in api_groups"
 
-  - name: "Load cluster API groups"
-    set_fact:
-      api_groups: "{{ lookup('k8s', cluster_info='api_groups') }}"
+- when: openshift_cluster|bool
+  block:
+    - name: "Get OpenShift cluster Proxy object"
+      set_fact:
+        proxy_cluster: "{{ lookup('k8s', api_version='config.openshift.io/v1', kind='Proxy', resource_name='cluster') }}"
 
-  - when: "'route.openshift.io' in api_groups"
-    block:
-      - name: "Enable OpenShift cluster environment"
-        set_fact:
-          openshift_cluster: true
+    - when: (proxy_cluster.spec.trustedCA.name | length) > 0
+      block:
+        - name: "Enable trusted CA environment"
+          set_fact:
+            trusted_ca_enabled: true
 
-      - name: "Obtain k8s cluster version"
-        set_fact:
-          k8s_cluster_version: "{{ lookup('k8s', cluster_info='version').kubernetes.gitVersion }}"
+        - name: "Create an empty ConfigMap that will hold the trusted CA"
+          k8s:
+            state: present
+            definition: "{{ lookup('template', 'configmap-trusted-ca.yml.j2') }}"
 
-  - when: openshift_cluster|bool
-    block:
-      - name: "Get OpenShift cluster Proxy object"
-        set_fact:
-          proxy_cluster: "{{ lookup('k8s', api_version='config.openshift.io/v1', kind='Proxy', resource_name='cluster') }}"
+- when:
+    - feature_auth_required|bool
+  block:
+    - name: "Setup Keycloak PostgreSQL PersistentVolumeClaim"
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'persistentvolumeclaim-keycloak-postgresql.yml.j2') }}"
 
-      - when: (proxy_cluster.spec.trustedCA.name | length) > 0
-        block:
-          - name: "Enable trusted CA environment"
-            set_fact:
-              trusted_ca_enabled: true
+    - name: "Check if Keycloak PostgreSQL Secret exists already so we don't update it"
+      k8s_info:
+        api_version: v1
+        kind: Secret
+        name: "{{ keycloak_database_secret_name }}"
+        namespace: "{{ app_namespace }}"
+      register: keycloak_database_secret_status
 
-          - name: "Create an empty ConfigMap that will hold the trusted CA"
-            k8s:
-              state: present
-              definition: "{{ lookup('template', 'configmap-trusted-ca.yml.j2') }}"
+    - when: (keycloak_database_secret_status.resources | length) == 0
+      block:
+        - name: "Generate random values for Keycloak PostgreSQL credentials"
+          set_fact:
+            keycloak_database_db_username: "user-{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=4') }}"
+            keycloak_database_db_password: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=16') }}"
 
-  - when:
-      - feature_auth_required|bool
-      - feature_auth_provider == "keycloak"
-    block:
-      - name: "Setup Keycloak PostgreSQL PersistentVolumeClaim"
-        k8s:
-          state: present
-          definition: "{{ lookup('template', 'persistentvolumeclaim-keycloak-postgresql.yml.j2') }}"
+        - name: "Encode Keycloak PostgreSQL credentials"
+          set_fact:
+            keycloak_database_db_username_b64: "{{ keycloak_database_db_username | b64encode }}"
+            keycloak_database_db_password_b64: "{{ keycloak_database_db_password | b64encode }}"
 
-      - name: "Check if Keycloak PostgreSQL Secret exists already so we don't update it"
-        k8s_info:
-          api_version: v1
-          kind: Secret
-          name: "{{ keycloak_database_secret_name }}"
-          namespace: "{{ app_namespace }}"
-        register: keycloak_database_secret_status
+        - name: "Setup Keycloak PostgreSQL Secret"
+          k8s:
+            state: present
+            definition: "{{ lookup('template', 'secret-keycloak-postgresql.yml.j2') }}"
 
-      - when: (keycloak_database_secret_status.resources | length) == 0
-        block:
-          - name: "Generate random values for Keycloak PostgreSQL username and password"
-            set_fact:
-              keycloak_database_db_username: "user-{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=4') }}"
-              keycloak_database_db_password: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=16') }}"
+    - name: "Setup Keycloak PostgreSQL Service"
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'service-keycloak-postgresql.yml.j2') }}"
 
-          - name: "Encode Keycloak PostgreSQL username and password"
-            set_fact:
-              keycloak_database_db_username_b64: "{{ keycloak_database_db_username | b64encode }}"
-              keycloak_database_db_password_b64: "{{ keycloak_database_db_password | b64encode }}"
+    - name: "Setup Keycloak PostgreSQL Deployment"
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'deployment-keycloak-postgresql.yml.j2') }}"
 
-          - name: "Setup Keycloak PostgreSQL Secret"
-            k8s:
-              state: present
-              definition: "{{ lookup('template', 'secret-keycloak-postgresql.yml.j2') }}"
+    - name: "Check status of Keycloak PostgreSQL Deployment"
+      k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: "{{ app_namespace }}"
+        label_selectors:
+           - app.kubernetes.io/name = {{ keycloak_database_service_name }}
+      register: pod
+      until: pod.resources[0].status.phase == "Running"
+      retries: 20
+      delay: 2
+      ignore_errors: true
 
-      - name: "Setup Keycloak PostgreSQL Service"
-        k8s:
-          state: present
-          definition: "{{ lookup('template', 'service-keycloak-postgresql.yml.j2') }}"
+    - name: "Check if Keycloak SSO Secret exists already so we don't update it"
+      k8s_info:
+        api_version: v1
+        kind: Secret
+        name: "{{ keycloak_sso_secret_name }}"
+        namespace: "{{ app_namespace }}"
+      register: keycloak_sso_secret_status
 
-      - name: "Setup Keycloak PostgreSQL Deployment"
-        k8s:
-          state: present
-          definition: "{{ lookup('template', 'deployment-keycloak-postgresql.yml.j2') }}"
+    - when: (keycloak_sso_secret_status.resources | length) == 0
+      block:
+        - name: "Generate random values for Keycloak SSO credentials"
+          set_fact:
+            keycloak_sso_admin_password: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=16') }}"
+            keycloak_sso_hub_client_secret: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=32') }}"
 
-      - name: "Check status of Keycloak PostgreSQL Deployment"
-        k8s_info:
-          api_version: v1
-          kind: Pod
-          namespace: "{{ app_namespace }}"
-          label_selectors:
-             - app.kubernetes.io/name = {{ keycloak_database_service_name }}
-        register: pod
-        until: pod.resources[0].status.phase == "Running"
-        retries: 20
-        delay: 2
-        ignore_errors: true
+        - name: "Encode Keycloak SSO credentials"
+          set_fact:
+            keycloak_sso_admin_password_b64: "{{ keycloak_sso_admin_password | b64encode }}"
+            keycloak_sso_hub_client_secret_b64: "{{ keycloak_sso_hub_client_secret | b64encode }}"
 
-      - name: "Check if Keycloak SSO Secret exists already so we don't update it"
-        k8s_info:
-          api_version: v1
-          kind: Secret
-          name: "{{ keycloak_sso_secret_name }}"
-          namespace: "{{ app_namespace }}"
-        register: keycloak_sso_secret_status
+        - name: "Setup Keycloak SSO Secret"
+          k8s:
+            state: present
+            definition: "{{ lookup('template', 'secret-keycloak-sso.yml.j2') }}"
 
-      - when: (keycloak_sso_secret_status.resources | length) == 0
-        block:
-          - name: "Generate random values for Keycloak PostgreSQL and SSO username and password"
-            set_fact:
-              keycloak_database_db_username: "user-{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=4') }}"
-              keycloak_database_db_password: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=16') }}"
-              keycloak_sso_admin_password: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=16') }}"
-              keycloak_sso_hub_client_secret: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=32') }}"
+    - name: "Setup Keycloak SSO Realm ConfigMap"
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'configmap-keycloak-sso.yml.j2') }}"
 
-          - name: "Encode Keycloak PostgreSQL and SSO username and password"
-            set_fact:
-              keycloak_database_db_username_b64: "{{ keycloak_database_db_username | b64encode }}"
-              keycloak_database_db_password_b64: "{{ keycloak_database_db_password | b64encode }}"
-              keycloak_sso_admin_password_b64: "{{ keycloak_sso_admin_password | b64encode }}"
-              keycloak_sso_hub_client_secret_b64: "{{ keycloak_sso_hub_client_secret | b64encode }}"
+    - name: "Setup Keycloak SSO Service"
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'service-keycloak-sso.yml.j2') }}"
 
-          - name: "Setup Keycloak SSO Secret"
-            k8s:
-              state: present
-              definition: "{{ lookup('template', 'secret-keycloak-sso.yml.j2') }}"
+    - name: "Setup Keycloak SSO Deployment"
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'deployment-keycloak-sso.yml.j2') }}"
 
-      - name: "Setup Keycloak SSO ConfigMap"
-        k8s:
-          state: present
-          definition: "{{ lookup('template', 'configmap-keycloak-sso.yml.j2') }}"
+- name: "Setup Hub API Database PersistentVolumeClaim"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'persistentvolumeclaim-hub-database.yml.j2') }}"
 
-      - name: "Setup Keycloak SSO Service"
-        k8s:
-          state: present
-          definition: "{{ lookup('template', 'service-keycloak-sso.yml.j2') }}"
+- name: "Setup Hub API Bucket PersistentVolumeClaim"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'persistentvolumeclaim-hub-bucket.yml.j2') }}"
 
-      - name: "Setup Keycloak SSO Deployment"
-        k8s:
-          state: present
-          definition: "{{ lookup('template', 'deployment-keycloak-sso.yml.j2') }}"
+- name: "Setup Hub Seed ConfigMap"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'configmap-hub-seed.yml.j2') }}"
 
-  - name: "Setup Tackle Hub API Database PersistentVolumeClaim"
-    k8s:
-      state: present
-      definition: "{{ lookup('template', 'persistentvolumeclaim-hub-database.yml.j2') }}"
+- name: "Check if Hub Secret exists already so we don't update it"
+  k8s_info:
+    api_version: v1
+    kind: Secret
+    name: "{{ hub_secret_name }}"
+    namespace: "{{ app_namespace }}"
+  register: hub_secret_status
 
-  - name: "Setup Tackle Hub API Bucket PersistentVolumeClaim"
-    k8s:
-      state: present
-      definition: "{{ lookup('template', 'persistentvolumeclaim-hub-bucket.yml.j2') }}"
+- when: (hub_secret_status.resources | length) == 0
+  block:
+    - name: "Generate Hub random AES passphrase"
+      set_fact:
+        hub_aes_passphrase: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=32') }}"
 
-  - name: "Setup Tackle Hub Seed ConfigMap"
-    k8s:
-      state: present
-      definition: "{{ lookup('template', 'configmap-hub-seed.yml.j2') }}"
+    - name: "Encode Hub AES passphrase"
+      set_fact:
+        hub_aes_passphrase_b64: "{{ hub_aes_passphrase | b64encode }}"
 
-  - name: "Check if Tackle Hub Secret exists already so we don't update it"
-    k8s_info:
-      api_version: v1
-      kind: Secret
-      name: "{{ hub_secret_name }}"
-      namespace: "{{ app_namespace }}"
-    register: hub_secret_status
+    - name: "Generate Hub addon token"
+      set_fact:
+        hub_addon_token: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=32') }}"
 
-  - when: (hub_secret_status.resources | length) == 0
-    block:
-      - name: "Generate Tackle Hub random AES passphrase"
-        set_fact:
-          hub_aes_passphrase: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=32') }}"
+    - name: "Encode Hub addon token"
+      set_fact:
+        hub_addon_token_b64: "{{ hub_addon_token | b64encode }}"
 
-      - name: "Encode Tackle Hub AES passphrase"
-        set_fact:
-          hub_aes_passphrase_b64: "{{ hub_aes_passphrase | b64encode }}"
+    - name: "Setup Hub Secret"
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'secret-hub.yml.j2') }}"
 
-      - name: "Generate Tackle Hub addon token"
-        set_fact:
-          hub_addon_token: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=32') }}"
+- name: "Setup Hub API Service"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'service-hub.yml.j2') }}"
 
-      - name: "Encode Tackle Hub addon token"
-        set_fact:
-          hub_addon_token_b64: "{{ hub_addon_token | b64encode }}"
+- name: "Setup Hub API Deployment"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'deployment-hub.yml.j2') }}"
 
-      - name: "Setup Tackle Hub Secret"
-        k8s:
-          state: present
-          definition: "{{ lookup('template', 'secret-hub.yml.j2') }}"
+- name: "Setup PathFinder PostgreSQL PersistentVolume"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'persistentvolumeclaim-pathfinder-postgresql.yml.j2') }}"
 
-  - name: "Setup Tackle Hub API Service"
-    k8s:
-      state: present
-      definition: "{{ lookup('template', 'service-hub.yml.j2') }}"
+- name: "Check if PathFinder PostgreSQL Secret exists already so we don't update it"
+  k8s_info:
+    api_version: v1
+    kind: Secret
+    name: "{{ pathfinder_database_secret_name }}"
+    namespace: "{{ app_namespace }}"
+  register: pathfinder_database_secret_status
 
-  - name: "Setup Tackle Hub API Deployment"
-    k8s:
-      state: present
-      definition: "{{ lookup('template', 'deployment-hub.yml.j2') }}"
+- when: (pathfinder_database_secret_status.resources | length) == 0
+  block:
+    - name: "Generate random values for PathFinder PostgreSQL username and password"
+      set_fact:
+        pathfinder_database_db_username: "user-{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=4') }}"
+        pathfinder_database_db_password: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=16') }}"
 
-  - name: "Setup PathFinder PostgreSQL PersistentVolume"
-    k8s:
-      state: present
-      definition: "{{ lookup('template', 'persistentvolumeclaim-pathfinder-postgresql.yml.j2') }}"
+    - name: "Encode PathFinder PostgreSQL username and password"
+      set_fact:
+        pathfinder_database_db_username_b64: "{{ pathfinder_database_db_username | b64encode }}"
+        pathfinder_database_db_password_b64: "{{ pathfinder_database_db_password | b64encode }}"
 
-  - name: "Check if PathFinder PostgreSQL Secret exists already so we don't update it"
-    k8s_info:
-      api_version: v1
-      kind: Secret
-      name: "{{ pathfinder_database_secret_name }}"
-      namespace: "{{ app_namespace }}"
-    register: pathfinder_database_secret_status
+    - name: "Setup PathFinder PostgreSQL Secret"
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'secret-pathfinder-postgresql.yml.j2') }}"
 
-  - when: (pathfinder_database_secret_status.resources | length) == 0
-    block:
-      - name: "Generate random values for PathFinder PostgreSQL username and password"
-        set_fact:
-          pathfinder_database_db_username: "user-{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=4') }}"
-          pathfinder_database_db_password: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=16') }}"
+- name: "Setup PathFinder PostgreSQL Service"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'service-pathfinder-postgresql.yml.j2') }}"
 
-      - name: "Encode PathFinder PostgreSQL username and password"
-        set_fact:
-          pathfinder_database_db_username_b64: "{{ pathfinder_database_db_username | b64encode }}"
-          pathfinder_database_db_password_b64: "{{ pathfinder_database_db_password | b64encode }}"
+- name: "Setup PathFinder PostgreSQL Deployment"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'deployment-pathfinder-postgresql.yml.j2') }}"
 
-      - name: "Setup PathFinder PostgreSQL Secret"
-        k8s:
-          state: present
-          definition: "{{ lookup('template', 'secret-pathfinder-postgresql.yml.j2') }}"
+- name: "Check status of PathFinder PostgreSQL Deployment"
+  k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: "{{ app_namespace }}"
+    label_selectors:
+      - app.kubernetes.io/name = {{ pathfinder_database_service_name }}
+  register: pod
+  until: pod.resources[0].status.phase == "Running"
+  retries: 20
+  delay: 2
+  ignore_errors: true
 
-  - name: "Setup PathFinder PostgreSQL Service"
-    k8s:
-      state: present
-      definition: "{{ lookup('template', 'service-pathfinder-postgresql.yml.j2') }}"
+- name: "Setup PathFinder Service"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'service-pathfinder.yml.j2') }}"
 
-  - name: "Setup PathFinder PostgreSQL Deployment"
-    k8s:
-      state: present
-      definition: "{{ lookup('template', 'deployment-pathfinder-postgresql.yml.j2') }}"
+- name: "Setup PathFinder Deployment"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'deployment-pathfinder.yml.j2') }}"
 
-  - name: "Check status of PathFinder PostgreSQL Deployment"
-    k8s_info:
-      api_version: v1
-      kind: Pod
-      namespace: "{{ app_namespace }}"
-      label_selectors:
-        - app.kubernetes.io/name = {{ pathfinder_database_service_name }}
-    register: pod
-    until: pod.resources[0].status.phase == "Running"
-    retries: 20
-    delay: 2
-    ignore_errors: true
+- name: "Setup UI Service"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'service-ui.yml.j2') }}"
 
-  - name: "Setup PathFinder Service"
-    k8s:
-      state: present
-      definition: "{{ lookup('template', 'service-pathfinder.yml.j2') }}"
+- name: "Setup UI Deployment"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'deployment-ui.yml.j2') }}"
 
-  - name: "Setup PathFinder Deployment"
-    k8s:
-      state: present
-      definition: "{{ lookup('template', 'deployment-pathfinder.yml.j2') }}"
+- when: not openshift_cluster|bool
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'ingress-ui.yml.j2') }}"
 
-  - when: feature_ui_enabled|bool
-    block:
-      - name: "Setup Tackle UI Service"
-        k8s:
-          state: present
-          definition: "{{ lookup('template', 'service-ui.yml.j2') }}"
+- when: openshift_cluster|bool
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'route-ui.yml.j2') }}"
 
-      - name: "Setup Tackle UI Deployment"
-        k8s:
-          state: present
-          definition: "{{ lookup('template', 'deployment-ui.yml.j2') }}"
+- name: "Setup Maven PersistentVolumeClaim"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'persistentvolumeclaim-maven.yml.j2') }}"
 
-      - when: not openshift_cluster|bool
-        k8s:
-          state: present
-          definition: "{{ lookup('template', 'ingress-ui.yml.j2') }}"
+- name: "Check if Admin Addon CR exists already so we don't update it"
+  k8s_info:
+    api_version: tackle.konveyor.io/v1alpha1
+    kind: Addon
+    name: "{{ admin_name }}"
+    namespace: "{{ app_namespace }}"
+  register: admin_cr_status
 
-      - when: openshift_cluster|bool
-        k8s:
-          state: present
-          definition: "{{ lookup('template', 'route-ui.yml.j2') }}"
+- name: "Create Admin Addon CR"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'customresource-addon-admin.yml.j2') }}"
+  when: (admin_cr_status.resources | length) == 0
 
-  - name: "Setup Maven PersistentVolumeClaim"
-    k8s:
-      state: present
-      definition: "{{ lookup('template', 'persistentvolumeclaim-maven.yml.j2') }}"
+- name: "Check if Windup Addon CR exists already so we don't update it"
+  k8s_info:
+    api_version: tackle.konveyor.io/v1alpha1
+    kind: Addon
+    name: "{{ windup_name }}"
+    namespace: "{{ app_namespace }}"
+  register: windup_cr_status
 
-  - name: "Check if Admin Addon CR exists already so we don't update it"
-    k8s_info:
-      api_version: tackle.konveyor.io/v1alpha1
-      kind: Addon
-      name: "{{ admin_name }}"
-      namespace: "{{ app_namespace }}"
-    register: admin_cr_status
+- name: "Create Windup Addon CR"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'customresource-addon-windup.yml.j2') }}"
+  when: (windup_cr_status.resources | length) == 0
 
-  - name: "Create Admin Addon CR"
-    k8s:
-      state: present
-      definition: "{{ lookup('template', 'customresource-addon-admin.yml.j2') }}"
-    when: (admin_cr_status.resources | length) == 0
-
-  - name: "Check if Windup Addon CR exists already so we don't update it"
-    k8s_info:
-      api_version: tackle.konveyor.io/v1alpha1
-      kind: Addon
-      name: "{{ windup_name }}"
-      namespace: "{{ app_namespace }}"
-    register: windup_cr_status
-
-  - name: "Create Windup Addon CR"
-    k8s:
-      state: present
-      definition: "{{ lookup('template', 'customresource-addon-windup.yml.j2') }}"
-    when: (windup_cr_status.resources | length) == 0
-
-  - name: "Create Network Policy"
-    k8s:
-      state: present
-      definition: "{{ lookup('template', 'networkpolicy.yml.j2') }}"
-    when: feature_isolate_namespace|bool
+- name: "Create Network Policy"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'networkpolicy.yml.j2') }}"
+  when: feature_isolate_namespace|bool

@@ -13,7 +13,6 @@ metadata:
       [
         { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ keycloak_database_deployment_name }}" }
       ]
-
 spec:
   replicas: {{ keycloak_sso_deployment_replicas }}
   selector:
@@ -21,6 +20,10 @@ spec:
       app.kubernetes.io/name: {{ keycloak_sso_service_name }}
       app.kubernetes.io/component: {{ keycloak_sso_component_name }}
       app.kubernetes.io/part-of: {{ app_name }}
+{% if keycloak_sso_deployment_strategy == 'Recreate' %}
+  strategy:
+    type: {{ keycloak_sso_deployment_strategy }}
+{% endif %}
   template:
     metadata:
       labels:
@@ -92,7 +95,7 @@ spec:
               memory: {{ keycloak_sso_container_requests_memory }}
           livenessProbe:
             httpGet:
-              path: /auth/realms/{{ app_name }}
+              path: /auth/realms/{{ keycloak_sso_realm }}
               port: 8080
               scheme: HTTP
             initialDelaySeconds: {{ keycloak_sso_liveness_init_delay }}
@@ -102,7 +105,7 @@ spec:
             failureThreshold: 20
           readinessProbe:
             httpGet:
-              path: /auth/realms/{{ app_name }}
+              path: /auth/realms/{{ keycloak_sso_realm }}
               port: 8080
               scheme: HTTP
             initialDelaySeconds: {{ keycloak_sso_readiness_init_delay }}

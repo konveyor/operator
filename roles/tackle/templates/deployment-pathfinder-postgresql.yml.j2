@@ -15,8 +15,10 @@ spec:
       app.kubernetes.io/name: {{ pathfinder_database_service_name }}
       app.kubernetes.io/component: {{ pathfinder_database_component_name }}
       app.kubernetes.io/part-of: {{ app_name }}
+{% if pathfinder_database_deployment_strategy == 'Recreate' %}
   strategy:
     type: {{ pathfinder_database_deployment_strategy }}
+{% endif %}
   template:
     metadata:
       labels:

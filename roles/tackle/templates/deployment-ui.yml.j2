@@ -13,7 +13,7 @@ metadata:
       [
         { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ hub_deployment_name }}" },
         { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ pathfinder_deployment_name }}" },
-{% if feature_auth_required|bool and feature_auth_provider == 'keycloak' %}
+{% if feature_auth_required|bool and app_profile == 'konveyor' %}
         { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ keycloak_sso_deployment_name }}" }
 {% endif %}
       ]
@@ -55,10 +55,10 @@ spec:
             - name: AUTH_REQUIRED
               value: "{{ feature_auth_required|lower }}"
 {% if feature_auth_required|bool %}
-            - name: KEYCLOAK_SERVER_URL
-              value: http://{{ keycloak_sso_service_name }}:8080
             - name: KEYCLOAK_REALM
-              value: {{ app_name }}
+              value: {{ keycloak_sso_realm }}
+            - name: KEYCLOAK_SERVER_URL
+              value: {{ keycloak_sso_host }}
             - name: KEYCLOAK_CLIENT_ID
               value: {{ ui_service_name }}
 {% endif %}
