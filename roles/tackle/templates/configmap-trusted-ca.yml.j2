@@ -1,0 +1,9 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trusted-ca
+  namespace: {{ app_namespace }}
+  labels:
+    config.openshift.io/inject-trusted-cabundle: "true"
+    app.kubernetes.io/part-of: {{ app_name }}
