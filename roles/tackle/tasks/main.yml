@@ -22,20 +22,20 @@
 
   - when: openshift_cluster|bool
     block:
-    - name: "Get OpenShift cluster Proxy object"
-      set_fact:
-        proxy_cluster: "{{ lookup('k8s', api_version='config.openshift.io/v1', kind='Proxy', resource_name='cluster') }}"
+      - name: "Get OpenShift cluster Proxy object"
+        set_fact:
+          proxy_cluster: "{{ lookup('k8s', api_version='config.openshift.io/v1', kind='Proxy', resource_name='cluster') }}"
 
-    - when: (proxy_cluster.spec.trustedCA.name | length) > 0
-      block:
-        - name: "Enable trusted CA environment"
-          set_fact:
-            trusted_ca_enabled: true
+      - when: (proxy_cluster.spec.trustedCA.name | length) > 0
+        block:
+          - name: "Enable trusted CA environment"
+            set_fact:
+              trusted_ca_enabled: true
 
-        - name: "Create an empty ConfigMap that will hold the trusted CA"
-          k8s:
-            state: present
-            definition: "{{ lookup('template', 'configmap-trusted-ca.yml.j2') }}"
+          - name: "Create an empty ConfigMap that will hold the trusted CA"
+            k8s:
+              state: present
+              definition: "{{ lookup('template', 'configmap-trusted-ca.yml.j2') }}"
 
   - when:
       - feature_auth_required|bool
