@@ -120,7 +120,7 @@ keycloak_sso_admin_username: "admin"
 keycloak_sso_admin_username_b64: "{{ keycloak_sso_admin_username | b64encode }}"
 keycloak_sso_java_opts: "-Dcom.redhat.fips=false"
 keycloak_sso_url: "http://{{ keycloak_sso_service_name }}.{{ app_namespace }}.svc:8080"
-keycloak_sso_realm: "tackle"
+keycloak_sso_realm: "{{ app_name }}"
 keycloak_sso_req_passwd_update: true
 keycloak_sso_hub_client_id: "{{ app_name }}-hub"
 keycloak_sso_ui_client_id: "{{ app_name }}-ui"
