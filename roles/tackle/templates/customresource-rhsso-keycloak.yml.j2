@@ -1,0 +1,12 @@
+---
+apiVersion: {{ rhsso_api_version }}
+kind: Keycloak
+metadata:
+  name: {{ rhsso_service_name }}
+  namespace: {{ app_namespace }}
+  labels:
+    app: {{ rhsso_service_name }}
+spec:
+  instances: 1
+  externalAccess:
+    enabled: {{ rhsso_external_access }}
