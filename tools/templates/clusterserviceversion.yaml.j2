@@ -299,6 +299,21 @@ spec:
           - proxies
           verbs:
           - get
+        - apiGroups:
+          - keycloak.org
+          resources:
+          - keycloaks
+          - keycloakrealms
+          - keycloakclients
+          - keycloakusers
+          verbs:
+          - get
+          - list
+          - watch
+          - create
+          - update
+          - patch
+          - delete
   installModes:
   - supported: true
     type: OwnNamespace

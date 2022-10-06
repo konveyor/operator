@@ -1,0 +1,17 @@
+---
+apiVersion: {{ rhsso_api_version }}
+kind: KeycloakRealm
+metadata:
+  name: {{ keycloak_sso_realm }}
+  namespace: {{ app_namespace }}
+  labels:
+    app: {{ rhsso_service_name }}
+spec:
+  realm:
+    id: "{{ keycloak_sso_realm }}"
+    realm: "{{ keycloak_sso_realm }}"
+    enabled: True
+    displayName: "{{ keycloak_sso_realm }} realm"
+  instanceSelector:
+    matchLabels:
+      app: {{ rhsso_service_name }}

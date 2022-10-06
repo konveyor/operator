@@ -57,10 +57,20 @@ spec:
 {% if feature_auth_required|bool %}
             - name: KEYCLOAK_REALM
               value: {{ keycloak_sso_realm }}
+{% if app_profile == 'mta' %}
             - name: KEYCLOAK_SERVER_URL
-              value: {{ keycloak_sso_host }}
+              value: {{ rhsso_url }}
             - name: KEYCLOAK_CLIENT_ID
-              value: {{ ui_service_name }}
+              valueFrom:
+                secretKeyRef:
+                  name: "keycloak-client-secret-{{ keycloak_sso_ui_client_id }}"
+                  key: CLIENT_ID
+{% else %}
+            - name: KEYCLOAK_SERVER_URL
+              value: {{ keycloak_sso_url }}
+            - name: KEYCLOAK_CLIENT_ID
+              value: {{ keycloak_sso_ui_client_id }}
+{% endif %}
 {% endif %}
             - name: NODE_EXTRA_CA_CERTS
               value: {{ ui_node_extra_ca_certs }}
