@@ -119,11 +119,12 @@ keycloak_sso_tls_secret_name: "{{ keycloak_sso_service_name }}-serving-cert"
 keycloak_sso_admin_username: "admin"
 keycloak_sso_admin_username_b64: "{{ keycloak_sso_admin_username | b64encode }}"
 keycloak_sso_java_opts: "-Dcom.redhat.fips=false"
-keycloak_sso_host: "http://{{ keycloak_sso_service_name }}.{{ app_namespace }}.svc:8080"
-keycloak_sso_realm: "tackle"
+keycloak_sso_url: "http://{{ keycloak_sso_service_name }}.{{ app_namespace }}.svc:8080"
+keycloak_sso_realm: "{{ app_name }}"
 keycloak_sso_req_passwd_update: true
-keycloak_sso_hub_client_id: "tackle-hub"
-keycloak_sso_hub_client_secret: "tackle"
+keycloak_sso_hub_client_id: "{{ app_name }}-hub"
+keycloak_sso_ui_client_id: "{{ app_name }}-ui"
+keycloak_sso_hub_client_secret: "{{ app_name }}"
 
 ui_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_TACKLE_UI') }}"
 ui_component_name: "ui"
@@ -163,3 +164,10 @@ maven_name: "maven"
 maven_data_volume_size: "100Gi"
 maven_data_volume_name: "{{ app_name }}-{{ maven_name }}-data"
 maven_data_volume_claim_name: "{{ app_name }}-{{ maven_name }}-volume-claim"
+
+# RH-SSO specific
+rhsso_name: "rhsso"
+rhsso_service_name: "{{ app_name }}-{{ rhsso_name }}"
+rhsso_api_version: "keycloak.org/v1alpha1"
+rhsso_url: "https://keycloak.{{ app_namespace }}.svc:8443"
+rhsso_external_access: false
