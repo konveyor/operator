@@ -11,9 +11,14 @@ metadata:
   annotations:
     app.openshift.io/connects-to: >-
       [
-{% if feature_auth_required|bool and app_profile == 'konveyor' %}
-        { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ keycloak_sso_deployment_name }}" }
+{% if feature_auth_required|bool %}
+{% if app_profile == 'konveyor' %}
+        { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ keycloak_sso_deployment_name }}" },
+{% elif app_profile == 'mta' %}
+        { "apiVersion": "apps/v1", "kind": "StatefulSet", "name": "keycloak" },
 {% endif %}
+{% endif %}
+        { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ pathfinder_deployment_name }}" }
       ]
 spec:
   replicas: {{ hub_deployment_replicas }}
