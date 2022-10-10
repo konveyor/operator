@@ -179,20 +179,6 @@
       retries: 20
       delay: 3
 
-    - name: "Check if RHSSO Admin user CR exists already so we don't update it"
-      k8s_info:
-        api_version: "{{ rhsso_api_version }}"
-        kind: KeycloakUser
-        name: "{{ app_name }}-admin"
-        namespace: "{{ app_namespace }}"
-      register: rhsso_keycloak_user_status
-
-    - name: "Create RHSSO Admin user CR"
-      k8s:
-        state: present
-        definition: "{{ lookup('template', 'customresource-rhsso-users.yml.j2') }}"
-      when: (rhsso_keycloak_user_status.resources | length) == 0
-
     - name: "Check if RHSSO Hub Client CR exists already so we don't update it"
       k8s_info:
         api_version: "{{ rhsso_api_version }}"
