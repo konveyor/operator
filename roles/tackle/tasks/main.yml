@@ -75,7 +75,7 @@
         kind: Pod
         namespace: "{{ app_namespace }}"
         label_selectors:
-           - app.kubernetes.io/name = {{ keycloak_database_service_name }}
+          - app.kubernetes.io/name = {{ keycloak_database_service_name }}
         wait: yes
         wait_condition:
           type: "Ready"

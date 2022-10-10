@@ -43,8 +43,8 @@ hub_addon_working_path: "/working"
 hub_task_sa: "{{ app_name }}-hub"
 hub_tls_enabled: false
 hub_tls_secret_name: "{{ hub_service_name }}-serving-cert"
-hub_port: "{{ '8443' if hub_tls_enabled|bool else '8080' }}"
-hub_proto: "{{ 'https' if hub_tls_enabled|bool else 'http' }}"
+hub_port: "{{ '8443' if hub_tls_enabled | bool else '8080' }}"
+hub_proto: "{{ 'https' if hub_tls_enabled | bool else 'http' }}"
 hub_url: "{{ hub_proto }}://{{ hub_service_name }}.{{ app_namespace }}.svc:{{ hub_port }}"
 hub_log_level: 3
 
@@ -80,8 +80,8 @@ pathfinder_container_requests_cpu: "100m"
 pathfinder_container_requests_memory: "350Mi"
 pathfinder_tls_enabled: false
 pathfinder_tls_secret_name: "{{ pathfinder_service_name }}-serving-cert"
-pathfinder_port: "{{ '8443' if pathfinder_tls_enabled|bool else '8080' }}"
-pathfinder_proto: "{{ 'https' if pathfinder_tls_enabled|bool else 'http' }}"
+pathfinder_port: "{{ '8443' if pathfinder_tls_enabled | bool else '8080' }}"
+pathfinder_proto: "{{ 'https' if pathfinder_tls_enabled | bool else 'http' }}"
 pathfinder_url: "{{ pathfinder_proto }}://{{ pathfinder_service_name }}.{{ app_namespace }}.svc:{{ pathfinder_port }}"
 
 keycloak_database_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_KEYCLOAK_DATABASE') }}"
@@ -130,8 +130,8 @@ keycloak_sso_ui_client_id: "{{ app_name }}-ui"
 keycloak_sso_hub_client_secret: "{{ app_name }}"
 keycloak_sso_tls_enabled: false
 keycloak_sso_tls_secret_name: "{{ keycloak_sso_service_name }}-serving-cert"
-keycloak_sso_port: "{{ '8443' if keycloak_sso_tls_enabled|bool else '8080' }}"
-keycloak_sso_proto: "{{ 'https' if keycloak_sso_tls_enabled|bool else 'http' }}"
+keycloak_sso_port: "{{ '8443' if keycloak_sso_tls_enabled | bool else '8080' }}"
+keycloak_sso_proto: "{{ 'https' if keycloak_sso_tls_enabled | bool else 'http' }}"
 keycloak_sso_url: "{{ keycloak_sso_proto }}://{{ keycloak_sso_service_name }}.{{ app_namespace }}.svc:{{ keycloak_sso_port }}"
 
 ui_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_TACKLE_UI') }}"
@@ -150,8 +150,8 @@ ui_ingress_proxy_body_size: "500m"
 ui_route_name: "{{ app_name }}"
 ui_tls_enabled: false
 ui_tls_secret_name: "{{ ui_service_name }}-serving-cert"
-ui_port: "{{ '8443' if ui_tls_enabled|bool else '8080' }}"
-ui_proto: "{{ 'https' if ui_tls_enabled|bool else 'http' }}"
+ui_port: "{{ '8443' if ui_tls_enabled | bool else '8080' }}"
+ui_proto: "{{ 'https' if ui_tls_enabled | bool else 'http' }}"
 ui_node_extra_ca_certs: "/opt/app-root/src/ca.crt"
 ui_route_tls_termination: "edge"
 ui_route_tls_insecure_termination_policy: "Redirect"
@@ -181,6 +181,6 @@ rhsso_service_name: "{{ app_name }}-{{ rhsso_name }}"
 rhsso_api_version: "keycloak.org/v1alpha1"
 rhsso_external_access: false
 rhsso_tls_enabled: true
-rhsso_port: "{{ '8443' if rhsso_tls_enabled|bool else '8080' }}"
-rhsso_proto: "{{ 'https' if rhsso_tls_enabled|bool else 'http' }}"
+rhsso_port: "{{ '8443' if rhsso_tls_enabled | bool else '8080' }}"
+rhsso_proto: "{{ 'https' if rhsso_tls_enabled | bool else 'http' }}"
 rhsso_url: "{{ rhsso_proto }}://keycloak.{{ app_namespace }}.svc:{{ rhsso_port }}"
