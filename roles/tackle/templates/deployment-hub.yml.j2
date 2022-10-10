@@ -57,6 +57,8 @@ spec:
               value: "{{ app_profile }}"
             - name: VERSION
               value: "{{ app_version }}"
+            - name: HUB_BASE_URL
+              value: "{{ hub_url }}"
 {% if hub_tls_enabled|bool %}
             - name: HUB_TLS_ENABLED
               value: 'true'
@@ -64,13 +66,9 @@ spec:
               value: "/var/run/secrets/{{ hub_tls_secret_name }}/tls.crt"
             - name: HUB_TLS_KEY
               value: "/var/run/secrets/{{ hub_tls_secret_name }}/tls.key"
-            - name: HUB_BASE_URL
-              value: "https://{{ hub_service_name }}.{{ app_namespace }}.svc:8443"
 {% else %}
             - name: HUB_TLS_ENABLED
               value: 'false'
-            - name: HUB_BASE_URL
-              value: "http://{{ hub_service_name }}.{{ app_namespace }}.svc:8080"
 {% endif %}
             - name: ADDON_SECRET_PATH
               value: "/var/run/secrets/{{ app_name }}-addon"
@@ -97,11 +95,7 @@ spec:
             - name: AUTH_REQUIRED
               value: '{{ feature_auth_required|lower }}'
             - name: PATHFINDER_URL
-{% if pathfinder_tls_enabled|bool %}
-              value: "http://{{ pathfinder_service_name }}:8443"
-{% else %}
-              value: "http://{{ pathfinder_service_name }}:8080"
-{% endif %}
+              value: "{{ pathfinder_url }}"
 {% if feature_auth_required|bool %}
             - name: KEYCLOAK_REALM
               value: "{{ keycloak_sso_realm }}"
@@ -149,11 +143,7 @@ spec:
               value: "{{ hub_task_retries }}"
 {% endif %}
           ports:
-{% if hub_tls_enabled|bool %}
-            - containerPort: 8443
-{% else %}
-            - containerPort: 8080
-{% endif %}
+            - containerPort: {{ hub_port }}
               protocol: TCP
           resources:
             limits:

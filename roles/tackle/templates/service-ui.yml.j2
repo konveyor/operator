@@ -10,17 +10,10 @@ metadata:
   namespace: {{ app_namespace }}
 spec:
   ports:
-{% if ui_tls_enabled|bool %}
-    - name: https
-      port: 8443
-      targetPort: 8443
+    - name: ui
+      port: {{ ui_port }}
+      targetPort: {{ ui_port }}
       protocol: TCP
-{% else %}
-    - name: http
-      port: 8080
-      targetPort: 8080
-      protocol: TCP
-{% endif %}
   selector:
     app.kubernetes.io/name: {{ ui_service_name }}
     app.kubernetes.io/component: {{ ui_component_name }}

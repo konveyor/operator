@@ -12,17 +12,10 @@ metadata:
   namespace: {{ app_namespace }}
 spec:
   ports:
-{% if pathfinder_tls_enabled|bool %}
-    - name: api-https
-      port: 8443
-      targetPort: 8443
+    - name: api
+      port: {{ pathfinder_port }}
+      targetPort: {{ pathfinder_port }}
       protocol: TCP
-{% else %}
-    - name: api-http
-      port: 8080
-      targetPort: 8080
-      protocol: TCP
-{% endif %}
   selector:
     app.kubernetes.io/name: {{ pathfinder_service_name }}
     app.kubernetes.io/component: {{ pathfinder_component_name }}

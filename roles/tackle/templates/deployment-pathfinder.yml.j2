@@ -67,20 +67,21 @@ spec:
                 secretKeyRef:
                   name: {{ pathfinder_database_secret_name }}
                   key: database-password
+{% if feature_auth_required|bool %}
 {% if app_profile == 'mta' %}
             - name: QUARKUS_OIDC_AUTH_SERVER_URL
               value: {{ rhsso_url }}/auth/realms/{{ keycloak_sso_realm }}
 {% else %}
             - name: QUARKUS_OIDC_AUTH_SERVER_URL
-              value: https://{{ keycloak_sso_service_name }}:8443/auth/realms/{{ keycloak_sso_realm }}
+              value: {{ keycloak_sso_url }}/auth/realms/{{ keycloak_sso_realm }}
 {% endif %}
-{% if not feature_auth_required|bool %}
+{% else %}
             - name: QUARKUS_PROFILE
               value: noauth
 {% endif %}
           ports:
-            - name: http
-              containerPort: 8080
+            - name: {{ pathfinder_proto }}
+              containerPort: {{ pathfinder_port }}
               protocol: TCP
           resources:
             limits:
@@ -92,8 +93,8 @@ spec:
           livenessProbe:
             httpGet:
               path: /pathfinder/q/health/live
-              port: 8080
-              scheme: HTTP
+              port: {{ pathfinder_port }}
+              scheme: {{ pathfinder_proto|upper }}
             initialDelaySeconds: 60
             timeoutSeconds: 10
             periodSeconds: 30
@@ -102,8 +103,8 @@ spec:
           readinessProbe:
             httpGet:
               path: /pathfinder/q/health/ready
-              port: 8080
-              scheme: HTTP
+              port: {{ pathfinder_port }}
+              scheme: {{ pathfinder_proto|upper }}
             timeoutSeconds: 10
             periodSeconds: 30
             successThreshold: 1

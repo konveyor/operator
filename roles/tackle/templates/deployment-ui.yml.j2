@@ -50,11 +50,7 @@ spec:
             - name: UI_INGRESS_PROXY_BODY_SIZE
               value: '{{ui_ingress_proxy_body_size}}'
             - name: TACKLE_HUB_URL
-{% if hub_tls_enabled|bool %}
-              value: "https://{{ hub_service_name }}:8443"
-{% else %}
-              value: "http://{{ hub_service_name }}:8080"
-{% endif %}
+              value: "{{ hub_url }}"
             - name: AUTH_REQUIRED
               value: "{{ feature_auth_required|lower }}"
 {% if feature_auth_required|bool %}
@@ -89,11 +85,7 @@ spec:
               value: 'false'
 {% endif %}
           ports:
-{% if ui_tls_enabled|bool %}
-            - containerPort: 8443
-{% else %}
-            - containerPort: 8080
-{% endif %}
+            - containerPort: {{ ui_port }}
               protocol: TCP
           resources:
             limits:
@@ -116,13 +108,8 @@ spec:
           readinessProbe:
             httpGet:
               path: /
-{% if ui_tls_enabled|bool %}
-              port: 8443
-              scheme: HTTPS
-{% else %}
-              port: 8080
-              scheme: HTTP
-{% endif %}
+              port: {{ ui_port }}
+              scheme: {{ ui_proto|upper }}
             initialDelaySeconds: 10
             timeoutSeconds: 1
             periodSeconds: 5
