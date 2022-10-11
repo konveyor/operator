@@ -11,13 +11,6 @@ metadata:
   annotations:
     app.openshift.io/connects-to: >-
       [
-{% if feature_auth_required|bool %}
-{% if app_profile == 'konveyor' %}
-        { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ keycloak_sso_deployment_name }}" },
-{% elif app_profile == 'mta' %}
-        { "apiVersion": "apps/v1", "kind": "StatefulSet", "name": "keycloak" },
-{% endif %}
-{% endif %}
         { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ pathfinder_database_deployment_name }}" }
       ]
     prometheus.io/path: /q/metrics
@@ -67,18 +60,8 @@ spec:
                 secretKeyRef:
                   name: {{ pathfinder_database_secret_name }}
                   key: database-password
-{% if feature_auth_required|bool %}
-{% if app_profile == 'mta' %}
-            - name: QUARKUS_OIDC_AUTH_SERVER_URL
-              value: {{ rhsso_url }}/auth/realms/{{ keycloak_sso_realm }}
-{% else %}
-            - name: QUARKUS_OIDC_AUTH_SERVER_URL
-              value: {{ keycloak_sso_url }}/auth/realms/{{ keycloak_sso_realm }}
-{% endif %}
-{% else %}
             - name: QUARKUS_PROFILE
               value: noauth
-{% endif %}
           ports:
             - name: {{ pathfinder_proto }}
               containerPort: {{ pathfinder_port }}
