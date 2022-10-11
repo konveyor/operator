@@ -64,15 +64,6 @@ data:
             "attributes": {}
           },
           {
-            "id": "a329180a-5036-4946-a07b-04c76fdaa66d",
-            "name": "user",
-            "description": "Required by: Pathfinder.",
-            "composite": false,
-            "clientRole": false,
-            "containerId": "11d78bf6-6d10-4484-baba-a1388379d68b",
-            "attributes": {}
-          },
-          {
             "id": "39eb64c8-66a9-4983-9c81-27ea7e2f6273",
             "name": "uma_authorization",
             "description": "${role_uma_authorization}",
@@ -82,41 +73,9 @@ data:
             "attributes": {}
           },
           {
-            "id": "8c1abe12-62fe-4a06-ae0d-f5fb67dddbb0",
-            "name": "admin",
-            "composite": false,
-            "clientRole": false,
-            "containerId": "11d78bf6-6d10-4484-baba-a1388379d68b",
-            "attributes": {}
-          },
-          {
             "id": "bc431d62-a80a-425b-961a-0fb3fc59006d",
             "name": "offline_access",
             "description": "${role_offline-access}",
-            "composite": false,
-            "clientRole": false,
-            "containerId": "11d78bf6-6d10-4484-baba-a1388379d68b",
-            "attributes": {}
-          },
-          {
-            "id": "fbfc93d7-c26e-4f11-816d-1621ed28a30f",
-            "name": "tackle-architect",
-            "composite": false,
-            "clientRole": false,
-            "containerId": "11d78bf6-6d10-4484-baba-a1388379d68b",
-            "attributes": {}
-          },
-          {
-            "id": "53cd2616-08f3-46ec-9c38-fdd72c4bc9a3",
-            "name": "tackle-admin",
-            "composite": false,
-            "clientRole": false,
-            "containerId": "11d78bf6-6d10-4484-baba-a1388379d68b",
-            "attributes": {}
-          },
-          {
-            "id": "47268ce1-d2da-4019-ac89-30cb8f05e12c",
-            "name": "tackle-migrator",
             "composite": false,
             "clientRole": false,
             "containerId": "11d78bf6-6d10-4484-baba-a1388379d68b",
@@ -358,7 +317,6 @@ data:
               "attributes": {}
             }
           ],
-          "tackle-hub": [],
           "security-admin-console": [],
           "tackle-ui": [],
           "admin-cli": [],
@@ -512,31 +470,7 @@ data:
       "webAuthnPolicyPasswordlessCreateTimeout": 0,
       "webAuthnPolicyPasswordlessAvoidSameAuthenticatorRegister": false,
       "webAuthnPolicyPasswordlessAcceptableAaguids": [],
-      "users": [ {
-          "id" : "7749cf8a-bb8a-43c7-a689-80c90e6023eb",
-          "createdTimestamp" : 1623676722008,
-          "username" : "admin",
-          "enabled" : true,
-          "totp" : false,
-          "emailVerified" : false,
-          "credentials" : [ {
-            "id" : "00f322ed-e01e-4032-bb9d-c737486a127c",
-            "type" : "password",
-            "createdDate" : 1623676739455,
-            "secretData" : "{\"value\":\"EJkbUZ740P1pMIMYd+iXjSSdYKPxLM2tB4q+0vp25fUjqWEHNTuznr7bPbhAlh7arLEJccUNdFlf8rmtd0YwkA==\",\"salt\":\"BUA3TOrO9EFmFRRulU/yNA==\",\"additionalParameters\":{}}",
-            "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
-          } ],
-          "disableableCredentialTypes" : [ ],
-{% if keycloak_sso_req_passwd_update|bool %}
-          "requiredActions" : [ "UPDATE_PASSWORD" ],
-{% endif %}
-          "realmRoles" : [ "tackle-admin", "admin" ],
-          "clientRoles" : {
-            "account" : [ "view-profile", "manage-account" ]
-          },
-          "notBefore" : 0,
-          "groups" : [ ]
-        },
+      "users": [
         {
           "id": "948c59ec-46ed-4d99-aa43-02900029b930",
           "createdTimestamp": 1554245880023,
