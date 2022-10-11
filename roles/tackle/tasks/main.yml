@@ -69,18 +69,18 @@
         state: present
         definition: "{{ lookup('template', 'deployment-keycloak-postgresql.yml.j2') }}"
 
-    - name: "Check status of Keycloak PostgreSQL Deployment"
-      k8s_info:
+    - name: "Check status of Keycloak PostgreSQL"
+      kubernetes.core.k8s_info:
         api_version: v1
         kind: Pod
         namespace: "{{ app_namespace }}"
         label_selectors:
-           - app.kubernetes.io/name = {{ keycloak_database_service_name }}
-      register: pod
-      until: pod.resources[0].status.phase == "Running"
-      retries: 20
-      delay: 2
-      ignore_errors: true
+          - app.kubernetes.io/name = {{ keycloak_database_service_name }}
+        wait: yes
+        wait_condition:
+          type: "Ready"
+          status: "True"
+        wait_timeout: 240
 
     - name: "Check if Keycloak SSO Secret exists already so we don't update it"
       k8s_info:
@@ -178,20 +178,6 @@
       until: true in (cr | json_query('resources[].status.ready'))
       retries: 20
       delay: 3
-
-    - name: "Check if RHSSO Admin user CR exists already so we don't update it"
-      k8s_info:
-        api_version: "{{ rhsso_api_version }}"
-        kind: KeycloakUser
-        name: "{{ app_name }}-admin"
-        namespace: "{{ app_namespace }}"
-      register: rhsso_keycloak_user_status
-
-    - name: "Create RHSSO Admin user CR"
-      k8s:
-        state: present
-        definition: "{{ lookup('template', 'customresource-rhsso-users.yml.j2') }}"
-      when: (rhsso_keycloak_user_status.resources | length) == 0
 
     - name: "Check if RHSSO Hub Client CR exists already so we don't update it"
       k8s_info:
@@ -309,18 +295,18 @@
     state: present
     definition: "{{ lookup('template', 'deployment-pathfinder-postgresql.yml.j2') }}"
 
-- name: "Check status of PathFinder PostgreSQL Deployment"
-  k8s_info:
+- name: "Check status of PathFinder PostgreSQL"
+  kubernetes.core.k8s_info:
     api_version: v1
     kind: Pod
     namespace: "{{ app_namespace }}"
     label_selectors:
       - app.kubernetes.io/name = {{ pathfinder_database_service_name }}
-  register: pod
-  until: pod.resources[0].status.phase == "Running"
-  retries: 20
-  delay: 2
-  ignore_errors: true
+    wait: yes
+    wait_condition:
+      type: "Ready"
+      status: "True"
+    wait_timeout: 240
 
 - name: "Setup PathFinder Service"
   k8s:
