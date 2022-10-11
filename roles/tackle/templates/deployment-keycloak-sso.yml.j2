@@ -96,8 +96,8 @@ spec:
           livenessProbe:
             httpGet:
               path: /auth/realms/{{ keycloak_sso_realm }}
-              port: 8080
-              scheme: HTTP
+              port: {{ keycloak_sso_port }}
+              scheme: {{ keycloak_sso_proto|upper }}
             initialDelaySeconds: {{ keycloak_sso_liveness_init_delay }}
             timeoutSeconds: 1
             periodSeconds: 10
@@ -106,8 +106,8 @@ spec:
           readinessProbe:
             httpGet:
               path: /auth/realms/{{ keycloak_sso_realm }}
-              port: 8080
-              scheme: HTTP
+              port: {{ keycloak_sso_port }}
+              scheme: {{ keycloak_sso_proto|upper }}
             initialDelaySeconds: {{ keycloak_sso_readiness_init_delay }}
             timeoutSeconds: 1
             periodSeconds: 10

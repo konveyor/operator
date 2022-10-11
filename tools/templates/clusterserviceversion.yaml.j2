@@ -23,7 +23,9 @@ metadata:
             "name": "tackle",
             "namespace": "{{ namespace }}"
           },
-          "spec": null
+          "spec": {
+            "feature_auth_required": "true"
+          }
         },
         {
           "apiVersion": "tackle.konveyor.io/v1alpha1",
@@ -45,7 +47,9 @@ metadata:
           "name": "tackle",
           "namespace": "{{ namespace }}"
         },
-        "spec": {}
+        "spec": {
+          "feature_auth_required": "true"
+        }
       }
     operatorframework.io/suggested-namespace: {{ namespace }}
 spec:
@@ -299,6 +303,21 @@ spec:
           - proxies
           verbs:
           - get
+        - apiGroups:
+          - keycloak.org
+          resources:
+          - keycloaks
+          - keycloakrealms
+          - keycloakclients
+          - keycloakusers
+          verbs:
+          - get
+          - list
+          - watch
+          - create
+          - update
+          - patch
+          - delete
   installModes:
   - supported: true
     type: OwnNamespace
