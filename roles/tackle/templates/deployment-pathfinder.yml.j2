@@ -14,8 +14,8 @@ metadata:
         { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ pathfinder_database_deployment_name }}" }
       ]
     prometheus.io/path: /q/metrics
-    prometheus.io/port: '8080'
-    prometheus.io/scheme: http
+    prometheus.io/port: "{{ pathfinder_port }}"
+    prometheus.io/scheme: "{{ pathfinder_proto }}"
     prometheus.io/scrape: 'true'
 spec:
   replicas: {{ pathfinder_deployment_replicas }}
@@ -34,8 +34,8 @@ spec:
         role: {{ pathfinder_service_name }}
       annotations:
         prometheus.io/path: /q/metrics
-        prometheus.io/port: '8080'
-        prometheus.io/scheme: http
+        prometheus.io/port: "{{ pathfinder_port }}"
+        prometheus.io/scheme: "{{ pathfinder_proto }}"
         prometheus.io/scrape: 'true'
     spec:
       containers:
