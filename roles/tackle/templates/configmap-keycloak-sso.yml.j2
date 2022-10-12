@@ -89,8 +89,7 @@ data:
             "composites": {
               "realm": [
                 "offline_access",
-                "uma_authorization",
-                "user"
+                "uma_authorization"
               ],
               "client": {
                 "account": [
@@ -321,16 +320,6 @@ data:
           "tackle-ui": [],
           "admin-cli": [],
           "account-console": [],
-          "backend-service": [
-            {
-              "id": "df147a91-6da7-4bbc-866c-f30cf99b2637",
-              "name": "uma_protection",
-              "composite": false,
-              "clientRole": true,
-              "containerId": "0ac5df91-e044-4051-bd03-106a3a5fb9cc",
-              "attributes": {}
-            }
-          ],
           "broker": [
             {
               "id": "d36865b0-7ade-4bcd-a7dc-1dacbd80f169",
@@ -470,34 +459,7 @@ data:
       "webAuthnPolicyPasswordlessCreateTimeout": 0,
       "webAuthnPolicyPasswordlessAvoidSameAuthenticatorRegister": false,
       "webAuthnPolicyPasswordlessAcceptableAaguids": [],
-      "users": [
-        {
-          "id": "948c59ec-46ed-4d99-aa43-02900029b930",
-          "createdTimestamp": 1554245880023,
-          "username": "service-account-backend-service",
-          "enabled": true,
-          "totp": false,
-          "emailVerified": false,
-          "email": "service-account-backend-service@placeholder.org",
-          "serviceAccountClientId": "backend-service",
-          "disableableCredentialTypes": [],
-          "requiredActions": [],
-          "realmRoles": [
-            "offline_access"
-          ],
-          "clientRoles": {
-            "backend-service": [
-              "uma_protection"
-            ],
-            "account": [
-              "view-profile",
-              "manage-account"
-            ]
-          },
-          "notBefore": 0,
-          "groups": []
-        }
-      ],
+      "users": [],
       "scopeMappings": [
         {
           "clientScope": "offline_access",
@@ -649,141 +611,6 @@ data:
             "offline_access",
             "microprofile-jwt"
           ]
-        },
-        {
-          "id": "0ac5df91-e044-4051-bd03-106a3a5fb9cc",
-          "clientId": "backend-service",
-          "surrogateAuthRequired": false,
-          "enabled": true,
-          "alwaysDisplayInConsole": false,
-          "clientAuthenticatorType": "client-secret",
-          "secret": "**********",
-          "redirectUris": [],
-          "webOrigins": [],
-          "notBefore": 0,
-          "bearerOnly": false,
-          "consentRequired": false,
-          "standardFlowEnabled": true,
-          "implicitFlowEnabled": false,
-          "directAccessGrantsEnabled": true,
-          "serviceAccountsEnabled": true,
-          "authorizationServicesEnabled": true,
-          "publicClient": false,
-          "frontchannelLogout": false,
-          "protocol": "openid-connect",
-          "attributes": {},
-          "authenticationFlowBindingOverrides": {},
-          "fullScopeAllowed": true,
-          "nodeReRegistrationTimeout": -1,
-          "protocolMappers": [
-            {
-              "id": "3eac903f-c16b-4a78-a7e8-eb8f4d402b71",
-              "name": "Client ID",
-              "protocol": "openid-connect",
-              "protocolMapper": "oidc-usersessionmodel-note-mapper",
-              "consentRequired": false,
-              "config": {
-                "user.session.note": "clientId",
-                "userinfo.token.claim": "true",
-                "id.token.claim": "true",
-                "access.token.claim": "true",
-                "claim.name": "clientId",
-                "jsonType.label": "String"
-              }
-            },
-            {
-              "id": "8422cefe-7f42-4f3b-abad-5f06f7d4b748",
-              "name": "Client IP Address",
-              "protocol": "openid-connect",
-              "protocolMapper": "oidc-usersessionmodel-note-mapper",
-              "consentRequired": false,
-              "config": {
-                "user.session.note": "clientAddress",
-                "userinfo.token.claim": "true",
-                "id.token.claim": "true",
-                "access.token.claim": "true",
-                "claim.name": "clientAddress",
-                "jsonType.label": "String"
-              }
-            },
-            {
-              "id": "988e47d6-2055-45eb-82d6-0b8b25c629fc",
-              "name": "Client Host",
-              "protocol": "openid-connect",
-              "protocolMapper": "oidc-usersessionmodel-note-mapper",
-              "consentRequired": false,
-              "config": {
-                "user.session.note": "clientHost",
-                "userinfo.token.claim": "true",
-                "id.token.claim": "true",
-                "access.token.claim": "true",
-                "claim.name": "clientHost",
-                "jsonType.label": "String"
-              }
-            }
-          ],
-          "defaultClientScopes": [
-            "web-origins",
-            "roles",
-            "profile",
-            "email"
-          ],
-          "optionalClientScopes": [
-            "address",
-            "phone",
-            "offline_access",
-            "microprofile-jwt"
-          ],
-          "authorizationSettings": {
-            "allowRemoteResourceManagement": true,
-            "policyEnforcementMode": "ENFORCING",
-            "resources": [
-              {
-                "name": "User Resource",
-                "ownerManagedAccess": false,
-                "attributes": {},
-                "_id": "df1b74a9-3f10-499d-a581-368de48e512b",
-                "uris": [
-                  "/api/users/*"
-                ]
-              },
-              {
-                "name": "Administration Resource",
-                "ownerManagedAccess": false,
-                "attributes": {},
-                "_id": "7124e2f1-e6dc-44b4-87ab-24b010090b97",
-                "uris": [
-                  "/api/admin/*"
-                ]
-              }
-            ],
-            "policies": [
-              {
-                "id": "fcef30b2-68b2-4b78-9f3d-9162c6cdf5cb",
-                "name": "Only Administrators",
-                "description": "Only administrators can access",
-                "type": "role",
-                "logic": "POSITIVE",
-                "decisionStrategy": "UNANIMOUS",
-                "config": {
-                  "roles": "[{\"id\":\"admin\",\"required\":false}]"
-                }
-              },
-              {
-                "id": "60188298-d55b-4066-b231-6a7c56ff7cc5",
-                "name": "Administration Resource Permission",
-                "type": "resource",
-                "logic": "POSITIVE",
-                "decisionStrategy": "UNANIMOUS",
-                "config": {
-                  "resources": "[\"Administration Resource\"]",
-                  "applyPolicies": "[\"Only Administrators\"]"
-                }
-              }
-            ],
-            "scopes": [],
-            "decisionStrategy": "UNANIMOUS"
-          }
         },
         {
           "id": "53d4fe53-a039-471e-886a-28eddc950e95",
