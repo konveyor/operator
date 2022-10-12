@@ -176,7 +176,7 @@ maven_data_volume_claim_name: "{{ app_name }}-{{ maven_name }}-volume-claim"
 # RH-SSO specific
 rhsso_name: "rhsso"
 rhsso_service_name: "{{ app_name }}-{{ rhsso_name }}"
-rhsso_secret_name: "credential-{{ app_name }}-{{ rhsso_name }}"
+rhsso_secret_name: "credential-{{ rhsso_service_name }}"
 rhsso_api_version: "keycloak.org/v1alpha1"
 rhsso_external_access: false
 rhsso_tls_enabled: true
