@@ -23,7 +23,9 @@ metadata:
             "name": "tackle",
             "namespace": "konveyor-tackle"
           },
-          "spec": null
+          "spec": {
+            "feature_auth_required": "true"
+          }
         },
         {
           "apiVersion": "tackle.konveyor.io/v1alpha1",
@@ -45,7 +47,9 @@ metadata:
           "name": "tackle",
           "namespace": "konveyor-tackle"
         },
-        "spec": {}
+        "spec": {
+          "feature_auth_required": "true"
+        }
       }
     operatorframework.io/suggested-namespace: konveyor-tackle
 spec:

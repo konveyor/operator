@@ -11,11 +11,14 @@ metadata:
   annotations:
     app.openshift.io/connects-to: >-
       [
-        { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ hub_deployment_name }}" },
-        { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ pathfinder_deployment_name }}" },
-{% if feature_auth_required|bool and app_profile == 'konveyor' %}
-        { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ keycloak_sso_deployment_name }}" }
+{% if feature_auth_required|bool %}
+{% if app_profile == 'konveyor' %}
+        { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ keycloak_sso_deployment_name }}" },
+{% elif app_profile == 'mta' %}
+        { "apiVersion": "apps/v1", "kind": "StatefulSet", "name": "keycloak" },
 {% endif %}
+{% endif %}
+        { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ hub_deployment_name }}" }
       ]
 spec:
   replicas: {{ ui_deployment_replicas }}
@@ -47,11 +50,7 @@ spec:
             - name: UI_INGRESS_PROXY_BODY_SIZE
               value: '{{ui_ingress_proxy_body_size}}'
             - name: TACKLE_HUB_URL
-{% if hub_tls_enabled|bool %}
-              value: "https://{{ hub_service_name }}:8443"
-{% else %}
-              value: "http://{{ hub_service_name }}:8080"
-{% endif %}
+              value: "{{ hub_url }}"
             - name: AUTH_REQUIRED
               value: "{{ feature_auth_required|lower }}"
 {% if feature_auth_required|bool %}
@@ -86,11 +85,7 @@ spec:
               value: 'false'
 {% endif %}
           ports:
-{% if ui_tls_enabled|bool %}
-            - containerPort: 8443
-{% else %}
-            - containerPort: 8080
-{% endif %}
+            - containerPort: {{ ui_port }}
               protocol: TCP
           resources:
             limits:
@@ -113,13 +108,8 @@ spec:
           readinessProbe:
             httpGet:
               path: /
-{% if ui_tls_enabled|bool %}
-              port: 8443
-              scheme: HTTPS
-{% else %}
-              port: 8080
-              scheme: HTTP
-{% endif %}
+              port: {{ ui_port }}
+              scheme: {{ ui_proto|upper }}
             initialDelaySeconds: 10
             timeoutSeconds: 1
             periodSeconds: 5

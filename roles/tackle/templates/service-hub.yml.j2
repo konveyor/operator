@@ -2,8 +2,10 @@
 apiVersion: v1
 kind: Service
 metadata:
+{% if hub_tls_enabled|bool and openshift_cluster|bool %}
   annotations:
     service.beta.openshift.io/serving-cert-secret-name: {{ hub_tls_secret_name }}
+{% endif %}
   labels:
     app.kubernetes.io/name: {{ hub_service_name }}
     app.kubernetes.io/component: {{ hub_component_name }}
@@ -12,17 +14,10 @@ metadata:
   namespace: {{ app_namespace }}
 spec:
   ports:
-{% if hub_tls_enabled|bool %}
-    - name: api-https
-      port: 8443
-      targetPort: 8443
+    - name: api
+      port: {{ hub_port }}
+      targetPort: {{ hub_port }}
       protocol: TCP
-{% else %}
-    - name: api-http
-      port: 8080
-      targetPort: 8080
-      protocol: TCP
-{% endif %}
   selector:
     app.kubernetes.io/name: {{ hub_service_name }}
     app.kubernetes.io/component: {{ hub_component_name }}
