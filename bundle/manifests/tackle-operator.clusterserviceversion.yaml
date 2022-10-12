@@ -77,6 +77,9 @@ spec:
 
 
     ### Install
+
+    Tackle requires a storage class that supports RWX volumes, please refer to the [documentation](https://konveyor.github.io/tackle/installation/) for system requirements details.
+
     Once you have successfully installed the Operator, proceed to deploy components by creating the required Tackle CR.
 
     By default, the Operator installs the following components on a target cluster:
