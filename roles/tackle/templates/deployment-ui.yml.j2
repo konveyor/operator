@@ -62,13 +62,13 @@ spec:
             - name: KEYCLOAK_CLIENT_ID
               valueFrom:
                 secretKeyRef:
-                  name: "keycloak-client-secret-{{ keycloak_sso_ui_client_id }}"
+                  name: "keycloak-client-secret-{{ keycloak_sso_client_id }}"
                   key: CLIENT_ID
 {% else %}
             - name: KEYCLOAK_SERVER_URL
               value: {{ keycloak_sso_url }}
             - name: KEYCLOAK_CLIENT_ID
-              value: {{ keycloak_sso_ui_client_id }}
+              value: {{ keycloak_sso_client_id }}
 {% endif %}
 {% endif %}
             - name: NODE_EXTRA_CA_CERTS

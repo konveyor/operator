@@ -99,29 +99,34 @@ spec:
 {% if feature_auth_required|bool %}
             - name: KEYCLOAK_REALM
               value: "{{ keycloak_sso_realm }}"
+            - name: KEYCLOAK_CLIENT_ID
+              value: "{{ keycloak_sso_client_id }}"
 {% if app_profile == 'mta' %}
             - name: KEYCLOAK_HOST
               value: "{{ rhsso_url }}"
-            - name: KEYCLOAK_CLIENT_ID
+            - name: KEYCLOAK_ADMIN_USER
               valueFrom:
                 secretKeyRef:
-                  name: "keycloak-client-secret-{{ keycloak_sso_hub_client_id }}"
-                  key: CLIENT_ID
-            - name: KEYCLOAK_CLIENT_SECRET
+                  name: "{{ rhsso_secret_name }}"
+                  key: ADMIN_USERNAME
+            - name: KEYCLOAK_ADMIN_PASS
               valueFrom:
                 secretKeyRef:
-                  name: "keycloak-client-secret-{{ keycloak_sso_hub_client_id }}"
-                  key: CLIENT_SECRET
+                  name: "{{ rhsso_secret_name }}"
+                  key: ADMIN_PASSWORD
 {% else %}
             - name: KEYCLOAK_HOST
               value: "{{ keycloak_sso_url }}"
-            - name: KEYCLOAK_CLIENT_ID
-              value: "{{ keycloak_sso_hub_client_id }}"
-            - name: KEYCLOAK_CLIENT_SECRET
+            - name: KEYCLOAK_ADMIN_USER
               valueFrom:
                 secretKeyRef:
-                  name: "{{ hub_secret_name }}"
-                  key: keycloak_client_secret
+                  name: "{{ keycloak_sso_secret_name }}"
+                  key: admin-username
+            - name: KEYCLOAK_ADMIN_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ keycloak_sso_secret_name }}"
+                  key: admin-password
 {% endif %}
 {% endif %}
             - name: TASK_SA
