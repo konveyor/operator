@@ -2,7 +2,7 @@
 apiVersion: {{ rhsso_api_version }}
 kind: KeycloakClient
 metadata:
-  name: {{ keycloak_sso_hub_client_id }}
+  name: {{ keycloak_sso_client_id }}
   namespace: {{ app_namespace }}
   labels:
     app: {{ rhsso_service_name }}
@@ -11,24 +11,7 @@ spec:
      matchLabels:
       app: {{ rhsso_service_name }}
   client:
-    clientId: {{ keycloak_sso_hub_client_id }}
-    secret: {{ keycloak_sso_hub_client_secret }}
-    standardFlowEnabled: true
-    directAccessGrantsEnabled: true
----
-apiVersion: {{ rhsso_api_version }}
-kind: KeycloakClient
-metadata:
-  name: {{ keycloak_sso_ui_client_id }}
-  namespace: {{ app_namespace }}
-  labels:
-    app: {{ rhsso_service_name }}
-spec:
-  realmSelector:
-     matchLabels:
-      app: {{ rhsso_service_name }}
-  client:
-    clientId: {{ keycloak_sso_ui_client_id }}
+    clientId: {{ keycloak_sso_client_id }}
     standardFlowEnabled: true
     directAccessGrantsEnabled: true
     publicClient: true

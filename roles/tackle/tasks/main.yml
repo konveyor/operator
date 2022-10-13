@@ -95,12 +95,10 @@
         - name: "Generate random values for Keycloak SSO credentials"
           set_fact:
             keycloak_sso_admin_password: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=16') }}"
-            keycloak_sso_hub_client_secret: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=32') }}"
 
         - name: "Encode Keycloak SSO credentials"
           set_fact:
             keycloak_sso_admin_password_b64: "{{ keycloak_sso_admin_password | b64encode }}"
-            keycloak_sso_hub_client_secret_b64: "{{ keycloak_sso_hub_client_secret | b64encode }}"
 
         - name: "Setup Keycloak SSO Secret"
           k8s:
@@ -190,10 +188,6 @@
 
     - when: (rhsso_keycloak_client_status.resources | length) == 0
       block:
-        - name: "Generate random values for RHSSO Hub Client secret"
-          set_fact:
-            keycloak_sso_hub_client_secret: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=32') }}"
-
         - name: "Create RHSSO Keycloak Client CR"
           k8s:
             state: present
