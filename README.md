@@ -63,6 +63,9 @@ If you need to deploy a beta release (or special branch) please replace the *mai
 **Note:** Upgrades between beta releases are **not guaranteed** , once installed, we strongly suggest to edit your subscription and switch to Manual upgrade mode for beta releases: `$ kubectl edit subscription` -> installPlanApproval: Manual
 
 ### Creating a _Tackle_ CR
+
+**Note:** Tackle **requires** a storage class that supports RWX volumes, please review storage requirements **prior** creating the Tackle CR in case you need to adjust settings.
+
 ```
 $ cat << EOF | kubectl apply -f -
 kind: Tackle
@@ -75,8 +78,6 @@ EOF
 ```
 
 Once the CR is created, the operator will deploy the hub, UI and configure the rest of required components.
-
-**Note:** Please review storage requirements **prior** creating the Tackle CR in case you need to adjust settings.
 
 ### Verify _Tackle_ Deployment
 
