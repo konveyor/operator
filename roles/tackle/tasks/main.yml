@@ -105,11 +105,6 @@
             state: present
             definition: "{{ lookup('template', 'secret-keycloak-sso.yml.j2') }}"
 
-    - name: "Setup Keycloak SSO Realm ConfigMap"
-      k8s:
-        state: present
-        definition: "{{ lookup('template', 'configmap-keycloak-sso.yml.j2') }}"
-
     - name: "Setup Keycloak SSO Service"
       k8s:
         state: present
@@ -149,105 +144,6 @@
       until: true in (cr | json_query('resources[].status.ready'))
       retries: 30
       delay: 5
-
-    - name: "Check if RHSSO Realm CR exists already so we don't update it"
-      k8s_info:
-        api_version: "{{ rhsso_api_version }}"
-        kind: KeycloakRealm
-        namespace: "{{ app_namespace }}"
-        label_selectors:
-          - app = {{ rhsso_service_name }}
-      register: rhsso_realm_status
-
-    - name: "Create RHSSO Keycloak Realm CR"
-      k8s:
-        state: present
-        definition: "{{ lookup('template', 'customresource-rhsso-realm.yml.j2') }}"
-      when: (rhsso_realm_status.resources | length) == 0
-
-    - name: "Check RHSSO Keycloak Realm for readiness"
-      k8s_info:
-        api_version: "{{ rhsso_api_version }}"
-        kind: KeycloakRealm
-        namespace: "{{ app_namespace }}"
-        label_selectors:
-          - app = {{ rhsso_service_name }}
-      register: cr
-      until: true in (cr | json_query('resources[].status.ready'))
-      retries: 20
-      delay: 3
-
-    - name: "Check if RHSSO Hub Client CR exists already so we don't update it"
-      k8s_info:
-        api_version: "{{ rhsso_api_version }}"
-        kind: KeycloakClient
-        namespace: "{{ app_namespace }}"
-        label_selectors:
-          - app = {{ rhsso_service_name }}
-      register: rhsso_keycloak_client_status
-
-    - when: (rhsso_keycloak_client_status.resources | length) == 0
-      block:
-        - name: "Create RHSSO Keycloak Client CR"
-          k8s:
-            state: present
-            definition: "{{ lookup('template', 'customresource-rhsso-clients.yml.j2') }}"
-
-- name: "Setup Hub API Database PersistentVolumeClaim"
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'persistentvolumeclaim-hub-database.yml.j2') }}"
-
-- name: "Setup Hub API Bucket PersistentVolumeClaim"
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'persistentvolumeclaim-hub-bucket.yml.j2') }}"
-
-- name: "Setup Hub Seed ConfigMap"
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'configmap-hub-seed.yml.j2') }}"
-
-- name: "Check if Hub Secret exists already so we don't update it"
-  k8s_info:
-    api_version: v1
-    kind: Secret
-    name: "{{ hub_secret_name }}"
-    namespace: "{{ app_namespace }}"
-  register: hub_secret_status
-
-- when: (hub_secret_status.resources | length) == 0
-  block:
-    - name: "Generate Hub random AES passphrase"
-      set_fact:
-        hub_aes_passphrase: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=32') }}"
-
-    - name: "Encode Hub AES passphrase"
-      set_fact:
-        hub_aes_passphrase_b64: "{{ hub_aes_passphrase | b64encode }}"
-
-    - name: "Generate Hub addon token"
-      set_fact:
-        hub_addon_token: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=32') }}"
-
-    - name: "Encode Hub addon token"
-      set_fact:
-        hub_addon_token_b64: "{{ hub_addon_token | b64encode }}"
-
-    - name: "Setup Hub Secret"
-      k8s:
-        state: present
-        definition: "{{ lookup('template', 'secret-hub.yml.j2') }}"
-
-- name: "Setup Hub API Service"
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'service-hub.yml.j2') }}"
-
-- name: "Setup Hub API Deployment"
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'deployment-hub.yml.j2') }}"
 
 - name: "Setup PathFinder PostgreSQL PersistentVolume"
   k8s:
@@ -311,6 +207,62 @@
   k8s:
     state: present
     definition: "{{ lookup('template', 'deployment-pathfinder.yml.j2') }}"
+
+- name: "Setup Hub API Database PersistentVolumeClaim"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'persistentvolumeclaim-hub-database.yml.j2') }}"
+
+- name: "Setup Hub API Bucket PersistentVolumeClaim"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'persistentvolumeclaim-hub-bucket.yml.j2') }}"
+
+- name: "Setup Hub Seed ConfigMap"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'configmap-hub-seed.yml.j2') }}"
+
+- name: "Check if Hub Secret exists already so we don't update it"
+  k8s_info:
+    api_version: v1
+    kind: Secret
+    name: "{{ hub_secret_name }}"
+    namespace: "{{ app_namespace }}"
+  register: hub_secret_status
+
+- when: (hub_secret_status.resources | length) == 0
+  block:
+    - name: "Generate Hub random AES passphrase"
+      set_fact:
+        hub_aes_passphrase: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=32') }}"
+
+    - name: "Encode Hub AES passphrase"
+      set_fact:
+        hub_aes_passphrase_b64: "{{ hub_aes_passphrase | b64encode }}"
+
+    - name: "Generate Hub addon token"
+      set_fact:
+        hub_addon_token: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=32') }}"
+
+    - name: "Encode Hub addon token"
+      set_fact:
+        hub_addon_token_b64: "{{ hub_addon_token | b64encode }}"
+
+    - name: "Setup Hub Secret"
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'secret-hub.yml.j2') }}"
+
+- name: "Setup Hub API Service"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'service-hub.yml.j2') }}"
+
+- name: "Setup Hub API Deployment"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'deployment-hub.yml.j2') }}"
 
 - name: "Setup UI Service"
   k8s:
