@@ -128,6 +128,8 @@ spec:
                   name: "{{ keycloak_sso_secret_name }}"
                   key: admin-password
 {% endif %}
+            - name: KEYCLOAK_REQ_PASS_UPDATE
+              value: "{{ keycloak_sso_req_passwd_update|lower }}"
 {% endif %}
             - name: TASK_SA
               value: "{{ hub_task_sa }}"

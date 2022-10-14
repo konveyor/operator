@@ -58,8 +58,6 @@ spec:
               value: {{ keycloak_sso_java_opts }}
             - name: PROXY_ADDRESS_FORWARDING
               value: 'true'
-            - name: KEYCLOAK_IMPORT
-              value: /etc/config/quarkus-realm.json
             - name: DB_VENDOR
               value: postgres
             - name: DB_ADDR
@@ -95,7 +93,7 @@ spec:
               memory: {{ keycloak_sso_container_requests_memory }}
           livenessProbe:
             httpGet:
-              path: /auth/realms/{{ keycloak_sso_realm }}
+              path: /
               port: {{ keycloak_sso_port }}
               scheme: {{ keycloak_sso_proto|upper }}
             initialDelaySeconds: {{ keycloak_sso_liveness_init_delay }}
@@ -105,7 +103,7 @@ spec:
             failureThreshold: 20
           readinessProbe:
             httpGet:
-              path: /auth/realms/{{ keycloak_sso_realm }}
+              path: /
               port: {{ keycloak_sso_port }}
               scheme: {{ keycloak_sso_proto|upper }}
             initialDelaySeconds: {{ keycloak_sso_readiness_init_delay }}
@@ -114,14 +112,8 @@ spec:
             successThreshold: 1
             failureThreshold: 20
           volumeMounts:
-            - name: {{ keycloak_sso_service_name }}-config
-              mountPath: /etc/config
             - name: {{ keycloak_sso_service_name }}-theme
               mountPath: /opt/jboss/keycloak/standalone/deployments
       volumes:
-        - name: {{ keycloak_sso_service_name }}-config
-          configMap:
-            name: {{ keycloak_sso_configmap_name }}
-            defaultMode: 420
         - name: {{ keycloak_sso_service_name }}-theme
           emptyDir: {}
