@@ -9,6 +9,7 @@ TACKLE_PATHFINDER_IMAGE="${TACKLE_PATHFINDER_IMAGE:-quay.io/konveyor/tackle-path
 TACKLE_UI_IMAGE="${TACKLE_UI_IMAGE:-quay.io/konveyor/tackle2-ui:latest}"
 TACKLE_ADDON_ADMIN_IMAGE="${TACKLE_ADDON_ADMIN_IMAGE:-quay.io/konveyor/tackle2-addon:latest}"
 TACKLE_ADDON_WINDUP_IMAGE="${TACKLE_ADDON_WINDUP_IMAGE:-quay.io/konveyor/tackle2-addon-windup:latest}"
+TACKLE_IMAGE_PULL_POLICY="${TACKLE_IMAGE_PULL_POLICY:-Always}"
 
 TACKLE_FEATURE_AUTH_REQUIRED="${TACKLE_FEATURE_AUTH_REQUIRED:-false}"
 
@@ -85,6 +86,7 @@ spec:
   ui_image_fqin: ${TACKLE_UI_IMAGE}
   admin_fqin: ${TACKLE_ADDON_ADMIN_IMAGE}
   windup_fqin: ${TACKLE_ADDON_WINDUP_IMAGE}
+  image_pull_policy: ${TACKLE_IMAGE_PULL_POLICY}
 EOF
 # Wait for reconcile to finish
 kubectl wait \
