@@ -330,18 +330,18 @@ spec:
     type: MultiNamespace
   - supported: false
     type: AllNamespaces
-  keywords: ['modernization', 'konveyor', 'tackle']
+  keywords: ['modernization', 'migration', 'konveyor', 'tackle']
   maintainers:
   - name: Tackle by Konveyor Community
     email: tackle-dev@googlegroups.com
-  maturity: beta
+  maturity: alpha
   provider:
     name: Konveyor
     url: https://www.konveyor.io
   links:
-  - name: Tackle Documentation
+  - name: Documentation
     url: https://konveyor.github.io/tackle
-  - name: Tackle Operator
+  - name: Operator
     url: https://github.com/konveyor/tackle2-operator
   relatedImages:
   - name: tackle-hub
