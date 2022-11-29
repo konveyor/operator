@@ -1,0 +1,16 @@
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: {{ rhsso_service_name }}-external
+  namespace: {{ app_namespace }}
+  labels:
+    app: {{ rhsso_service_name }}
+spec:
+  podSelector:
+    matchLabels:
+      role: {{ rhsso_service_name }}
+  ingress:
+  - ports:
+    - protocol: TCP
+      port: {{ rhsso_port }}

@@ -145,6 +145,12 @@
       retries: 30
       delay: 5
 
+    - name: "Create RHSSO Ingress Network Policy"
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'networkpolicy-rhsso-keycloak.yml.j2') }}"
+      when: rhsso_external_access | bool
+
 - name: "Setup PathFinder PostgreSQL PersistentVolume"
   k8s:
     state: present
