@@ -19,9 +19,6 @@ spec:
     - jsonPath: .status.conditions[?(@.type=='Ready')].status
       name: READY
       type: string
-    - jsonPath: .status.conditions[?(@.type=='ConnectionTestSucceeded')].status
-      name: CONNECTED
-      type: string
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
@@ -42,6 +39,14 @@ spec:
             properties:
               image:
                 description: Addon fqin.
+                type: string
+              imagePullPolicy:
+                default: IfNotPresent
+                description: ImagePullPolicy an optional image pull policy.
+                enum:
+                - IfNotPresent
+                - Always
+                - Never
                 type: string
               mounts:
                 description: Mounts optional.
