@@ -140,8 +140,8 @@ hub_bucket_volume_size | 100gi | Size requested for Hub bucket volume
 keycloak_database_data_volume_size | 1Gi | Size requested for Keycloak DB volume
 pathfinder_database_data_volume_size | 1Gi | Size requested for Pathfinder DB volume
 maven_data_volume_size | 100Gi | Size requested for maven m2 repository volume
-rwx_storage_class | N/A | Storage class requested for Tackle RWX volumes
-rwo_storage_class | N/A | Storage class requested for Tackle RWO volumes
+cache_storage_class | N/A | Storage class requested for Tackle Cache volume
+hub_bucket_storage_class | N/A | Storage class requested for Tackle Hub Bucket volume
 
 ## Tackle CR Customize Settings
 
@@ -173,7 +173,7 @@ metadata:
   namespace: <your-tackle-namespace>
 spec:
   hub_bucket_volume_size: "50Gi"
-  rwx_storage_class: "nfs"
+  cache_storage_class: "nfs"
 ```
 
 ## Development

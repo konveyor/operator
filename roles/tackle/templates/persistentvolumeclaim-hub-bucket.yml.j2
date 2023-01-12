@@ -11,13 +11,13 @@ metadata:
     volume: {{ hub_bucket_volume_name }}
 spec:
   accessModes:
-    - ReadWriteMany
+    - {{ hub_bucket_volume_claim_mode }}
   resources:
     requests:
       storage: {{ hub_bucket_volume_size }}
-{% if rwx_storage_class is defined %}
-{% if rwx_storage_class|length %}
-  storageClassName: {{ rwx_storage_class }}
+{% if hub_bucket_storage_class is defined %}
+{% if hub_bucket_storage_class|length %}
+  storageClassName: {{ hub_bucket_storage_class }}
 {% else %}
   storageClassName: ""
 {% endif %}

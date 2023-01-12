@@ -10,9 +10,6 @@ metadata:
     app.kubernetes.io/part-of: {{ app_name }}
 spec:
   image: {{ windup_fqin }}
-  mounts:
-  - claim: {{ maven_data_volume_claim_name }}
-    name: m2
   resources:
     requests:
       cpu: {{ windup_container_requests_cpu }}
