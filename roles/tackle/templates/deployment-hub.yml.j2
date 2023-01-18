@@ -149,6 +149,14 @@ spec:
             - name: TASK_RETRIES
               value: "{{ hub_task_retries }}"
 {% endif %}
+            - name: RWX_SUPPORTED
+              value: "{{ rwx_supported | string | lower }}"
+{% if rwx_supported|bool %}
+            - name: CACHE_PVC
+              value: "{{ cache_data_volume_claim_name }}"
+            - name: CACHE_PATH
+              value: "{{ cache_mount_path }}"
+{% endif %}
           ports:
             - containerPort: {{ hub_port }}
               protocol: TCP
@@ -168,11 +176,20 @@ spec:
             - name: {{ hub_seed_configmap_name }}
               mountPath: {{ hub_seed_configmap_path }}
               readOnly: true
+{% if rwx_supported|bool %}
+            - name: {{ cache_data_volume_name }}
+              mountPath: {{ cache_mount_path }}
+{% endif %}
 {% if hub_tls_enabled|bool %}
             - name: {{ hub_tls_secret_name }}
               mountPath: /var/run/secrets/{{ hub_tls_secret_name }}/tls.crt
 {% endif %}
       volumes:
+{% if rwx_supported|bool %}
+        - name: {{ cache_data_volume_name }}
+          persistentVolumeClaim:
+            claimName: {{ cache_data_volume_claim_name }}
+{% endif %}
         - name: {{ hub_database_volume_name }}
           persistentVolumeClaim:
             claimName: {{ hub_database_volume_claim_name }}

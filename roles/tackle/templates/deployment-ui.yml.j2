@@ -79,6 +79,8 @@ spec:
             - name: UI_TLS_ENABLED
               value: 'false'
 {% endif %}
+            - name: RWX_SUPPORTED
+              value: "{{ rwx_supported | string | lower }}"
           ports:
             - containerPort: {{ ui_port }}
               protocol: TCP

@@ -3,6 +3,16 @@
   set_fact:
     api_groups: "{{ lookup('k8s', cluster_info='api_groups') }}"
 
+- name: Transfer rwx_storage_class setting if hub_bucket_storage_class is not defined
+  set_fact:
+    hub_bucket_storage_class: "{{ rwx_storage_class }}"
+  when: rwx_storage_class is defined and hub_bucket_storage_class is not defined
+
+- name: Transfer rwx_storage_class setting if hub_bucket_storage_class is not defined
+  set_fact:
+    cache_storage_class: "{{ rwx_storage_class }}"
+  when: rwx_storage_class is defined and cache_storage_class is not defined
+
 - name: "Enable OpenShift cluster environment"
   set_fact:
     openshift_cluster: true
@@ -213,6 +223,19 @@
     state: present
     definition: "{{ lookup('template', 'persistentvolumeclaim-hub-database.yml.j2') }}"
 
+- name: "Retrieve the Hub API Bucket if it already exists"
+  k8s_info:
+    api_version: v1
+    kind: PersistentVolumeClaim
+    name: "{{ hub_bucket_volume_claim_name }}"
+    namespace: "{{ app_namespace }}"
+  register: hub_bucket
+
+- name: "Update the Hub Bucket Access Mode to reflect its current state"
+  when: hub_bucket.resources | length > 0
+  set_fact:
+    hub_bucket_volume_claim_mode: "{{ (hub_bucket.resources | first).spec.accessModes | first }}"
+
 - name: "Setup Hub API Bucket PersistentVolumeClaim"
   k8s:
     state: present
@@ -263,6 +286,7 @@
   k8s:
     state: present
     definition: "{{ lookup('template', 'deployment-hub.yml.j2') }}"
+    merge_type: merge
 
 - name: "Setup UI Service"
   k8s:
@@ -286,24 +310,27 @@
     definition: "{{ lookup('template', 'route-ui.yml.j2') }}"
   when: openshift_cluster|bool
 
-- name: "Setup Maven PersistentVolumeClaim"
+- name: "Setup Cache PersistentVolumeClaim"
   k8s:
     state: present
-    definition: "{{ lookup('template', 'persistentvolumeclaim-maven.yml.j2') }}"
+    definition: "{{ lookup('template', 'persistentvolumeclaim-cache.yml.j2') }}"
+  when: (rwx_supported | bool)
 
-- name: "Check if Admin Addon CR exists already so we don't update it"
-  k8s_info:
-    api_version: tackle.konveyor.io/v1alpha1
+- name: "Remove Maven PersistentVolumeClaim"
+  k8s:
+    state: absent
+    kind: PersistentVolumeClaim
+    api_version: v1
+    name: "{{ app_name }}-maven-volume-claim"
+    namespace: "{{ app_namespace }}"
+
+- name: "Remove Admin Addon CR"
+  k8s:
+    state: absent
     kind: Addon
+    api_version: tackle.konveyor.io/v1alpha1
     name: "{{ admin_name }}"
     namespace: "{{ app_namespace }}"
-  register: admin_cr_status
-
-- name: "Create Admin Addon CR"
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'customresource-addon-admin.yml.j2') }}"
-  when: (admin_cr_status.resources | length) == 0
 
 - name: "Check if Windup Addon CR exists already so we don't update it"
   k8s_info:

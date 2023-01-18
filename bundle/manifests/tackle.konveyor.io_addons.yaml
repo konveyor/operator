@@ -48,20 +48,6 @@ spec:
                 - Always
                 - Never
                 type: string
-              mounts:
-                description: Mounts optional.
-                items:
-                  description: Mount specification.
-                  properties:
-                    claim:
-                      type: string
-                    name:
-                      type: string
-                  required:
-                  - claim
-                  - name
-                  type: object
-                type: array
               resources:
                 description: Resource requirements.
                 properties:

@@ -36,6 +36,7 @@ hub_bucket_volume_name: "{{ hub_service_name }}-bucket"
 hub_bucket_volume_size: "100Gi"
 hub_bucket_volume_path: "/buckets"
 hub_bucket_volume_claim_name: "{{ hub_service_name }}-bucket-volume-claim"
+hub_bucket_volume_claim_mode: ReadWriteOnce
 hub_seed_configmap_name: "{{ hub_service_name }}-seed"
 hub_seed_configmap_path: "/seed"
 hub_addon_working_path: "/working"
@@ -167,10 +168,13 @@ windup_service_name: "{{ app_name }}-{{ windup_name }}-{{ windup_component_name 
 windup_container_requests_cpu: "500m"
 windup_container_requests_memory: "2Gi"
 
-maven_name: "maven"
-maven_data_volume_size: "100Gi"
-maven_data_volume_name: "{{ app_name }}-{{ maven_name }}-data"
-maven_data_volume_claim_name: "{{ app_name }}-{{ maven_name }}-volume-claim"
+cache_name: "cache"
+cache_data_volume_size: "100Gi"
+cache_data_volume_name: "{{ app_name }}-{{ cache_name }}-data"
+cache_data_volume_claim_name: "{{ app_name }}-{{ cache_name }}-volume-claim"
+cache_data_volume_claim_mode: "ReadWriteMany"
+cache_mount_path: "/cache"
+rwx_supported: true
 
 # RH-SSO specific
 rhsso_name: "rhsso"
