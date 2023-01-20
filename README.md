@@ -135,11 +135,12 @@ Name | Default | Description
 --- | --- | ---
 feature_auth_required | true | Enable keycloak auth or false (single user/noauth)
 feature_isolate_namespace | true | Enable namespace isolation via network policies
+rwx_supported: | true | Whether or not RWX volumes are supported in the cluster
 hub_database_volume_size | 5Gi | Size requested for Hub database volume
 hub_bucket_volume_size | 100gi | Size requested for Hub bucket volume
 keycloak_database_data_volume_size | 1Gi | Size requested for Keycloak DB volume
 pathfinder_database_data_volume_size | 1Gi | Size requested for Pathfinder DB volume
-maven_data_volume_size | 100Gi | Size requested for maven m2 repository volume
+cache_data_volume_size | 100Gi | Size requested for Tackle Cache volume
 cache_storage_class | N/A | Storage class requested for Tackle Cache volume
 hub_bucket_storage_class | N/A | Storage class requested for Tackle Hub Bucket volume
 
