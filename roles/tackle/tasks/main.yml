@@ -13,6 +13,11 @@
     cache_storage_class: "{{ rwx_storage_class }}"
   when: rwx_storage_class is defined and cache_storage_class is not defined
 
+- name: Transfer maven_data_volume_size setting
+  set_fact:
+    cache_data_volume_size: "{{ maven_data_volume_size }}"
+  when: maven_data_volume_size is defined and hostvars[inventory_hostname]['cache_data_volume_size'] is not defined
+
 - name: "Enable OpenShift cluster environment"
   set_fact:
     openshift_cluster: true
