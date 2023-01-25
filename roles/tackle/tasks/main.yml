@@ -3,17 +3,17 @@
   set_fact:
     api_groups: "{{ lookup('k8s', cluster_info='api_groups') }}"
 
-- name: Transfer rwx_storage_class setting if hub_bucket_storage_class is not defined
+- name: "Transfer rwx_storage_class setting if hub_bucket_storage_class is not defined"
   set_fact:
     hub_bucket_storage_class: "{{ rwx_storage_class }}"
   when: rwx_storage_class is defined and hub_bucket_storage_class is not defined
 
-- name: Transfer rwx_storage_class setting if hub_bucket_storage_class is not defined
+- name: "Transfer rwx_storage_class setting if cache_storage_class is not defined"
   set_fact:
     cache_storage_class: "{{ rwx_storage_class }}"
   when: rwx_storage_class is defined and cache_storage_class is not defined
 
-- name: Transfer maven_data_volume_size setting
+- name: "Transfer maven_data_volume_size setting"
   set_fact:
     cache_data_volume_size: "{{ maven_data_volume_size }}"
   when: maven_data_volume_size is defined and hostvars[inventory_hostname]['cache_data_volume_size'] is not defined

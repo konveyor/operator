@@ -78,7 +78,7 @@ spec:
 
     ### Install
 
-    Tackle requires a storage class that supports RWX volumes, please refer to the [documentation](https://konveyor.github.io/tackle/installation/) for system requirements details.
+    By default, Tackle requires a RWX storage class for caching purposes, this can be disabled via the rwx_supported parameter in Tackle CR.
 
     Once you have successfully installed the Operator, proceed to deploy components by creating the required Tackle CR.
 
