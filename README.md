@@ -160,7 +160,7 @@ hub database | 5Gi | RWO | Hub DB
 hub bucket | 100Gi | RWX | Hub file storage
 keycloak postgresql | 1Gi | RWO | Keycloak backend DB
 pathfinder postgresql | 1Gi | RWO | Pathfinder backend DB
-maven | 100Gi | RWX | maven m2 repository
+cache | 100Gi | RWX | cache repository
 
 ### Tackle Storage Custom Settings Example
 
