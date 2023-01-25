@@ -96,7 +96,7 @@ tackle-pathfinder-6c58447d8f-rd6rr                             1/1     Running  
 tackle-pathfinder-postgresql-5fff469bcc-bc5z2                  1/1     Running     0          130m
 tackle-ui-5f694bddcb-scbh5                                     1/1     Running     0          130m
 ```
-
+If you are looking to install Tackle operator in MacOS, follow along [this guide](docs/installation-macos.md). 
 ## Tackle Operator Installation on OKD/OpenShift
 
 ### Installing _released versions_
