@@ -78,7 +78,7 @@ spec:
 
     ### Install
 
-    By default, Tackle requires a RWX storage class for caching purposes, this can be turned off via the rwx_supported parameter in Tackle CR.
+    By default, Tackle requires a RWX storage class for caching purposes, this can be disabled via the rwx_supported parameter in Tackle CR.
 
     Once you have successfully installed the Operator, proceed to deploy components by creating the required Tackle CR.
 
