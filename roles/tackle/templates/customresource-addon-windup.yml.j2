@@ -10,6 +10,7 @@ metadata:
     app.kubernetes.io/part-of: {{ app_name }}
 spec:
   image: {{ windup_fqin }}
+  imagePullPolicy: {{ image_pull_policy }}
   resources:
     requests:
       cpu: {{ windup_container_requests_cpu }}
