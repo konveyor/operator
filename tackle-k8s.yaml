@@ -30,7 +30,7 @@ metadata:
   name: tackle-operator
   namespace: konveyor-tackle
 spec:
-  channel: development
+  channel: v2.1
   installPlanApproval: Automatic
   name: tackle-operator
   source: konveyor-tackle
