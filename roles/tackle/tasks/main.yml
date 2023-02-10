@@ -337,19 +337,10 @@
     name: "{{ admin_name }}"
     namespace: "{{ app_namespace }}"
 
-- name: "Check if Windup Addon CR exists already so we don't update it"
-  k8s_info:
-    api_version: tackle.konveyor.io/v1alpha1
-    kind: Addon
-    name: "{{ windup_name }}"
-    namespace: "{{ app_namespace }}"
-  register: windup_cr_status
-
 - name: "Create Windup Addon CR"
   k8s:
     state: present
     definition: "{{ lookup('template', 'customresource-addon-windup.yml.j2') }}"
-  when: (windup_cr_status.resources | length) == 0
 
 - name: "Create Network Policy"
   k8s:
