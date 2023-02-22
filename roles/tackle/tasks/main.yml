@@ -42,6 +42,56 @@
 
 - when:
     - feature_auth_required|bool
+    - feature_auth_type == "oauth"
+  block:
+    - name: "Check if Cookie Secret already exists"
+      k8s_info:
+        api_version: v1
+        kind: Secret
+        name: cookie-secret
+        namespace: "{{ app_namespace }}"
+      register: cookie_secret
+
+    - name: "Generate Cookie Secret"
+      set_fact:
+        new_cookie_secret: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=32') }}"
+      when: (cookie_secret.resources | length) == 0
+
+    - name: "Create Cookie Secret"
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'secret-cookie-secret.yml.j2') }}"
+      when: (cookie_secret.resources | length) == 0
+
+    - name: "Retrieve Cookie Secret"
+      k8s_info:
+        api_version: v1
+        kind: Secret
+        name: cookie-secret
+        namespace: "{{ app_namespace }}"
+      register: cookie_secret
+
+    - name: "Set Cookie Secret"
+      set_fact:
+        cookie_secret_data: "{{ cookie_secret.resources[0].data['cookie-secret'] | b64decode }}"
+
+    - name: "Retrieve Oauth Client Secret if it exists"
+      k8s_info:
+        api_version: v1
+        kind: Secret
+        name: oauth-client-secret
+        namespace: "{{ app_namespace }}"
+      register: oauth_client_secret_status
+
+    - name: "Set Oauth Client Secret"
+      set_fact:
+        oauth_client_secret: "{{ oauth_client_secret_status.resources[0].data['client-secret'] | b64decode }}"
+      when: (oauth_client_secret_status.resources | length) > 0
+
+- when:
+    - feature_auth_required|bool
+    - feature_auth_type == "keycloak"
+    - app_profile == "konveyor"
   block:
     - name: "Setup Keycloak PostgreSQL PersistentVolumeClaim"
       k8s:
@@ -134,6 +184,7 @@
 
 - when:
     - feature_auth_required|bool
+    - feature_auth_type == "keycloak"
     - app_profile == "mta"
   block:
     - name: "Check for existing RHSSO Keycloak CR"
@@ -356,6 +407,11 @@
     definition: "{{ lookup('template', 'deployment-hub.yml.j2') }}"
     merge_type: merge
 
+- name: "Setup UI ServiceAccount"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'serviceaccount-ui.yml.j2') }}"
+
 - name: "Setup UI Service"
   k8s:
     state: present
@@ -365,6 +421,7 @@
   k8s:
     state: present
     definition: "{{ lookup('template', 'deployment-ui.yml.j2') }}"
+    merge_type: merge
 
 - name: "Setup UI Ingress"
   k8s:
@@ -410,3 +467,30 @@
     state: present
     definition: "{{ lookup('template', 'networkpolicy.yml.j2') }}"
   when: feature_isolate_namespace|bool
+
+- when:
+    - not(feature_auth_required|bool) or not(feature_auth_type == "keycloak")
+  block:
+    - name: "Deprovision RHSSO Keycloak CR"
+      k8s:
+        state: absent
+        kind: Keycloak
+        api_version: "{{ rhsso_api_version }}"
+        name: "{{ rhsso_service_name }}"
+        namespace: "{{ app_namespace }}"
+
+    - name: "Deprovision RHSSO Keycloak Deployment"
+      k8s:
+        state: absent
+        kind: Deployment
+        api_version: apps/v1
+        name: "{{ keycloak_database_deployment_name }}"
+        namespace: "{{ app_namespace }}"
+
+    - name: "Deprovision RHSSO Keycloak Postgres"
+      k8s:
+        state: absent
+        kind: Deployment
+        api_version: apps/v1
+        name: "{{ keycloak_sso_deployment_name }}"
+        namespace: "{{ app_namespace }}"
