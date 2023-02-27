@@ -42,7 +42,6 @@
 
 - when:
     - feature_auth_required|bool
-    - app_profile == "konveyor"
   block:
     - name: "Setup Keycloak PostgreSQL PersistentVolumeClaim"
       k8s:
@@ -91,7 +90,7 @@
         namespace: "{{ app_namespace }}"
         label_selectors:
           - app.kubernetes.io/name = {{ keycloak_database_service_name }}
-        wait: yes
+        wait: true
         wait_condition:
           type: "Ready"
           status: "True"
@@ -120,33 +119,87 @@
             state: present
             definition: "{{ lookup('template', 'secret-keycloak-sso.yml.j2') }}"
 
-    - name: "Setup Keycloak SSO Service"
-      k8s:
-        state: present
-        definition: "{{ lookup('template', 'service-keycloak-sso.yml.j2') }}"
+    - when:
+        - app_profile == "konveyor"
+      block:
+        - name: "Setup Keycloak SSO Service"
+          k8s:
+            state: present
+            definition: "{{ lookup('template', 'service-keycloak-sso.yml.j2') }}"
 
-    - name: "Setup Keycloak SSO Deployment"
-      k8s:
-        state: present
-        definition: "{{ lookup('template', 'deployment-keycloak-sso.yml.j2') }}"
+        - name: "Setup Keycloak SSO Deployment"
+          k8s:
+            state: present
+            definition: "{{ lookup('template', 'deployment-keycloak-sso.yml.j2') }}"
+
 - when:
     - feature_auth_required|bool
     - app_profile == "mta"
   block:
-    - name: "Check if RHSSO Keycloak CR exists already so we don't update it"
+    - name: "Check for existing RHSSO Keycloak CR"
       k8s_info:
         api_version: "{{ rhsso_api_version }}"
         kind: Keycloak
         namespace: "{{ app_namespace }}"
         label_selectors:
           - app = {{ rhsso_service_name }}
-      register: rhsso_keycloak_status
+      register: rhsso_keycloak
+
+    - name: "Delete old RHSSO Keycloak"
+      k8s:
+        state: absent
+        api_version: "{{ rhsso_api_version }}"
+        kind: Keycloak
+        name: "{{ rhsso_service_name }}"
+        namespace: "{{ app_namespace }}"
+      when:
+        - rhsso_keycloak.resources | length > 0
+        - '"keycloak-postgresql" in rhsso_keycloak.resources[0].status.secondaryResources.Deployment'
+
+    - name: "Get PostgreSQL Keycloak Secret"
+      k8s_info:
+        api_version: v1
+        kind: Secret
+        name: "{{ keycloak_database_secret_name }}"
+        namespace: "{{ app_namespace }}"
+      register: keycloak_database_secret
+
+    - name: "Get DNS operator CR"
+      k8s_info:
+        api_version: operator.openshift.io/v1
+        kind: DNS
+        name: default
+      register: default_dns_operator
+
+    - name: "Collect service name components"
+      set_fact:
+        pgsql_svc_fqdn_parts:
+          - "{{ keycloak_database_service_name }}"
+          - "{{ app_namespace }}"
+          - "svc"
+          - "{{ default_dns_operator.resources[0].status.clusterDomain }}"
+
+    - name: "Assemble service name"
+      set_fact:
+        pgsql_svc_fqdn: "{{ pgsql_svc_fqdn_parts | join('.') }}"
+
+    - name: "Collect database coordinates"
+      set_fact:
+        rhsso_db_pass_b64: "{{ keycloak_database_secret.resources[0].data['database-password'] }}"
+        rhsso_db_user_b64: "{{ keycloak_database_secret.resources[0].data['database-user'] }}"
+        rhsso_db_host_b64: "{{ pgsql_svc_fqdn | b64encode }}"
+        rhsso_db_name_b64: "{{ keycloak_database_secret.resources[0].data['database-name'] }}"
+
+    - name: "Setup Keycloak SSO Deployment"
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'secret-keycloak-db.yml.j2') }}"
+        merge_type: merge
 
     - name: "Create RHSSO Keycloak CR"
       k8s:
         state: present
         definition: "{{ lookup('template', 'customresource-rhsso-keycloak.yml.j2') }}"
-      when: (rhsso_keycloak_status.resources | length) == 0
 
     - name: "Check RHSSO for readiness"
       k8s_info:
@@ -207,7 +260,7 @@
     namespace: "{{ app_namespace }}"
     label_selectors:
       - app.kubernetes.io/name = {{ pathfinder_database_service_name }}
-    wait: yes
+    wait: true
     wait_condition:
       type: "Ready"
       status: "True"
@@ -281,6 +334,15 @@
       k8s:
         state: present
         definition: "{{ lookup('template', 'secret-hub.yml.j2') }}"
+
+
+- name: "Look up Keycloak DB Secret for Hashing"
+  set_fact:
+    keycloak_db_secret:
+      env: "{{ lookup('template', 'secret-keycloak-db.yml.j2') | from_yaml }}"
+  when:
+    - feature_auth_required|bool
+    - app_profile == "mta"
 
 - name: "Setup Hub API Service"
   k8s:

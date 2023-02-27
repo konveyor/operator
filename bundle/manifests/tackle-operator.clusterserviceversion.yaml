@@ -300,6 +300,13 @@ spec:
       - serviceAccountName: tackle-operator
         rules:
         - apiGroups:
+          - operator.openshift.io
+          resources:
+          - dnses
+          verbs:
+          - list
+          - get
+        - apiGroups:
           - config.openshift.io
           resources:
           - clusterversions

@@ -39,6 +39,11 @@ spec:
         app.kubernetes.io/part-of: {{ app_name }}
         app: {{ app_name }}
         role: {{ hub_service_name }}
+{% if feature_auth_required|bool %}
+{% if app_profile == 'mta' %}
+        keycloak_db_secret_name: {{ keycloak_db_secret.env | k8s_config_resource_name }}
+{% endif %}
+{% endif %}
     spec:
       serviceAccountName: {{ hub_serviceaccount_name }}
       containers:

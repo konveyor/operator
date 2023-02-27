@@ -8,5 +8,7 @@ metadata:
     app: {{ rhsso_service_name }}
 spec:
   instances: 1
+  externalDatabase:
+    enabled: true
   externalAccess:
     enabled: {{ rhsso_external_access }}
