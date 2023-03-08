@@ -1,45 +1,48 @@
-name: 'Publish'
+name: 'Publish a new release to community operators'
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - 'main'
-      - 'release-*'
-    tags:
-      - 'v*'
-
-concurrency:
-  group: march-build-${{ github.ref }}
-  cancel-in-progress: true
-
+    inputs:
+      operator_channel:
+        description: 'Channel to publish the new operator to'
+        required: true
+        type: string
+      operator_version:
+        description: 'Version of the operator you want to publish'
+        required: true
+        type: string
+      previous_operator_version:
+        description: 'Version of the previous operator release'
+        required: false
+        type: string
+      github_name:
+        description: 'Your full name'
+        required: true
+        type: string
+      github_email:
+        description: 'Your e-mail address'
+        required: true
+        type: string
 jobs:
-  push-quay:
+  publish:
     name: Build and Push Manifest
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
     steps:
-    - name: Build Operator Container
-      uses: konveyor/release-tools/build-push-quay@main
-      with:
-        architectures: "amd64, arm64, ppc64le, s390x"
-        containerfile: "./Dockerfile"
-        image_name: "tackle2-operator"
-        image_namespace: "konveyor"
-        image_registry: "quay.io"
-        quay_publish_robot: ${{ secrets.QUAY_PUBLISH_ROBOT }}
-        quay_publish_token: ${{ secrets.QUAY_PUBLISH_TOKEN }}
-        ref: ${{ github.ref }}
+    - name: Checkout Push to Registry action
+      uses: actions/checkout@main
 
-    - name: Build Operator Bundle
-      uses: konveyor/release-tools/build-push-quay@main
-      with:
-        architectures: "amd64"
-        containerfile: "./bundle.Dockerfile"
-        image_name: "tackle2-operator-bundle"
-        image_namespace: "konveyor"
-        image_registry: "quay.io"
-        quay_publish_robot: ${{ secrets.QUAY_PUBLISH_ROBOT }}
-        quay_publish_token: ${{ secrets.QUAY_PUBLISH_TOKEN }}
-        ref: ${{ github.ref }}
+    - name: Run migrations
+      run: bash ./tools/konveyor-operator-publish-commands.sh
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        GITHUB_USER: ${{ secrets.GH_USER }}
+        QUAY_ROBOT: ${{ secrets.QUAY_PUBLISH_ROBOT }}
+        QUAY_TOKEN: ${{ secrets.QUAY_PUBLISH_TOKEN }}
+        OPERATOR_VERSION: ${{ inputs.operator_version }}
+        OPERATOR_CHANNEL: ${{ inputs.operator_channel }}
+        PREV_OPERATOR_VERSION: ${{ inputs.previous_operator_version }}
+        GITHUB_NAME: ${{ inputs.github_name }}
+        GITHUB_EMAIL: ${{ inputs.github_email }}
+
