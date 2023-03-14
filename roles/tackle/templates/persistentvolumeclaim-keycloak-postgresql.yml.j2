@@ -18,7 +18,5 @@ spec:
 {% if rwo_storage_class is defined %}
 {% if rwo_storage_class|length %}
   storageClassName: {{ rwo_storage_class }}
-{% else %}
-  storageClassName: ""
 {% endif %}
 {% endif %}
