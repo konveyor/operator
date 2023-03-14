@@ -154,6 +154,7 @@
         namespace: "{{ app_namespace }}"
       when:
         - rhsso_keycloak.resources | length > 0
+        - rhsso_keycloak.resources[0].status.secondaryResources.Deployment is defined
         - '"keycloak-postgresql" in rhsso_keycloak.resources[0].status.secondaryResources.Deployment'
 
     - name: "Get PostgreSQL Keycloak Secret"
