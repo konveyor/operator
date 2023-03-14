@@ -17,7 +17,5 @@ spec:
 {% if cache_storage_class is defined %}
 {% if cache_storage_class|length %}
   storageClassName: {{ cache_storage_class }}
-{% else %}
-  storageClassName: ""
 {% endif %}
 {% endif %}
