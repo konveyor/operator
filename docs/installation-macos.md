@@ -12,7 +12,7 @@ podman machine set --rootful
 podman machine start
 ```
 2. Create a Minikube cluster with podman as the driver option
-`minikube start --memory=10g --driver podman`
+`minikube start --memory=9g --driver podman`
 3. Install ingress addon
 `minikube addons enable ingress`
 4. Install OLM to manage Tackle operator
