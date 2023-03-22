@@ -1,0 +1,45 @@
+name: 'Build and Push Multi-Arch Image'
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'main'
+      - 'release-*'
+    tags:
+      - 'v*'
+
+concurrency:
+  group: march-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  push-quay:
+    name: Build and Push Manifest
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+    steps:
+    - name: Build Operator Container
+      uses: konveyor/release-tools/build-push-quay@main
+      with:
+        architectures: "amd64, arm64, ppc64le, s390x"
+        containerfile: "./Dockerfile"
+        image_name: "tackle2-operator"
+        image_namespace: "konveyor"
+        image_registry: "quay.io"
+        quay_publish_robot: ${{ secrets.QUAY_PUBLISH_ROBOT }}
+        quay_publish_token: ${{ secrets.QUAY_PUBLISH_TOKEN }}
+        ref: ${{ github.ref }}
+
+    - name: Build Operator Bundle
+      uses: konveyor/release-tools/build-push-quay@main
+      with:
+        architectures: "amd64"
+        containerfile: "./bundle.Dockerfile"
+        image_name: "tackle2-operator-bundle"
+        image_namespace: "konveyor"
+        image_registry: "quay.io"
+        quay_publish_robot: ${{ secrets.QUAY_PUBLISH_ROBOT }}
+        quay_publish_token: ${{ secrets.QUAY_PUBLISH_TOKEN }}
+        ref: ${{ github.ref }}
