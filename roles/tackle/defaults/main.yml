@@ -6,7 +6,7 @@ app_profile: "{{ lookup('env', 'PROFILE') }}"
 app_version: "{{ lookup('env', 'VERSION') }}"
 
 # Feature defaults
-feature_auth_required: true
+feature_auth_required: "{{ false if app_profile == 'konveyor' else true }}"
 feature_isolate_namespace: true
 
 # Environment
