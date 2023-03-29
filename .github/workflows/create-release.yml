@@ -17,16 +17,13 @@ jobs:
   #   ...
   # might consider creating "rc" releases, building and testing those before
   # publishing a release.
-  release:
-    runs-on: ubuntu-latest
+  release-components:
     strategy:
       matrix:
         repository:
           - konveyor/tackle2-hub
-    steps:
-      - name: Do release
-        uses: konveyor/release-tools/.github/workflows/create-release.yml@main
-        with:
-          repository: ${{ matrix.repository }}
-          ref: ${{ github.event.inputs.branch }}
+    uses: konveyor/release-tools/.github/workflows/create-release.yml@main
+    with:
+      repository: ${{ matrix.repository }}
+      ref: ${{ github.event.inputs.branch }}
       # TODO(djzager) Next we'll need to force the multi-arch build steps to run
