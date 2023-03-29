@@ -83,6 +83,10 @@ spec:
           volumeMounts:
             - name: {{ pathfinder_database_data_volume_name }}
               mountPath: {{ pathfinder_database_data_volume_path }}
+{% if not openshift_cluster %}
+      securityContext:
+        fsGroup: 26
+{% endif %}
       volumes:
         - name: {{ pathfinder_database_data_volume_name }}
           persistentVolumeClaim:
