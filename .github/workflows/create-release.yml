@@ -24,6 +24,9 @@ jobs:
           - konveyor/tackle2-hub
     uses: konveyor/release-tools/.github/workflows/create-release.yml@main
     with:
+      version: ${{ github.event.inputs.version }}
       repository: ${{ matrix.repository }}
       ref: ${{ github.event.inputs.branch }}
+    secrets:
+      token: ${{ secrets.GH_TOKEN }}
       # TODO(djzager) Next we'll need to force the multi-arch build steps to run
