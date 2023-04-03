@@ -22,11 +22,34 @@ jobs:
       matrix:
         repository:
           - konveyor/tackle2-hub
+          - konveyor/tackle2-ui
+          - konveyor/tackle2-addon
+          - konveyor/tackle2-addon-windup
+          - konveyor/tackle2-operator
     uses: konveyor/release-tools/.github/workflows/create-release.yml@main
     with:
-      version: ${{ github.event.inputs.version }}
+      version: ${{ inputs.version }}
       repository: ${{ matrix.repository }}
-      ref: ${{ github.event.inputs.branch }}
+      ref: ${{ inputs.branch }}
     secrets:
       token: ${{ secrets.GH_TOKEN }}
       # TODO(djzager) Next we'll need to force the multi-arch build steps to run
+
+  wait-for-images:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        image:
+          - konveyor/tackle2-hub
+          - konveyor/tackle2-ui
+          - konveyor/tackle2-addon
+          - konveyor/tackle2-addon-windup
+          - konveyor/tackle2-operator
+    steps:
+      - name: Pull the image
+        run: |
+          #!/bin/bash
+          while ! docker pull quay.io/${{ matrix.image }}:${{ inputs.version }} &> /dev/null; do
+              sleep 3m
+          done
+          docker image inspect quay.io/${{ matrix.image }}:${{ inputs.version }}
