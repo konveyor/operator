@@ -5,7 +5,7 @@
 # All objects are created inside PROJECT_NS namespace for OCP and k8s clusters
 
 PROJECT_ROOT="../"
-CSV_PATH="bundle/manifests/tackle-operator.clusterserviceversion.yaml"
+CSV_PATH="bundle/manifests/konveyor-operator.clusterserviceversion.yaml"
 REQ_BINS="opm oc docker podman operator-sdk"
 OPERATOR_REPO="tackle2-operator"
 BUNDLE_REPO="tackle2-operator-bundle"

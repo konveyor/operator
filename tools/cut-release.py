@@ -6,7 +6,7 @@ import jinja2
 import datetime
 
 # Files to template, the template name to be used and target file path relative to --project-path
-files = { 1: {'template': 'clusterserviceversion.yaml.j2', 'path': 'bundle/manifests/tackle-operator.clusterserviceversion.yaml'},
+files = { 1: {'template': 'clusterserviceversion.yaml.j2', 'path': 'bundle/manifests/konveyor-operator.clusterserviceversion.yaml'},
           2: {'template': 'annotations.yaml.j2', 'path': 'bundle/metadata/annotations.yaml'},
           3: {'template': 'bundle.Dockerfile.j2', 'path': 'bundle.Dockerfile'},
           4: {'template': 'tackle-k8s.yaml.j2', 'path': 'tackle-k8s.yaml'}}
