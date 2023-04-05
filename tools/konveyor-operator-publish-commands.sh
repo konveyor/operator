@@ -26,7 +26,7 @@ REGISTRY_ORG="konveyor"
 UNRELEASED_SEMVER="v99.0.0"
 OPERATOR_MANIFESTS="bundle/manifests"
 OPERATOR_METADATA="bundle/metadata"
-CSV="tackle-operator.clusterserviceversion.yaml"
+CSV="konveyor-operator.clusterserviceversion.yaml"
 
 echo ${QUAY_TOKEN} | docker login ${REGISTRY_HOST} -u ${QUAY_ROBOT} --password-stdin
 
