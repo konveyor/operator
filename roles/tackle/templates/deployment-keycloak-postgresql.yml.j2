@@ -85,6 +85,10 @@ spec:
             failureThreshold: 3
           terminationMessagePath: "/dev/termination-log"
           terminationMessagePolicy: File
+{% if not openshift_cluster %}
+      securityContext:
+        fsGroup: 26
+{% endif %}
       volumes:
         - name: {{ keycloak_database_data_volume_name }}
           persistentVolumeClaim:
