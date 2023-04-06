@@ -54,6 +54,7 @@ jobs:
 
   wait-for-images:
     runs-on: ubuntu-20.04
+    needs: release-components
     strategy:
       matrix:
         image:
@@ -73,6 +74,7 @@ jobs:
 
   publish:
     name: Build and Push Manifest
+    needs: wait-for-images
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
