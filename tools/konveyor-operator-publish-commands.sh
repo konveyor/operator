@@ -4,6 +4,9 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
+export OPERATOR_VERSION=$(echo ${OPERATOR_SEMVER} | sed -e 's/^v//g')
+export PREV_OPERATOR_VERSION=$(echo ${PREV_OPERATOR_SEMVER} | sed -e 's/^v//g')
+
 echo "************ konveyor  operator publish command ************"
 
 # Install tools
