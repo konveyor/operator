@@ -87,8 +87,8 @@ jobs:
         GITHUB_USER: ${{ secrets.GH_USER }}
         QUAY_ROBOT: ${{ secrets.QUAY_PUBLISH_ROBOT }}
         QUAY_TOKEN: ${{ secrets.QUAY_PUBLISH_TOKEN }}
-        OPERATOR_VERSION: ${{ inputs.version }}
+        OPERATOR_SEMVER: ${{ inputs.version }}
         OPERATOR_CHANNEL: ${{ inputs.operator_channel }}
-        PREV_OPERATOR_VERSION: ${{ inputs.previous_version }}
+        PREV_OPERATOR_SEMVER: ${{ inputs.previous_version }}
         GITHUB_NAME: ${{ inputs.github_name }}
         GITHUB_EMAIL: ${{ inputs.github_email }}
