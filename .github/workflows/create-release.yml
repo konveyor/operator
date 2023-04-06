@@ -1,4 +1,4 @@
-name: Create Release
+name: Create Release and Publish to Community Operators
 
 on:
   workflow_dispatch:
@@ -6,10 +6,27 @@ on:
       version:
         description: 'The semantic version of the release (e.g. v1.2.3)'
         required: true
+      previous_version:
+        description: 'The semantic version of the previous release (e.g. v1.2.2)'
+        required: false
+        type: string
       branch:
         description: 'The branch to create the release from (defaults to main)'
         required: false
         default: 'main'
+      operator_channel:
+        description: 'Channel to publish the new operator to'
+        required: true
+        type: string
+      github_name:
+        description: 'Your full name'
+        required: true
+        type: string
+      github_email:
+        description: 'Your e-mail address'
+        required: true
+        type: string
+
 
 jobs:
   # TODO(djzager): This is where we would want to do some integration testing
@@ -53,3 +70,25 @@ jobs:
               sleep 3m
           done
           docker image inspect quay.io/${{ matrix.image }}:${{ inputs.version }}
+
+  publish:
+    name: Build and Push Manifest
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+    steps:
+    - name: Checkout Push to Registry action
+      uses: actions/checkout@main
+
+    - name: Run migrations
+      run: bash ./tools/konveyor-operator-publish-commands.sh
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        GITHUB_USER: ${{ secrets.GH_USER }}
+        QUAY_ROBOT: ${{ secrets.QUAY_PUBLISH_ROBOT }}
+        QUAY_TOKEN: ${{ secrets.QUAY_PUBLISH_TOKEN }}
+        OPERATOR_VERSION: ${{ inputs.version }}
+        OPERATOR_CHANNEL: ${{ inputs.operator_channel }}
+        PREV_OPERATOR_VERSION: ${{ inputs.previous_version }}
+        GITHUB_NAME: ${{ inputs.github_name }}
+        GITHUB_EMAIL: ${{ inputs.github_email }}
