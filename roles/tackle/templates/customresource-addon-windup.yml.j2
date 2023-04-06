@@ -12,6 +12,9 @@ spec:
   image: {{ windup_fqin }}
   imagePullPolicy: {{ image_pull_policy }}
   resources:
+    limits:
+      cpu: {{ windup_container_limits_cpu }}
+      memory: {{ windup_container_limits_memory }}
     requests:
       cpu: {{ windup_container_requests_cpu }}
       memory: {{ windup_container_requests_memory }}
