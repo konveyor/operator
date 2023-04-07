@@ -43,6 +43,7 @@ jobs:
           - konveyor/tackle2-addon
           - konveyor/tackle2-addon-windup
           - konveyor/tackle2-operator
+          - konveyor/tackle-pathfinder
     uses: konveyor/release-tools/.github/workflows/create-release.yml@main
     with:
       version: ${{ inputs.version }}
@@ -63,6 +64,7 @@ jobs:
           - konveyor/tackle2-addon
           - konveyor/tackle2-addon-windup
           - konveyor/tackle2-operator
+          - konveyor/tackle-pathfinder
     steps:
       - name: Pull the image
         run: |
