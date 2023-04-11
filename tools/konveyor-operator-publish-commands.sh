@@ -126,7 +126,7 @@ operator_digest=$(curl -G "https://${REGISTRY_HOST}/api/v1/repository/${operator
 export operator_digest_fqin=${operator_image}@${operator_digest}
 /tmp/yq eval --exit-status --inplace \
     '.spec.install.spec.deployments[0].spec.template.spec.containers[0].image |= strenv(operator_digest_fqin)' "${CO_CSV}"
-
+/tmp/yq eval --exit-status --inplace '.metadata.annotations["containerImage"] |= strenv(operator_digest_fqin)' "${CO_CSV}"
 
 echo "   update createdAt time"
 CREATED_AT=$(date +"%Y-%m-%dT%H:%M:%SZ") /tmp/yq eval --exit-status --inplace '.metadata.annotations["createdAt"] |= strenv(CREATED_AT)' "${CO_CSV}" 
