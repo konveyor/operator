@@ -85,7 +85,7 @@ pushd "${CO_DIR}"
 git checkout -B "${OPERATOR_VERSION}"
 CO_CSV="${CO_OPERATOR_DIR}/${OPERATOR_VERSION}/manifests/${CSV}"
 
-echo "   updating images to use digest"
+echo "   updating operand images to use digest"
 # Grab all of the images from the relatedImages and get their digest sha
 for full_image in $(/tmp/yq eval '.spec.relatedImages[] | .image' "${CO_CSV}"); do
     image=${full_image%:*}
@@ -113,6 +113,20 @@ for full_image in $(/tmp/yq eval '.spec.relatedImages[] | .image' "${CO_CSV}"); 
     [[ -z ${digest} ]] && false
     sed -i "s,${full_image},${REGISTRY_HOST}/${mirror_image_name}@${digest},g" "${CO_CSV}"
 done
+
+echo "   updating operator image to use digest"
+full_operator_image=$(/tmp/yq eval '.spec.install.spec.deployments[0].spec.template.spec.containers[0] | .image' "${CO_CSV}")
+operator_image=${full_operator_image%:*}
+operator_image_name=${operator_image#*/}
+operator_digest=$(curl -G "https://${REGISTRY_HOST}/api/v1/repository/${operator_image_name}/tag/?specificTag=v${OPERATOR_VERSION}" | \
+        /tmp/jq -e -r '
+            .tags[]
+            | select((has("expiration") | not))
+            | .manifest_digest')
+export operator_digest_fqin=${operator_image}@${operator_digest}
+/tmp/yq eval --exit-status --inplace \
+    '.spec.install.spec.deployments[0].spec.template.spec.containers[0].image |= strenv(operator_digest_fqin)' "${CO_CSV}"
+
 
 echo "   update createdAt time"
 CREATED_AT=$(date +"%Y-%m-%dT%H:%M:%SZ") /tmp/yq eval --exit-status --inplace '.metadata.annotations["createdAt"] |= strenv(CREATED_AT)' "${CO_CSV}" 
