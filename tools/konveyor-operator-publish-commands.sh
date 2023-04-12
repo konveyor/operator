@@ -172,6 +172,10 @@ done
 echo "   add minimum version to annotations"
 /tmp/yq eval --inplace '.annotations["com.redhat.openshift.versions"] = "v4.9" | .annotations["com.redhat.openshift.versions"] style="double"' ${CO_OPERATOR_ANNOTATIONS}
 
+echo "   remove scorecard annotations"
+/tmp/yq eval --inplace 'del(.annotations["operators.operatorframework.io.test.mediatype.v1"])' ${CO_OPERATOR_ANNOTATIONS}
+/tmp/yq eval --inplace 'del(.annotations["operators.operatorframework.io.test.config.v1"])' ${CO_OPERATOR_ANNOTATIONS}
+
 echo
 echo "## Submit PR to community operators"
 echo "   commit changes"
