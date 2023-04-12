@@ -35,7 +35,7 @@ spec:
     spec:
       initContainers:
         - name: keycloak-theme
-          image: quay.io/konveyor/tackle-keycloak-init:1.2.0
+          image: "{{ keycloak_init_image_fqin }}"
           volumeMounts:
             - name: {{ keycloak_sso_service_name }}-theme
               mountPath: /deployments
