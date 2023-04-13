@@ -34,11 +34,17 @@ CSV="konveyor-operator.clusterserviceversion.yaml"
 echo ${QUAY_TOKEN} | docker login ${REGISTRY_HOST} -u ${QUAY_ROBOT} --password-stdin
 
 CO_PROJECT="community-operators-prod"
+CO_PROJECT_K8s="community-operators"
 CO_REPO="redhat-openshift-ecosystem/${CO_PROJECT}"
+CO_REPO_K8S="k8s-operatorhub/${CO_PROJECT_K8S}"
 CO_GIT="https://github.com/${CO_REPO}.git"
+CO_GIT_K8S="https://github.com/${CO_REPO_K8S}.git"
 CO_FORK="https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${CO_PROJECT}.git"
+CO_FORK_K8S="https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${CO_PROJECT_K8S}.git"
 CO_DIR=$(mktemp -d)
+CO_DIR_K8S=$(mktemp -d)
 CO_OPERATOR_DIR="${CO_DIR}/operators/konveyor-operator"
+CO_OPERATOR_DIR_K8S="${CO_DIR_K8S}/operators/konveyor-operator"
 CO_OPERATOR_ANNOTATIONS="${CO_OPERATOR_DIR}/${OPERATOR_VERSION}/metadata/annotations.yaml"
 
 if [ -z "${GITHUB_USER}" ] || [ -z "${GITHUB_TOKEN}" ] || [ -z "${GITHUB_NAME}" ] || [ -z "${GITHUB_EMAIL}" ]; then
@@ -47,7 +53,7 @@ if [ -z "${GITHUB_USER}" ] || [ -z "${GITHUB_TOKEN}" ] || [ -z "${GITHUB_NAME}" 
 fi
 
 echo
-echo "## Cloning community-operator repo"
+echo "## Cloning community-operator-prod repo"
 git clone "${CO_FORK}" "${CO_DIR}"
 pushd "${CO_DIR}"
 git remote add upstream "${CO_GIT}"
@@ -56,6 +62,18 @@ git checkout upstream/main
 git config user.name "${GITHUB_NAME}"
 git config user.email "${GITHUB_EMAIL}"
 echo "   ${CO_PROJECT} cloned"
+popd
+
+echo
+echo "## Cloning community-operator repo"
+git clone "${CO_FORK_K8S}" "${CO_DIR_K8S}"
+pushd "${CO_DIR_K8S}"
+git remote add upstream "${CO_GIT_K8S}"
+git fetch upstream main:upstream/main
+git checkout upstream/main
+git config user.name "${GITHUB_NAME}"
+git config user.email "${GITHUB_EMAIL}"
+echo "   ${CO_PROJECT_K8S} cloned"
 popd
 
 echo
@@ -169,12 +187,24 @@ for c in ${BUNDLE_CHANNELS//,/ }; do
     /tmp/yq eval --inplace '.annotations["operators.operatorframework.io.bundle.channel.default.v1"] |= strenv(OPERATOR_CHANNEL)' ${CO_OPERATOR_ANNOTATIONS}
 done
 
-echo "   add minimum version to annotations"
-/tmp/yq eval --inplace '.annotations["com.redhat.openshift.versions"] = "v4.9" | .annotations["com.redhat.openshift.versions"] style="double"' ${CO_OPERATOR_ANNOTATIONS}
-
 echo "   remove scorecard annotations"
 /tmp/yq eval --inplace 'del(.annotations["operators.operatorframework.io.test.mediatype.v1"])' ${CO_OPERATOR_ANNOTATIONS}
 /tmp/yq eval --inplace 'del(.annotations["operators.operatorframework.io.test.config.v1"])' ${CO_OPERATOR_ANNOTATIONS}
+
+echo "   copy updated operator files to K8s repo and submit PR"
+cp -r ${CO_OPERATOR_DIR} ${CO_OPERATOR_DIR_K8S}
+pushd "${CO_DIR_K8S}"
+git checkout -B "${OPERATOR_VERSION}"
+git add --all
+git commit -s -m "konveyor-operator.v${OPERATOR_VERSION}"
+git push --set-upstream --force origin HEAD
+# Create PR
+curl "https://api.github.com/repos/${CO_REPO_K8S}/pulls" --user "${GITHUB_USER}:${GITHUB_TOKEN}" -X POST \
+    --data '{"title": "'"$(git log -1 --format=%s)"'", "base": "main", "body": "An automated PR to update konveyor-operator to v'"${OPERATOR_VERSION}"'", "head": "'"${GITHUB_USER}:${OPERATOR_VERSION}"'"}'
+popd
+
+echo "   add minimum version to annotations"
+/tmp/yq eval --inplace '.annotations["com.redhat.openshift.versions"] = "v4.9" | .annotations["com.redhat.openshift.versions"] style="double"' ${CO_OPERATOR_ANNOTATIONS}
 
 echo
 echo "## Submit PR to community operators"
