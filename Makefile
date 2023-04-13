@@ -9,6 +9,11 @@ VERSION ?= 99.0.0
 # with docker or podman
 CONTAINER_RUNTIME ?= docker
 
+# TARGET_ARCH is the architecture of the image to be built
+# Note, that even developers running on arm64 Macs will likely want to set
+# this to amd64 when building local images to deploy into remote clusters
+TARGET_ARCH ?= amd64
+
 # CHANNELS define the bundle channels used in the bundle.
 # Add a new line here if you would like to change its default config. (E.g CHANNELS = "candidate,fast,stable")
 # To re-generate a bundle for other specific channels without changing the standard setup, you can:
@@ -82,7 +87,7 @@ run: ansible-operator ## Run against the configured Kubernetes cluster in ~/.kub
 
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.
-	$(CONTAINER_RUNTIME) build -t ${IMG} .
+	$(CONTAINER_RUNTIME) build --arch ${TARGET_ARCH} -t ${IMG} .
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.
@@ -151,7 +156,7 @@ bundle: kustomize ## Generate bundle manifests and metadata, then validate gener
 
 .PHONY: bundle-build
 bundle-build: ## Build the bundle image.
-	$(CONTAINER_RUNTIME) build -f bundle.Dockerfile -t $(BUNDLE_IMG) .
+	$(CONTAINER_RUNTIME) build --arch ${TARGET_ARCH} -f bundle.Dockerfile -t $(BUNDLE_IMG) .
 
 .PHONY: bundle-push
 bundle-push: ## Push the bundle image.

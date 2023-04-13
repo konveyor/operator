@@ -15,6 +15,7 @@ PROJECT_NS="konveyor-tackle"
 TAG="latest"
 NAME="Tackle"
 
+
 function usage () {
 echo
 echo "Valid arguments for $(basename $0):"
@@ -118,7 +119,15 @@ if [ ! -z ${RUN_BUNDLE} ]; then
 	echo "##### Building and pushing Bundle #####"
 	echo
 	# Must patch bundle CSV with target custom operator image first, assumes main branch latest tag
-	sed -i "s/quay.io\/konveyor\/tackle2-operator:latest/quay.io\/${QUAY_NS}\/tackle2-operator:${TAG}/" ${CSV_PATH}
+    BODY="s|quay.io/konveyor/tackle2-operator:latest|quay.io/${QUAY_NS}/tackle2-operator:${TAG}|" 
+    if [[ "$(uname)" == "Darwin" ]]; then
+        # sed on MacOS requires an argument for -i to optionally be an extension for the backup file
+        # we are giving it '' to avoid creating a backup file
+        # https://stackoverflow.com/questions/5694228/sed-in-place-flag-that-works-both-on-mac-bsd-and-linux
+        sed -i '' ${BODY} ${CSV_PATH}
+    else
+        sed -i ${BODY} ${CSV_PATH}
+    fi
 	operator-sdk bundle validate ./bundle && make bundle-build bundle-push BUNDLE_IMG=quay.io/${QUAY_NS}/${BUNDLE_REPO}:${TAG}
 fi
 
