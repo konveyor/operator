@@ -6,7 +6,7 @@ metadata:
   annotations:
     capabilities: Seamless Upgrades
     description: >-
-      Konveyor contains tools that support the modernization and migration of applications to Kubernetes and OpenShift
+      Konveyor is an open-source application modernization platform that helps organizations safely and predictably modernize applications to Kubernetes at scale.
     categories: 'Modernization & Migration'
     support: https://github.com/konveyor/tackle2-operator/issues
     repository: https://github.com/konveyor/tackle2-operator
@@ -67,18 +67,11 @@ spec:
       displayName: Addon
       description: Tackle Addon
   description: |+
-    Konveyor is a collection of tools that supports large-scale application modernization and migration projects to Kubernetes and OpenShift.
+    Konveyor is an open-source application modernization platform that helps organizations safely and predictably modernize applications to new technologies, with an initial focus on accelerating the adoption of legacy applications to Kubernetes.
 
-
-    Konveyor allows users to maintain their portfolio of applications with a full set of metadata and to assess their suitability for modernization leveraging a questionnaire based approach.
-
-
-    Konveyor is a project within the [Konveyor community](https://www.konveyor.io/).
-
+    See the [Konveyor Unified Experience](https://github.com/konveyor/enhancements/tree/master/enhancements/unified_experience) to understand the vision of the project and the [Konveyor Charter](https://github.com/konveyor/community/blob/main/Charter.md) for more information on the community.
 
     ### Install
-
-    By default, Konveyor requires a RWX storage class for caching purposes, this can be disabled via the rwx_supported parameter in Tackle CR.
 
     Once you have successfully installed the Operator, proceed to deploy components by creating the required Tackle CR.
 
@@ -87,13 +80,19 @@ spec:
     * Hub, to manage the application inventory and coordinate the migration process.
     * UI, the web console to manage the application inventory and drive the migration waves.
     * Pathfinder, a service to manage the assessment questionnaires.
+
+    Authentication capabilities may be enabled via the `feature_auth_required` parameter in the Tackle CR. When enabled, the Operator installs the following components:
     * Keycloak, to manage authentication, including with 3rd-party providers.
+
+    ### Examples
+    If you are just getting started using Konveyor, take a look at an [example application analysis here](https://github.com/konveyor/example-applications/tree/main/example-1)
 
     ### Documentation
     Documentation can be found on our [website](https://konveyor.github.io/tackle).
 
     ### Getting help
     If you encounter any issues while using Konveyor operator, you can create an issue on our [Github repo](https://github.com/konveyor/tackle2-operator/issues), for bugs, enhancements or other requests.
+    Or reach out to us in [#konveyor](https://kubernetes.slack.com/archives/CR85S82A2) on kubernetes.slack.com
 
     ### Contributing
     You can contribute by:
