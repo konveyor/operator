@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-{% if ui_tls_enabled|bool and openshift_cluster|bool %}
+{% if (ui_tls_enabled|bool and openshift_cluster|bool) or (feature_auth_required|bool and feature_auth_type == "oauth") %}
   annotations:
     service.beta.openshift.io/serving-cert-secret-name: {{ ui_tls_secret_name }}
 {% endif %}
@@ -14,10 +14,17 @@ metadata:
   namespace: {{ app_namespace }}
 spec:
   ports:
+{% if feature_auth_required|bool and feature_auth_type == "oauth" %}
+    - name: ui
+      port: {{ oauth_ssl_port }}
+      targetPort: {{ oauth_ssl_port }}
+      protocol: TCP
+{% else %}
     - name: ui
       port: {{ ui_port }}
       targetPort: {{ ui_port }}
       protocol: TCP
+{% endif %}
   selector:
     app.kubernetes.io/name: {{ ui_service_name }}
     app.kubernetes.io/component: {{ ui_component_name }}

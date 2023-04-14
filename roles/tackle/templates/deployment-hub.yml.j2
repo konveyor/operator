@@ -11,7 +11,7 @@ metadata:
   annotations:
     app.openshift.io/connects-to: >-
       [
-{% if feature_auth_required|bool %}
+{% if feature_auth_required|bool and feature_auth_type == "keycloak" %}
 {% if app_profile == 'konveyor' %}
         { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ keycloak_sso_deployment_name }}" },
 {% elif app_profile == 'mta' %}
@@ -97,11 +97,16 @@ spec:
                 secretKeyRef:
                   name: "{{ hub_secret_name }}"
                   key: addon_token
+{% if feature_auth_required|bool and feature_auth_type == "keycloak" %}
             - name: AUTH_REQUIRED
-              value: '{{ feature_auth_required|lower }}'
+              value: "true"
+{% else %}
+            - name: AUTH_REQUIRED
+              value: "false"
+{% endif %}
             - name: PATHFINDER_URL
               value: "{{ pathfinder_url }}"
-{% if feature_auth_required|bool %}
+{% if feature_auth_required|bool and feature_auth_type == "keycloak" %}
             - name: KEYCLOAK_REALM
               value: "{{ keycloak_sso_realm }}"
             - name: KEYCLOAK_CLIENT_ID

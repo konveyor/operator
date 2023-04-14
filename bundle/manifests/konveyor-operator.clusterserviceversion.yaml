@@ -144,6 +144,8 @@ spec:
                   value: konveyor
                 - name: VERSION
                   value: 99.0.0
+                - name: RELATED_IMAGE_OAUTH_PROXY
+                  value: docker.io/openshift/oauth-proxy:latest
                 - name: RELATED_IMAGE_TACKLE_HUB
                   value: quay.io/konveyor/tackle2-hub:latest
                 - name: RELATED_IMAGE_PATHFINDER_DATABASE
@@ -202,6 +204,7 @@ spec:
           - events
           - configmaps
           - secrets
+          - serviceaccounts
           verbs:
           - '*'
         - apiGroups:
@@ -330,6 +333,8 @@ spec:
           - update
           - patch
           - delete
+      - serviceAccountName: tackle-ui
+        rules: []
   installModes:
   - supported: true
     type: OwnNamespace

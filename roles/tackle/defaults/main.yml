@@ -7,6 +7,7 @@ app_version: "{{ lookup('env', 'VERSION') }}"
 
 # Feature defaults
 feature_auth_required: "{{ false if app_profile == 'konveyor' else true }}"
+feature_auth_type: keycloak
 feature_isolate_namespace: true
 
 # Environment
@@ -136,6 +137,7 @@ keycloak_sso_url: "{{ keycloak_sso_proto }}://{{ keycloak_sso_service_name }}.{{
 ui_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_TACKLE_UI') }}"
 ui_component_name: "ui"
 ui_service_name: "{{ app_name }}-{{ ui_component_name }}"
+ui_serviceaccount_name: "{{ app_name }}-{{ ui_component_name }}"
 ui_configmap_name: "{{ ui_service_name }}-config"
 ui_deployment_name: "{{ ui_service_name }}"
 ui_deployment_replicas: "1"
@@ -154,6 +156,12 @@ ui_proto: "{{ 'https' if ui_tls_enabled | bool else 'http' }}"
 ui_node_extra_ca_certs: "/opt/app-root/src/ca.crt"
 ui_route_tls_termination: "edge"
 ui_route_tls_insecure_termination_policy: "Redirect"
+
+oauth_provider: openshift
+oauth_default_openshift_sar: --openshift-sar={"namespace":"{{ app_namespace }}","resource":"services","resourceName":"{{ ui_service_name }}","verb":"get"}
+oauth_access_rule: "{{ oauth_default_openshift_sar if oauth_provider == 'openshift' }}"
+oauth_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_OAUTH_PROXY') }}"
+oauth_ssl_port: 9443
 
 admin_fqin: "{{ lookup('env', 'RELATED_IMAGE_ADDON_ADMIN') }}"
 admin_name: "admin"

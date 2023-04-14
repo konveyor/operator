@@ -16,5 +16,9 @@ spec:
     kind: Service
     name: {{ ui_service_name }}
   tls:
+{% if feature_auth_required|bool and feature_auth_type == "oauth" %}
+    termination: reencrypt
+{% else %}
     termination: {{ ui_route_tls_termination }}
+{% endif %}
     insecureEdgeTerminationPolicy: {{ ui_route_tls_insecure_termination_policy }}

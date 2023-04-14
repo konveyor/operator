@@ -11,12 +11,10 @@ metadata:
   annotations:
     app.openshift.io/connects-to: >-
       [
-{% if feature_auth_required|bool %}
-{% if app_profile == 'konveyor' %}
+{% if feature_auth_required|bool and feature_auth_type == "keycloak" and app_profile == 'konveyor' %}
         { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ keycloak_sso_deployment_name }}" },
-{% elif app_profile == 'mta' %}
+{% elif feature_auth_required|bool and feature_auth_type == "keycloak" and app_profile == 'mta' %}
         { "apiVersion": "apps/v1", "kind": "StatefulSet", "name": "keycloak" },
-{% endif %}
 {% endif %}
         { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ hub_deployment_name }}" }
       ]
@@ -37,6 +35,51 @@ spec:
         role: {{ ui_service_name }}
     spec:
       containers:
+{% if feature_auth_required|bool and feature_auth_type == "oauth" %}
+        - args:
+          - --https-address=:{{ oauth_ssl_port }}
+          - --provider={{ oauth_provider }}
+          - --upstream=http://localhost:{{ ui_port }}
+          - --cookie-secret={{ cookie_secret_data }}
+{% if oauth_provider == "openshift" %}
+          - --openshift-service-account={{ ui_serviceaccount_name }}
+          - --tls-cert=/etc/tls/private/tls.crt
+          - --tls-key=/etc/tls/private/tls.key
+{% else %}
+          - --tls-cert-file=/etc/tls/private/tls.crt
+          - --tls-key-file=/etc/tls/private/tls.key
+{% if oauth_email_domain is defined %}
+          - --email-domain={{ oauth_email_domain }}
+{% endif %}
+{% if oauth_client_id is defined %}
+          - --client-id={{ oauth_client_id }}
+{% endif %}
+{% if oauth_client_secret is defined %}
+          - --client-secret={{ oauth_client_secret }}
+{% endif %}
+{% endif %}
+{% if oauth_access_rule != "" %}
+          - {{ oauth_access_rule }}
+{% endif %}
+{% if oauth_extra_opts is defined %}
+{% for item in oauth_extra_opts  %}
+          - {{ item }}
+{% endfor %}
+{% endif %}
+          image: "{{ oauth_image_fqin }}"
+          imagePullPolicy: "{{ image_pull_policy }}"
+          name: oauth-proxy
+          ports:
+          - containerPort: 8081
+            name: public
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/tls/private
+            name: {{ ui_tls_secret_name }}
+{% endif %}
         - name: {{ ui_container_name }}
           image: "{{ ui_image_fqin }}"
           imagePullPolicy: "{{ image_pull_policy }}"
@@ -51,9 +94,9 @@ spec:
               value: '{{ui_ingress_proxy_body_size}}'
             - name: TACKLE_HUB_URL
               value: "{{ hub_url }}"
+{% if feature_auth_required|bool and feature_auth_type == "keycloak" %}
             - name: AUTH_REQUIRED
-              value: "{{ feature_auth_required|lower }}"
-{% if feature_auth_required|bool %}
+              value: "true"
             - name: KEYCLOAK_REALM
               value: {{ keycloak_sso_realm }}
             - name: KEYCLOAK_CLIENT_ID
@@ -65,6 +108,9 @@ spec:
             - name: KEYCLOAK_SERVER_URL
               value: {{ keycloak_sso_url }}
 {% endif %}
+{% else %}
+            - name: AUTH_REQUIRED
+              value: "false"
 {% endif %}
             - name: NODE_EXTRA_CA_CERTS
               value: {{ ui_node_extra_ca_certs }}
@@ -122,8 +168,9 @@ spec:
               mountPath: /etc/pki/ca-trust/extracted/pem
               readOnly: true
 {% endif %}
+      serviceAccount: {{ ui_serviceaccount_name }}
       volumes:
-{% if ui_tls_enabled|bool %}
+{% if ui_tls_enabled|bool or (feature_auth_required|bool and feature_auth_type == "oauth") %}
         - name: {{ ui_tls_secret_name }}
           secret:
             secretName: {{ ui_tls_secret_name }}
