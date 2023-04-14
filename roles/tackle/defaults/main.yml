@@ -146,8 +146,14 @@ ui_container_limits_cpu: "500m"
 ui_container_limits_memory: "800Mi"
 ui_container_requests_cpu: "100m"
 ui_container_requests_memory: "350Mi"
+# Setting ingress defaults for 'nginx' ingress
+# To use 'alb' ingress need to set:
+#   ui_ingress_class_name: "alb"
+#   ui_ingress_path_type: "Prefix"
 ui_ingress_name: "{{ app_name }}"
+ui_ingress_class_name: "nginx"
 ui_ingress_proxy_body_size: "500m"
+ui_ingress_path_type: ImplementationSpecific
 ui_route_name: "{{ app_name }}"
 ui_tls_enabled: false
 ui_tls_secret_name: "{{ ui_service_name }}-serving-cert"
