@@ -16,6 +16,6 @@ metadata:
 spec:
   channel: development
   installPlanApproval: Automatic
-  name: tackle-operator
+  name: konveyor-operator
   source: konveyor-tackle
   sourceNamespace: konveyor-tackle
