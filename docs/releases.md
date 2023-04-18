@@ -23,4 +23,4 @@ We use semantic versioning convention (semver) for stable releases, release bran
    1. Review changes, commmit, and submit the PR against new release branch for review
 1. Once the release PR is ready and merged, add it to the index image and push to quay.io
    1. `tools/push-release-metadata.py --old-version 1.9.9 --new-version 2.0.0`
-   1. Create or refresh existing konveyor-tackle catalog source and validate `oc create -f tackle-operator-catalog.yaml`
+   1. Create or refresh existing konveyor-tackle catalog source and validate `oc create -f konveyor-operator-catalog.yaml`

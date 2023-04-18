@@ -112,7 +112,7 @@ Released (or public betas) of Tackle are installable on OpenShift via community 
 
 Installing latest is almost an identical procedure to released versions but requires creating a new catalog source.
 
-1. `oc apply -f https://raw.githubusercontent.com/konveyor/tackle2-operator/main/tackle-operator-catalog.yaml`
+1. `oc apply -f https://raw.githubusercontent.com/konveyor/tackle2-operator/main/konveyor-operator-catalog.yaml`
 1. Visit the OpenShift Web Console.
 1. Navigate to _Operators => OperatorHub_.
 1. Search for _Tackle_.
