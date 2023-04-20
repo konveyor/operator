@@ -1,8 +1,8 @@
-# Tackle Operator
+# Konveyor Operator
 
 [![Operator Repository on Quay](https://quay.io/repository/konveyor/tackle2-operator/status "Operator Repository on Quay")](https://quay.io/repository/konveyor/tackle2-operator) [![License](http://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html) [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/konveyor/tackle2-operator/pulls)
 
-The Tackle Operator fully manages the deployment and life cycle of Tackle on Kubernetes and OpenShift.
+The Konveyor Operator fully manages the deployment and life cycle of Konveyor on Kubernetes and OpenShift.
 
 ## Prerequisites
 
@@ -40,15 +40,15 @@ Tackle can provide namespace network isolation if a supported CNI, such as [Cali
 
 `$ minikube start --network-plugin=cni --cni=calico`
 
-## Tackle Operator Installation on k8s
+## Konveyor Operator Installation on k8s
 
 ### Installing _released versions_
 
-Released (or public betas) of Tackle are installable on Kubernetes via [OperatorHub](https://operatorhub.io/operator/tackle-operator).
+Released (or public betas) of Konveyor are installable on Kubernetes via [OperatorHub](https://operatorhub.io/operator/konveyor-operator).
 
 ### Installing _latest_
 
-Deploy Tackle using manifest:
+Deploy Konveyor using manifest:
 
 `$ kubectl apply -f https://raw.githubusercontent.com/konveyor/tackle2-operator/main/tackle-k8s.yaml`
 
@@ -96,17 +96,17 @@ tackle-pathfinder-6c58447d8f-rd6rr                             1/1     Running  
 tackle-pathfinder-postgresql-5fff469bcc-bc5z2                  1/1     Running     0          130m
 tackle-ui-5f694bddcb-scbh5                                     1/1     Running     0          130m
 ```
-If you are looking to install Tackle operator in MacOS, follow along [this guide](docs/installation-macos.md). 
-## Tackle Operator Installation on OKD/OpenShift
+If you are looking to install Konveyor operator in MacOS, follow along [this guide](docs/installation-macos.md). 
+## Konveyor Operator Installation on OKD/OpenShift
 
 ### Installing _released versions_
 
-Released (or public betas) of Tackle are installable on OpenShift via community operators which appear in [OCP](https://openshift.com/) and [OKD](https://www.okd.io/).
+Released (or public betas) of Konveyor are installable on OpenShift via community operators which appear in [OCP](https://openshift.com/) and [OKD](https://www.okd.io/).
 
 1. Visit the OpenShift Web Console.
 1. Navigate to _Operators => OperatorHub_.
-1. Search for _Tackle_.
-1. Install the desired _Tackle_ version.
+1. Search for _Konveyor_.
+1. Install the desired _Konveyor_ version.
 
 ### Installing _latest_
 
@@ -115,16 +115,16 @@ Installing latest is almost an identical procedure to released versions but requ
 1. `oc apply -f https://raw.githubusercontent.com/konveyor/tackle2-operator/main/tackle-operator-catalog.yaml`
 1. Visit the OpenShift Web Console.
 1. Navigate to _Operators => OperatorHub_.
-1. Search for _Tackle_.
-1. There should be two _Tackle_ available for installation now.
-1. Select the _Tackle_ **without** the _community_ tag.
+1. Search for _Konveyor_.
+1. There should be two _Konveyor_ available for installation now.
+1. Select the _Konveyor_ **without** the _community_ tag.
 1. Proceed to install latest using the _development_ channel in the subscription step.
 
 ### Tackle CR Creation
 
 1. Visit OpenShift Web Console, navigate to _Operators => Installed Operators_.
-1. Select _Tackle_.
-1. Locate _Tackle_ on the top menu and click on it.
+1. Select _Konveyor_.
+1. Locate _Konveyor_ on the top menu and click on it.
 1. Adjust settings if desired and click Create instance.
 
 ## Tackle CR Settings
@@ -150,9 +150,9 @@ Custom settings can be applied by editing the `Tackle` CR.
 
 `oc edit tackle -n <your-tackle-namespace>`
 
-## Tackle Storage Requirements
+## Konveyor Storage Requirements
 
-Tackle requires a total of 5 persistent volumes (PVs) used by different components to successfully deploy, 3 RWO volumes and 2 RWX volumes will be requested via PVCs.
+Konveyor requires a total of 5 persistent volumes (PVs) used by different components to successfully deploy, 3 RWO volumes and 2 RWX volumes will be requested via PVCs.
 
 Name | Default Size | Access Mode | Description
 --- | --- | --- | ---
@@ -162,7 +162,7 @@ keycloak postgresql | 1Gi | RWO | Keycloak backend DB
 pathfinder postgresql | 1Gi | RWO | Pathfinder backend DB
 cache | 100Gi | RWX | cache repository
 
-### Tackle Storage Custom Settings Example
+### Konveyor Storage Custom Settings Example
 
 The example below requests a custom hub bucket volume size and RWX storage class
 
@@ -171,7 +171,7 @@ kind: Tackle
 apiVersion: tackle.konveyor.io/v1alpha1
 metadata:
   name: tackle
-  namespace: <your-tackle-namespace>
+  namespace: <your-konveyor-namespace>
 spec:
   hub_bucket_volume_size: "50Gi"
   cache_storage_class: "nfs"
@@ -181,9 +181,9 @@ spec:
 
 See [development.md](docs/development.md) for details in how to contribute to Tackle operator.
 
-## Tackle Documentation
+## Konveyor Documentation
 
-See the [Konveyor Tackle Documentation](https://tackle-docs.konveyor.io/) for detailed installation instructions as well as how to use Tackle.
+See the [Konveyor Tackle Documentation](https://tackle-docs.konveyor.io/) for detailed installation instructions as well as how to use Konveyor.
 
 ## Code of Conduct
 Refer to Konveyor's Code of Conduct [here](https://github.com/konveyor/community/blob/main/CODE_OF_CONDUCT.md).
