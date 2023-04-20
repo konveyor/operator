@@ -25,7 +25,13 @@ spec:
     - http:
         paths:
           - path: /
+{% if ui_ingress_path_type is defined %}
             pathType: {{ ui_ingress_path_type }}
+{% elif ui_ingress_class_name == 'alb' %}
+            pathType: Prefix
+{% else %}
+            pathType: ImplementationSpecific
+{% endif %} 
             backend:
               service:
                 name: {{ ui_service_name }}

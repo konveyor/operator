@@ -427,6 +427,7 @@
   k8s:
     state: present
     definition: "{{ lookup('template', 'ingress-ui.yml.j2') }}"
+    merge_type: merge
   when: not openshift_cluster|bool
 
 - name: "Setup UI Route"
