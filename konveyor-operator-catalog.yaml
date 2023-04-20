@@ -1,10 +1,10 @@
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
-  name: konveyor-tackle
+  name: konveyor
   namespace: openshift-marketplace
 spec:
-  displayName: Tackle Operator
+  displayName: Konveyor Operator
   publisher: Konveyor
   sourceType: grpc
   image: quay.io/konveyor/tackle2-operator-index:latest
