@@ -1,4 +1,4 @@
-# Tackle local installation guide for MacOS using Minikube & Podman
+# Konveyor local installation guide for MacOS using Minikube & Podman
 
 ## Prerequisites:
 * [Podman](https://podman.io/getting-started/installation)
@@ -15,12 +15,12 @@ podman machine start
 `minikube start --memory=9g --driver podman`
 3. Install ingress addon
 `minikube addons enable ingress`
-4. Install OLM to manage Tackle operator
+4. Install OLM to manage Konveyor operator
 `curl -sL https://github.com/operator-framework/operator-lifecycle-manager/releases/download/v0.21.2/install.sh | bash -s v0.21.2`
-5. Install Tackle operator
-`kubectl create -f https://operatorhub.io/install/tackle-operator.yaml`
-6. Verify if the Tackle operator pod is running or not
-`kubectl get pods -n my-tackle-operator`
+5. Install Konveyor operator
+`kubectl create -f https://operatorhub.io/install/konveyor-operator.yaml`
+6. Verify if the Konveyor operator pod is running or not
+`kubectl get pods -n my-konveyor-operator`
 7. Once the operator pod is running, create a Tackle instance using the following 
 ```
 cat << EOF | kubectl apply -f -
