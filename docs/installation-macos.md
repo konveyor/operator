@@ -37,7 +37,7 @@ EOF
 
 8. Wait until Tackle pods are in running state
 ```
-$ kubectl get pods -n my-tackle-operator
+$ kubectl get pods -n my-konveyor-operator
 NAME                                           READY   STATUS      RESTARTS   AGE
 tackle-hub-7f7cc9d574-b5kkl                    1/1     Running     0          109m
 tackle-operator-56c574d689-jmvs7               1/1     Running     0          111m
@@ -48,6 +48,6 @@ task-1-x6fmv                                 0/1     Completed   0          4m6s
 ```
 
 9. Once they are running, access the Tackle UI,
-`kubectl port-forward service/tackle-ui 8080:8080 -n my-tackle-operator`
+`kubectl port-forward service/tackle-ui 8080:8080 -n my-konveyor-operator`
 
 *Note: add `--address` param if using aws ec2 instances*
