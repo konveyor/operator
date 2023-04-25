@@ -2,7 +2,7 @@
 apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
 metadata:
-  name: migration
+  name: konveyor
   namespace: konveyor-tackle
 spec:
   targetNamespaces:
@@ -11,11 +11,11 @@ spec:
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
-  name: tackle-operator
+  name: konveyor-operator
   namespace: konveyor-tackle
 spec:
   channel: development
   installPlanApproval: Automatic
   name: konveyor-operator
-  source: konveyor-tackle
-  sourceNamespace: konveyor-tackle
+  source: konveyor
+  sourceNamespace: openshift-marketplace
