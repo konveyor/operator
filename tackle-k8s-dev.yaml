@@ -18,4 +18,4 @@ spec:
   installPlanApproval: Automatic
   name: konveyor-operator
   source: konveyor
-  sourceNamespace: openshift-marketplace
+  sourceNamespace: konveyor-tackle
