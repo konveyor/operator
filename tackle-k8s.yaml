@@ -7,10 +7,10 @@ metadata:
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
-  name: konveyor-tackle
-  namespace: konveyor-tackle
+  name: konveyor
+  namespace: openshift-marketplace
 spec:
-  displayName: Tackle Operator
+  displayName: Konveyor Operator
   publisher: Konveyor
   sourceType: grpc
   image: quay.io/konveyor/tackle2-operator-index:latest
@@ -18,7 +18,7 @@ spec:
 apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
 metadata:
-  name: konveyor-tackle
+  name: konveyor
   namespace: konveyor-tackle
 spec:
   targetNamespaces:
@@ -27,11 +27,11 @@ spec:
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
-  name: tackle-operator
+  name: konveyor-operator
   namespace: konveyor-tackle
 spec:
   channel: development
   installPlanApproval: Automatic
-  name: tackle-operator
-  source: konveyor-tackle
-  sourceNamespace: konveyor-tackle
+  name: konveyor-operator
+  source: konveyor
+  sourceNamespace: openshift-marketplace
