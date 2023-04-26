@@ -147,6 +147,8 @@ ui_container_limits_memory: "800Mi"
 ui_container_requests_cpu: "100m"
 ui_container_requests_memory: "350Mi"
 ui_ingress_name: "{{ app_name }}"
+# Ingress class names of "nginx" and "alb" are expected
+ui_ingress_class_name: "nginx"
 ui_ingress_proxy_body_size: "500m"
 ui_route_name: "{{ app_name }}"
 ui_tls_enabled: false
@@ -156,6 +158,10 @@ ui_proto: "{{ 'https' if ui_tls_enabled | bool else 'http' }}"
 ui_node_extra_ca_certs: "/opt/app-root/src/ca.crt"
 ui_route_tls_termination: "edge"
 ui_route_tls_insecure_termination_policy: "Redirect"
+# ui_ingress_path_type should only be defined if you need to override
+# the default value for the ingress controller you are using
+# ui_ingress_path_type: 
+
 
 oauth_provider: openshift
 oauth_default_openshift_sar: --openshift-sar={"namespace":"{{ app_namespace }}","resource":"services","resourceName":"{{ ui_service_name }}","verb":"get"}
