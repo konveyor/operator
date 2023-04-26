@@ -7,6 +7,7 @@ TACKLE_OPERATOR_INDEX_IMAGE="${TACKLE_OPERATOR_INDEX_IMAGE:-quay.io/konveyor/tac
 TACKLE_HUB_IMAGE="${TACKLE_HUB_IMAGE:-quay.io/konveyor/tackle2-hub:latest}"
 TACKLE_PATHFINDER_IMAGE="${TACKLE_PATHFINDER_IMAGE:-quay.io/konveyor/tackle-pathfinder:1.3.0-native}"
 TACKLE_UI_IMAGE="${TACKLE_UI_IMAGE:-quay.io/konveyor/tackle2-ui:latest}"
+TACKLE_UI_INGRESS_CLASS_NAME="${TACKLE_UI_INGRESS_CLASS_NAME:-nginx}"
 TACKLE_ADDON_ADMIN_IMAGE="${TACKLE_ADDON_ADMIN_IMAGE:-quay.io/konveyor/tackle2-addon:latest}"
 TACKLE_ADDON_WINDUP_IMAGE="${TACKLE_ADDON_WINDUP_IMAGE:-quay.io/konveyor/tackle2-addon-windup:latest}"
 TACKLE_IMAGE_PULL_POLICY="${TACKLE_IMAGE_PULL_POLICY:-Always}"
@@ -34,7 +35,7 @@ metadata:
   name: konveyor-tackle
   namespace: konveyor-tackle
 spec:
-  displayName: Tackle Operator
+  displayName: Konveyor Operator
   publisher: Konveyor
   sourceType: grpc
   image: ${TACKLE_OPERATOR_INDEX_IMAGE}
@@ -57,12 +58,12 @@ cat << EOF | kubectl apply -f -
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
-  name: tackle-operator
+  name: konveyor-operator
   namespace: konveyor-tackle
 spec:
   channel: development
   installPlanApproval: Automatic
-  name: tackle-operator
+  name: konveyor-operator
   source: konveyor-tackle
   sourceNamespace: konveyor-tackle
 EOF
@@ -85,6 +86,7 @@ spec:
   hub_image_fqin: ${TACKLE_HUB_IMAGE}
   pathfinder_image_fqin: ${TACKLE_PATHFINDER_IMAGE}
   ui_image_fqin: ${TACKLE_UI_IMAGE}
+  ui_ingress_class_name: ${TACKLE_UI_INGRESS_CLASS_NAME}
   admin_fqin: ${TACKLE_ADDON_ADMIN_IMAGE}
   windup_fqin: ${TACKLE_ADDON_WINDUP_IMAGE}
   image_pull_policy: ${TACKLE_IMAGE_PULL_POLICY}
