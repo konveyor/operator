@@ -29,6 +29,8 @@ apiVersion: tackle.konveyor.io/v1alpha1
 metadata:
   name: tackle
   namespace: my-konveyor-operator
+spec:
+  feature_auth_required: false
 EOF
 
 ```
