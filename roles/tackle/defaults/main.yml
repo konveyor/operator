@@ -49,7 +49,7 @@ hub_proto: "{{ 'https' if hub_tls_enabled | bool else 'http' }}"
 hub_url: "{{ hub_proto }}://{{ hub_service_name }}.{{ app_namespace }}.svc:{{ hub_port }}"
 hub_log_level: 3
 
-pathfinder_database_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_PATHFINDER_DATABASE') }}"
+pathfinder_database_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_TACKLE_POSTGRES') }}"
 pathfinder_database_name: "pathfinder"
 pathfinder_database_component_name: "postgresql"
 pathfinder_database_service_name: "{{ app_name }}-{{ pathfinder_database_name }}-{{ pathfinder_database_component_name }}"
@@ -85,7 +85,7 @@ pathfinder_port: "{{ '8443' if pathfinder_tls_enabled | bool else '8080' }}"
 pathfinder_proto: "{{ 'https' if pathfinder_tls_enabled | bool else 'http' }}"
 pathfinder_url: "{{ pathfinder_proto }}://{{ pathfinder_service_name }}.{{ app_namespace }}.svc:{{ pathfinder_port }}"
 
-keycloak_database_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_KEYCLOAK_DATABASE') }}"
+keycloak_database_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_TACKLE_POSTGRES') }}"
 keycloak_database_name: "keycloak"
 keycloak_database_component_name: "postgresql"
 keycloak_database_service_name: "{{ app_name }}-{{ keycloak_database_name }}-{{ keycloak_database_component_name }}"

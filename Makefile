@@ -15,6 +15,7 @@ CONTAINER_RUNTIME ?= docker
 TARGET_ARCH ?= amd64
 
 # CHANNELS define the bundle channels used in the bundle.
+CHANNELS = "development"
 # Add a new line here if you would like to change its default config. (E.g CHANNELS = "candidate,fast,stable")
 # To re-generate a bundle for other specific channels without changing the standard setup, you can:
 # - use the CHANNELS as arg of the bundle target (e.g make bundle CHANNELS=candidate,fast,stable)
@@ -39,7 +40,7 @@ BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 #
 # For example, running 'make bundle-build bundle-push catalog-build catalog-push' will build and push both
 # konveyor.io/tackle-operator-bundle:$VERSION and konveyor.io/tackle-operator-catalog:$VERSION.
-IMAGE_TAG_BASE ?= konveyor.io/tackle-operator
+IMAGE_TAG_BASE ?= quay.io/konveyor/tackle2-operator
 
 # BUNDLE_IMG defines the image:tag used for the bundle.
 # You can use it as an arg. (E.g make bundle-build BUNDLE_IMG=<some-registry>/<project-name-bundle>:<tag>)
@@ -57,7 +58,7 @@ ifeq ($(USE_IMAGE_DIGESTS), true)
 endif
 
 # Image URL to use all building/pushing image targets
-IMG ?= tackle-operator:latest
+IMG ?= quay.io/konveyor/tackle2-operator:latest
 
 .PHONY: all
 all: docker-build
@@ -85,9 +86,14 @@ help: ## Display this help.
 run: ansible-operator ## Run against the configured Kubernetes cluster in ~/.kube/config
 	ANSIBLE_ROLES_PATH="$(ANSIBLE_ROLES_PATH):$(shell pwd)/roles" $(ANSIBLE_OPERATOR) run
 
+TARGET_PLATFORMS ?= linux/${TARGET_ARCH}
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.
+ifeq ($(CONTAINER_RUNTIME), podman)
 	$(CONTAINER_RUNTIME) build --arch ${TARGET_ARCH} -t ${IMG} .
+else
+	$(CONTAINER_RUNTIME) build --platform ${TARGET_PLATFORMS} -t ${IMG} .
+endif
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.
@@ -108,6 +114,26 @@ deploy: kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/c
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/default | kubectl apply -f -
 
+GIT_REV:=$(shell git rev-parse --short HEAD)
+## Build current branch operator image, bundle image, push and install via OLM
+.PHONY: deploy-olm
+deploy-olm: THIS_OPERATOR_IMAGE?=ttl.sh/konveyor-operator-$(GIT_REV):1h # Set target specific variable
+deploy-olm: THIS_BUNDLE_IMAGE?=ttl.sh/konveyor-operator-bundle-$(GIT_REV):1h # Set target specific variable
+deploy-olm: NAMESPACE?=konveyor-tackle
+deploy-olm: DEPLOY_TMP:=$(shell mktemp -d)/ # Set target specific variable
+deploy-olm: operator-sdk ## Build current branch operator image, bundle image, push and install via OLM
+	kubectl auth can-i create ns --all-namespaces # Check if logged in
+	kubectl create namespace $(NAMESPACE) || true
+	$(OPERATOR_SDK) cleanup konveyor-operator --namespace $(NAMESPACE)
+	@echo "DEPLOY_TMP: $(DEPLOY_TMP)"
+	# build and push operator and bundle image
+	# use $(OPERATOR_SDK) to install bundle to authenticated cluster
+	cp -r . $(DEPLOY_TMP) && cd $(DEPLOY_TMP) && \
+	IMG=$(THIS_OPERATOR_IMAGE) BUNDLE_IMG=$(THIS_BUNDLE_IMAGE) \
+		make docker-build docker-push bundle bundle-build bundle-push; \
+	rm -rf $(DEPLOY_TMP)
+	$(OPERATOR_SDK) run bundle $(THIS_BUNDLE_IMAGE) --namespace $(NAMESPACE)
+
 .PHONY: undeploy
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config.
 	$(KUSTOMIZE) build config/default | kubectl delete -f -
@@ -117,13 +143,20 @@ ARCH := $(shell uname -m | sed 's/x86_64/amd64/')
 
 .PHONY: kustomize
 KUSTOMIZE = $(shell pwd)/bin/kustomize
+KUSTOMIZE_ARCH=$(ARCH)
+ifeq ($(OS),darwin)
+# Kustomize does not provide a Darwin/arm64 binary for v3.8.7
+	KUSTOMIZE_ARCH="amd64"
+endif
 kustomize: ## Download kustomize locally if necessary.
 ifeq (,$(wildcard $(KUSTOMIZE)))
 ifeq (,$(shell which kustomize 2>/dev/null))
 	@{ \
-	set -e ;\
-	mkdir -p $(dir $(KUSTOMIZE)) ;\
-	curl -sSLo - https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v3.8.7/kustomize_v3.8.7_$(OS)_$(ARCH).tar.gz | \
+	set -e &&\
+	echo "$(KUSTOMIZE_ARCH)" &&\
+	mkdir -p $(dir $(KUSTOMIZE)) &&\
+	echo https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v3.8.7/kustomize_v3.8.7_$(OS)_$(KUSTOMIZE_ARCH).tar.gz &&\
+	curl -sSLo - https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v3.8.7/kustomize_v3.8.7_$(OS)_$(KUSTOMIZE_ARCH).tar.gz | \
 	tar xzf - -C bin/ ;\
 	}
 else
@@ -147,16 +180,29 @@ ANSIBLE_OPERATOR = $(shell which ansible-operator)
 endif
 endif
 
+OPERATOR_SDK = $(shell pwd)/bin/operator-sdk
+.PHONY: operator-sdk
+operator-sdk: $(OPERATOR_SDK)
+
+$(OPERATOR_SDK):
+	mkdir -p $(dir $(OPERATOR_SDK)) && \
+	curl -Lo $(OPERATOR_SDK) https://github.com/operator-framework/operator-sdk/releases/download/v1.28.1/operator-sdk_$(shell go env GOOS)_$(shell go env GOARCH) && \
+	chmod +x $(OPERATOR_SDK);
+
 .PHONY: bundle
-bundle: kustomize ## Generate bundle manifests and metadata, then validate generated files.
-	operator-sdk generate kustomize manifests -q
+bundle: kustomize operator-sdk ## Generate bundle manifests and metadata, then validate generated files.
+	$(OPERATOR_SDK) generate kustomize manifests -q
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
-	$(KUSTOMIZE) build config/manifests | operator-sdk generate bundle -q --overwrite --version $(VERSION) $(BUNDLE_METADATA_OPTS)
-	operator-sdk bundle validate ./bundle
+	$(KUSTOMIZE) build config/manifests | $(OPERATOR_SDK) generate bundle -q --overwrite --extra-service-accounts tackle-hub,tackle-ui --version $(VERSION) $(BUNDLE_METADATA_OPTS)
+	$(OPERATOR_SDK) bundle validate ./bundle
 
 .PHONY: bundle-build
 bundle-build: ## Build the bundle image.
+ifeq ($(CONTAINER_RUNTIME), podman)
 	$(CONTAINER_RUNTIME) build --arch ${TARGET_ARCH} -f bundle.Dockerfile -t $(BUNDLE_IMG) .
+else
+	$(CONTAINER_RUNTIME) build --platform ${TARGET_PLATFORMS} -f bundle.Dockerfile -t $(BUNDLE_IMG) .
+endif
 
 .PHONY: bundle-push
 bundle-push: ## Push the bundle image.

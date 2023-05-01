@@ -1,6 +1,7 @@
 apiVersion: tackle.konveyor.io/v1alpha1
 kind: Tackle
 metadata:
-  name: tackle-sample
+    name: tackle
+    namespace: konveyor-tackle
 spec:
-  # TODO(user): Add fields here
+    feature_auth_required: 'false'

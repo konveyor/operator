@@ -3,4 +3,5 @@
 # It should be run by config/default
 resources:
 - bases/tackle.konveyor.io_tackles.yaml
+- bases/tackle.konveyor.io_addons.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
