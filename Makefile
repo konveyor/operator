@@ -196,6 +196,12 @@ bundle: kustomize operator-sdk ## Generate bundle manifests and metadata, then v
 	$(KUSTOMIZE) build config/manifests | $(OPERATOR_SDK) generate bundle -q --overwrite --extra-service-accounts tackle-hub,tackle-ui --version $(VERSION) $(BUNDLE_METADATA_OPTS)
 	$(OPERATOR_SDK) bundle validate ./bundle
 
+# Workaround to undo createdAt changes in bundle manifests if its the only change.
+# https://github.com/operator-framework/operator-sdk/issues/6285#issuecomment-1532150678
+.PHONY: bundle-ignore-createdAt
+bundle-ignore-createdAt:
+	git diff --quiet -I'^    createdAt: ' bundle && git checkout bundle || true
+
 .PHONY: bundle-build
 bundle-build: ## Build the bundle image.
 ifeq ($(CONTAINER_RUNTIME), podman)
