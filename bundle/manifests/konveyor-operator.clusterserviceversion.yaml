@@ -346,7 +346,7 @@ spec:
   keywords: ['modernization', 'migration', 'konveyor', 'tackle']
   maintainers:
   - name: Konveyor Community
-    email: tackle-dev@googlegroups.com
+    email: konveyor-dev@googlegroups.com
   maturity: alpha
   provider:
     name: Konveyor
