@@ -177,7 +177,7 @@ cache_data_volume_name: "{{ app_name }}-{{ cache_name }}-data"
 cache_data_volume_claim_name: "{{ app_name }}-{{ cache_name }}-volume-claim"
 cache_data_volume_claim_mode: "ReadWriteMany"
 cache_mount_path: "/cache"
-rwx_supported: true
+rwx_supported: false
 
 # RH-SSO specific
 rhsso_name: "rhsso"
