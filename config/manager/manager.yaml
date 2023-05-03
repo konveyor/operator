@@ -62,7 +62,7 @@ spec:
         - name: RELATED_IMAGE_ADDON_WINDUP
           value: quay.io/konveyor/tackle2-addon-windup:latest
         name: tackle-operator
-        image: quay.io/konveyor/tackle2-operator:latest
+        image: controller:latest # this will be replaced with IMG by `make bundle`
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
