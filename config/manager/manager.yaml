@@ -9,7 +9,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tackle-operator
-  namespace: system
 spec:
   replicas: 1
   selector:

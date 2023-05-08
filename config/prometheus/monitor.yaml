@@ -6,7 +6,6 @@ metadata:
   labels:
     control-plane: tackle-operator
   name: tackle-operator-metrics-monitor
-  namespace: system
 spec:
   endpoints:
     - path: /metrics
