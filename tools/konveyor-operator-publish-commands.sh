@@ -34,7 +34,7 @@ CSV="konveyor-operator.clusterserviceversion.yaml"
 echo ${QUAY_TOKEN} | docker login ${REGISTRY_HOST} -u ${QUAY_ROBOT} --password-stdin
 
 CO_PROJECT="community-operators-prod"
-CO_PROJECT_K8s="community-operators"
+CO_PROJECT_K8S="community-operators"
 CO_REPO="redhat-openshift-ecosystem/${CO_PROJECT}"
 CO_REPO_K8S="k8s-operatorhub/${CO_PROJECT_K8S}"
 CO_GIT="https://github.com/${CO_REPO}.git"
