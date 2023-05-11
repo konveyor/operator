@@ -61,7 +61,7 @@ spec:
             - name: DB_VENDOR
               value: postgres
             - name: DB_ADDR
-              value: {{ keycloak_database_service_name }}
+              value: {{ keycloak_database_service_k8s_resource_name }}
             - name: DB_DATABASE
               valueFrom:
                 secretKeyRef:
