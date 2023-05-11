@@ -88,6 +88,7 @@ keycloak_database_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_KEYCLOAK_DATABASE
 keycloak_database_name: "keycloak"
 keycloak_database_component_name: "postgresql"
 keycloak_database_service_name: "{{ app_name }}-{{ keycloak_database_name }}-{{ keycloak_database_component_name }}"
+keycloak_database_service_k8s_resource_name: "{{ app_name }}-kcpgsql"
 keycloak_database_secret_name: "{{ keycloak_database_service_name }}"
 keycloak_database_deployment_name: "{{ keycloak_database_service_name }}"
 keycloak_database_deployment_strategy: "Recreate"

@@ -73,6 +73,14 @@
             state: present
             definition: "{{ lookup('template', 'secret-keycloak-postgresql.yml.j2') }}"
 
+    - name: "Delete old Keycloak PostgreSQL Service"
+      k8s:
+        state: absent
+        kind: Service
+        api_version: v1
+        name: "{{ keycloak_database_service_name }}"
+        namespace: "{{ app_namespace }}"
+
     - name: "Setup Keycloak PostgreSQL Service"
       k8s:
         state: present
@@ -175,7 +183,7 @@
     - name: "Collect service name components"
       set_fact:
         pgsql_svc_fqdn_parts:
-          - "{{ keycloak_database_service_name }}"
+          - "{{ keycloak_database_service_k8s_resource_name }}"
           - "{{ app_namespace }}"
           - "svc"
           - "{{ default_dns_operator.resources[0].status.clusterDomain }}"
