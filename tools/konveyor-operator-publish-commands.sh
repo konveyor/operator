@@ -191,6 +191,9 @@ echo "   remove scorecard annotations"
 /tmp/yq eval --inplace 'del(.annotations["operators.operatorframework.io.test.mediatype.v1"])' ${CO_OPERATOR_ANNOTATIONS}
 /tmp/yq eval --inplace 'del(.annotations["operators.operatorframework.io.test.config.v1"])' ${CO_OPERATOR_ANNOTATIONS}
 
+echo "   add minimum version to annotations"
+/tmp/yq eval --inplace '.annotations["com.redhat.openshift.versions"] = "v4.9" | .annotations["com.redhat.openshift.versions"] style="double"' ${CO_OPERATOR_ANNOTATIONS}
+
 echo "   copy updated operator files to K8s repo and submit PR"
 cp -r ${CO_OPERATOR_DIR}/. ${CO_OPERATOR_DIR_K8S}
 pushd "${CO_DIR_K8S}"
@@ -202,9 +205,6 @@ git push --set-upstream --force origin HEAD
 curl "https://api.github.com/repos/${CO_REPO_K8S}/pulls" --user "${GITHUB_USER}:${GITHUB_TOKEN}" -X POST \
     --data '{"title": "'"$(git log -1 --format=%s)"'", "base": "main", "body": "An automated PR to update konveyor-operator to v'"${OPERATOR_VERSION}"'", "head": "'"${GITHUB_USER}:${OPERATOR_VERSION}"'"}'
 popd
-
-echo "   add minimum version to annotations"
-/tmp/yq eval --inplace '.annotations["com.redhat.openshift.versions"] = "v4.9" | .annotations["com.redhat.openshift.versions"] style="double"' ${CO_OPERATOR_ANNOTATIONS}
 
 echo
 echo "## Submit PR to community operators"
