@@ -192,7 +192,7 @@ echo "   remove scorecard annotations"
 /tmp/yq eval --inplace 'del(.annotations["operators.operatorframework.io.test.config.v1"])' ${CO_OPERATOR_ANNOTATIONS}
 
 echo "   copy updated operator files to K8s repo and submit PR"
-cp -r ${CO_OPERATOR_DIR} ${CO_OPERATOR_DIR_K8S}
+cp -r ${CO_OPERATOR_DIR}/. ${CO_OPERATOR_DIR_K8S}
 pushd "${CO_DIR_K8S}"
 git checkout -B "${OPERATOR_VERSION}"
 git add --all
