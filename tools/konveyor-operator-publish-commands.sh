@@ -26,7 +26,6 @@ popd
 
 REGISTRY_HOST="quay.io"
 REGISTRY_ORG="konveyor"
-UNRELEASED_SEMVER="v99.0.0"
 OPERATOR_MANIFESTS="bundle/manifests"
 OPERATOR_METADATA="bundle/metadata"
 CSV="konveyor-operator.clusterserviceversion.yaml"
@@ -150,7 +149,8 @@ echo "   update createdAt time"
 CREATED_AT=$(date +"%Y-%m-%dT%H:%M:%SZ") /tmp/yq eval --exit-status --inplace '.metadata.annotations["createdAt"] |= strenv(CREATED_AT)' "${CO_CSV}" 
 
 echo "   update operator version"
-sed -i "s/${UNRELEASED_SEMVER}/${OPERATOR_VERSION}/" "${CO_CSV}"
+/tmp/yq eval --exit-status --inplace \
+    '.metadata.name |= "konveyor-operator.v" + strenv(OPERATOR_VERSION)' "${CO_CSV}"
 
 echo "   adding replaces"
 if [ -z "${PREV_OPERATOR_VERSION}" ]; then
