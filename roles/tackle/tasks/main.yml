@@ -480,6 +480,10 @@
 - when:
     - not(feature_auth_required|bool) or not(feature_auth_type == "keycloak")
   block:
+    - name: Gather available apis
+      kubernetes.core.k8s_cluster_info:
+      register: tackle_cluster_info
+
     - name: "Deprovision RHSSO Keycloak CR"
       k8s:
         state: absent
@@ -487,6 +491,9 @@
         api_version: "{{ rhsso_api_version }}"
         name: "{{ rhsso_service_name }}"
         namespace: "{{ app_namespace }}"
+      when:
+        - rhsso_api_version in cluster_info.apis
+        - '"Keycloak" in cluster_info.apis[rhsso_api_version]'
 
     - name: "Deprovision RHSSO Keycloak Deployment"
       k8s:
