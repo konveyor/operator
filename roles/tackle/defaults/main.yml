@@ -161,7 +161,7 @@ ui_route_tls_termination: "edge"
 ui_route_tls_insecure_termination_policy: "Redirect"
 # ui_ingress_path_type should only be defined if you need to override
 # the default value for the ingress controller you are using
-# ui_ingress_path_type: 
+# ui_ingress_path_type:
 
 
 oauth_provider: openshift

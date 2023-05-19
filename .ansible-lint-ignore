@@ -1,0 +1,2 @@
+# This file contains ignores rule violations for ansible-lint
+roles/tackle/tasks/main.yml var-naming[no-role-prefix]
