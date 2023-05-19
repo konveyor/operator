@@ -482,7 +482,7 @@
   block:
     - name: Gather available apis
       kubernetes.core.k8s_cluster_info:
-      register: tackle_cluster_info
+      register: cluster_info
 
     - name: "Deprovision RHSSO Keycloak CR"
       k8s:
