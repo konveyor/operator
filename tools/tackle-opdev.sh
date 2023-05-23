@@ -13,7 +13,7 @@ INDEX_REPO="tackle2-operator-index"
 CATALOG_NS="konveyor-tackle"
 PROJECT_NS="konveyor-tackle"
 TAG="latest"
-NAME="Tackle"
+NAME="Konveyor"
 
 function usage () {
 echo

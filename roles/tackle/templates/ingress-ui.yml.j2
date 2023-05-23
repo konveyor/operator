@@ -3,7 +3,12 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
+{% if ui_ingress_class_name == 'nginx' %}
     nginx.ingress.kubernetes.io/proxy-body-size: {{ ui_ingress_proxy_body_size }}
+{% elif ui_ingress_class_name == 'alb' %}
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/scheme: internet-facing
+{% endif %}
   name: {{ ui_ingress_name }}
   namespace: {{ app_namespace }}
   labels:
@@ -12,14 +17,21 @@ metadata:
     app.kubernetes.io/part-of: {{ app_name }}
     app: {{ app_name }}
 spec:
-  ingressClassName: nginx
+  ingressClassName: {{ ui_ingress_class_name }}
+  
   tls:
     - {}
   rules:
     - http:
         paths:
           - path: /
+{% if ui_ingress_path_type is defined %}
+            pathType: {{ ui_ingress_path_type }}
+{% elif ui_ingress_class_name == 'alb' %}
+            pathType: Prefix
+{% else %}
             pathType: ImplementationSpecific
+{% endif %} 
             backend:
               service:
                 name: {{ ui_service_name }}
