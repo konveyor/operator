@@ -431,9 +431,13 @@
     definition: "{{ lookup('template', 'deployment-ui.yml.j2') }}"
     merge_type: merge
 
+- name: "Set UI Ingress"
+  set_fact:
+    ui_ingress_state: "{{ 'absent' if ui_ingress_class_name == 'none' else 'present' }}"
+
 - name: "Setup UI Ingress"
   k8s:
-    state: present
+    state: "{{ ui_ingress_state }}"
     definition: "{{ lookup('template', 'ingress-ui.yml.j2') }}"
     merge_type: merge
   when: not openshift_cluster|bool
