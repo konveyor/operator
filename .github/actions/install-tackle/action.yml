@@ -30,6 +30,14 @@ inputs:
     description: "Image Pull Policy"
     required: false
     default: "Always"
+  tackle-windup-container-cpu:
+    description: "The CPU request value for the windup task containers"
+    required: false
+    default: 0
+  tackle-windup-container-memory:
+    description: "The memory request value for the windup task containers"
+    required: false
+    default: 0
   # TODO(djzager): uncomment when supported
   # tackle-operator-container-image:
   #   description: "image url for operator container"
@@ -49,6 +57,8 @@ runs:
       export TACKLE_ADDON_ADMIN_IMAGE="${{ inputs.tackle-addon-admin-image }}"
       export TACKLE_ADDON_WINDUP_IMAGE="${{ inputs.tackle-addon-windup-image }}"
       export TACKLE_IMAGE_PULL_POLICY="${{ inputs.tackle-image-pull-policy }}"
+      export TACKLE_WINDUP_CONTAINER_REQUESTS_MEMORY="${{ inputs.tackle-windup-container-memory }}"
+      export TACKLE_WINDUP_CONTAINER_REQUESTS_CPU="${{ inputs.tackle-windup-container-cpu }}"
       make install-tackle
     working-directory: ${{ github.action_path }}/../../..
     shell: bash
