@@ -91,7 +91,6 @@
 - when:
     - feature_auth_required|bool
     - feature_auth_type == "keycloak"
-    - app_profile == "konveyor"
   block:
     - name: "Setup Keycloak PostgreSQL PersistentVolumeClaim"
       k8s:
