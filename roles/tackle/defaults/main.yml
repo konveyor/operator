@@ -48,6 +48,8 @@ hub_port: "{{ '8443' if hub_tls_enabled | bool else '8080' }}"
 hub_proto: "{{ 'https' if hub_tls_enabled | bool else 'http' }}"
 hub_url: "{{ hub_proto }}://{{ hub_service_name }}.{{ app_namespace }}.svc:{{ hub_port }}"
 hub_log_level: 3
+hub_metrics_enabled: true
+hub_metrics_port: "2112"
 
 pathfinder_database_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_PATHFINDER_DATABASE') }}"
 pathfinder_database_name: "pathfinder"
