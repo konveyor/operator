@@ -18,6 +18,10 @@ spec:
       port: {{ hub_port }}
       targetPort: {{ hub_port }}
       protocol: TCP
+    - name: metrics
+      port: {{ hub_metrics_port }}
+      targetPort: {{ hub_metrics_port }}
+      protocol: TCP
   selector:
     app.kubernetes.io/name: {{ hub_service_name }}
     app.kubernetes.io/component: {{ hub_component_name }}
