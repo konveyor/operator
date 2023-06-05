@@ -41,3 +41,18 @@ spec:
   - ports:
     - port: 8080
     - port: 8443
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ app_name }}-metrics
+  namespace: {{ app_namespace }}
+  labels:
+    app: {{ app_name }}
+spec:
+  podSelector:
+    matchLabels:
+      role: {{ hub_service_name }}
+    ingress:
+    - ports:
+      - port: {{ hub_metrics_port }}

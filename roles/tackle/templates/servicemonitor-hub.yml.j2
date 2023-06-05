@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app.kubernetes.io/name: {{ hub_service_name }}
+    app.kubernetes.io/component: {{ hub_component_name }}
+    app.kubernetes.io/part-of: {{ app_name }}
+  name: {{ hub_service_name }}
+  namespace: {{ app_namespace }}
+spec:
+  endpoints:
+    - interval: 30s
+      port: metrics
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ hub_service_name }}
+      app.kubernetes.io/component: {{ hub_component_name }}
+      app.kubernetes.io/part-of: {{ app_name }}
