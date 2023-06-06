@@ -9,9 +9,6 @@ on:
     - 'bundle/**'
     workflow_dispatch:
 
-env:
-  OPERATOR_SDK_DL_URL: https://github.com/operator-framework/operator-sdk/releases/download
-  OPERATOR_SDK_VERSION: v1.16.0
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -25,7 +22,12 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Get Operator SDK
-        run: curl -LO ${{ env.OPERATOR_SDK_DL_URL }}/${{ env.OPERATOR_SDK_VERSION }}/operator-sdk_linux_amd64 && chmod +x operator-sdk_* && mv operator-sdk_linux_amd64 operator-sdk
+        run: make operator-sdk
+
+      - name: Check config/ is in sync with bundle/
+        run: |
+          make bundle bundle-ignore-createdAt
+          git diff --exit-code bundle/
 
       - name: Validate bundle
-        run: ./operator-sdk bundle validate ./bundle
+        run: ./bin/operator-sdk bundle validate ./bundle

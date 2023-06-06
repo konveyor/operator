@@ -1,0 +1,7 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tackle-ui-role
+rules: [] # Add clusterRules for tackle-ui SA in CSV if not empty, right now it's empty, so CSV contains no mention of tackle-ui SA
+#+kubebuilder:scaffold:rules

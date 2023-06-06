@@ -1,10 +1,10 @@
-domain: konveyor.io
+domain: quay.io
 layout:
 - ansible.sdk.operatorframework.io/v1
 plugins:
   manifests.sdk.operatorframework.io/v2: {}
   scorecard.sdk.operatorframework.io/v2: {}
-projectName: tackle-operator
+projectName: konveyor-operator
 resources:
 - api:
     crdVersion: v1

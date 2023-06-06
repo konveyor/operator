@@ -146,12 +146,10 @@ spec:
                   value: {{ version }}
                 - name: RELATED_IMAGE_TACKLE_HUB
                   value: quay.io/konveyor/tackle2-hub:{{ tag }}
-                - name: RELATED_IMAGE_PATHFINDER_DATABASE
+                - name: RELATED_IMAGE_TACKLE_POSTGRES
                   value: quay.io/centos7/postgresql-12-centos7:latest
                 - name: RELATED_IMAGE_PATHFINDER
                   value: quay.io/konveyor/tackle-pathfinder:1.3.1-native
-                - name: RELATED_IMAGE_KEYCLOAK_DATABASE
-                  value: quay.io/centos7/postgresql-12-centos7:latest
                 - name: RELATED_IMAGE_KEYCLOAK_SSO
                   value: quay.io/keycloak/keycloak:18.0.2-legacy
                 - name: RELATED_IMAGE_TACKLE_UI
@@ -348,14 +346,16 @@ spec:
     image: quay.io/konveyor/tackle2-hub:{{ tag }}
   - name: tackle-ui
     image: quay.io/konveyor/tackle2-ui:{{ tag }}
-  - name: tackle-addon
+  - name: addon-admin
     image: quay.io/konveyor/tackle2-addon:{{ tag }}
-  - name: tackle-addon-windup
+  - name: addon-windup
     image: quay.io/konveyor/tackle2-addon-windup:{{ tag }}
-  - name: tackle-pathfinder
+  - name: pathfinder
     image: quay.io/konveyor/tackle-pathfinder:1.3.1-native
-  - name: tackle-keycloak
+  - name: keycloak-sso
     image: quay.io/keycloak/keycloak:18.0.2-legacy
+  - image: quay.io/konveyor/tackle-keycloak-init:{{ tag }}
+    name: keycloak-init
   - name: tackle-postgres
     image: quay.io/centos7/postgresql-12-centos7:latest
   version: {{ version }}
