@@ -513,3 +513,11 @@
         api_version: apps/v1
         name: "{{ keycloak_sso_deployment_name }}"
         namespace: "{{ app_namespace }}"
+
+- name: "Create Hub ServiceMonitor"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'servicemonitor-hub.yml.j2') }}"
+  when:
+    - hub_metrics_enabled|bool
+    - openshift_cluster|bool
