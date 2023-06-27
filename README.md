@@ -183,7 +183,7 @@ See [development.md](docs/development.md) for details in how to contribute to Ta
 
 ## Konveyor Documentation
 
-See the [Konveyor Tackle Documentation](https://tackle-docs.konveyor.io/) for detailed installation instructions as well as how to use Konveyor.
+See the [Konveyor Documentation](https://konveyor.github.io/konveyor/) for detailed installation instructions as well as how to use Konveyor.
 
 ## Code of Conduct
 Refer to Konveyor's Code of Conduct [here](https://github.com/konveyor/community/blob/main/CODE_OF_CONDUCT.md).
