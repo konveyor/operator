@@ -42,7 +42,7 @@ jobs:
           - konveyor/tackle2-ui
           - konveyor/tackle2-addon
           - konveyor/tackle2-addon-windup
-          - konveyor/tackle2-operator
+          - konveyor/operator
           - konveyor/tackle-pathfinder
           - konveyor/tackle-keycloak-theme
     uses: konveyor/release-tools/.github/workflows/create-release.yml@main
@@ -64,7 +64,7 @@ jobs:
           - konveyor/tackle2-ui
           - konveyor/tackle2-addon
           - konveyor/tackle2-addon-windup
-          - konveyor/tackle2-operator
+          - konveyor/operator
           - konveyor/tackle-pathfinder
           - konveyor/tackle-keycloak-init
     steps:
@@ -85,6 +85,8 @@ jobs:
     steps:
     - name: Checkout Push to Registry action
       uses: actions/checkout@main
+      with:
+        ref: ${{ inputs.branch }}
 
     - name: Run migrations
       run: bash ./tools/konveyor-operator-publish-commands.sh
