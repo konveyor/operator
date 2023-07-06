@@ -64,7 +64,7 @@ jobs:
           - konveyor/tackle2-ui
           - konveyor/tackle2-addon
           - konveyor/tackle2-addon-windup
-          - konveyor/operator
+          - konveyor/tackle2-operator
           - konveyor/tackle-pathfinder
           - konveyor/tackle-keycloak-init
     steps:
