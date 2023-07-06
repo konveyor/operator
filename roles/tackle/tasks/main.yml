@@ -472,7 +472,7 @@
 - name: "Create Windup Addon CR"
   k8s:
     state: present
-    definition: "{{ lookup('template', 'customresource-addon-windup.yml.j2') }}"
+    definition: "{{ lookup('template', 'customresource-addon-analyzer.yml.j2') }}"
 
 - name: "Create Network Policy"
   k8s:

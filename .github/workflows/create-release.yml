@@ -41,7 +41,7 @@ jobs:
           - konveyor/tackle2-hub
           - konveyor/tackle2-ui
           - konveyor/tackle2-addon
-          - konveyor/tackle2-addon-windup
+          - konveyor/tackle2-addon-analyzer
           - konveyor/operator
           - konveyor/tackle-pathfinder
           - konveyor/tackle-keycloak-theme
@@ -63,7 +63,7 @@ jobs:
           - konveyor/tackle2-hub
           - konveyor/tackle2-ui
           - konveyor/tackle2-addon
-          - konveyor/tackle2-addon-windup
+          - konveyor/tackle2-addon-analyzer
           - konveyor/tackle2-operator
           - konveyor/tackle-pathfinder
           - konveyor/tackle-keycloak-init
