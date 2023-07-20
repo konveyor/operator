@@ -358,11 +358,6 @@
     state: present
     definition: "{{ lookup('template', 'persistentvolumeclaim-hub-bucket.yml.j2') }}"
 
-- name: "Setup Hub Seed ConfigMap"
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'configmap-hub-seed.yml.j2') }}"
-
 - name: "Check if Hub Secret exists already so we don't update it"
   k8s_info:
     api_version: v1

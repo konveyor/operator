@@ -38,8 +38,6 @@ hub_bucket_volume_size: "25Gi"
 hub_bucket_volume_path: "/buckets"
 hub_bucket_volume_claim_name: "{{ hub_service_name }}-bucket-volume-claim"
 hub_bucket_volume_claim_mode: ReadWriteOnce
-hub_seed_configmap_name: "{{ hub_service_name }}-seed"
-hub_seed_configmap_path: "/seed"
 hub_addon_working_path: "/working"
 hub_task_sa: "{{ app_name }}-hub"
 hub_tls_enabled: false
