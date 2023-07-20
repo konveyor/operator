@@ -6,17 +6,6 @@ metadata:
       [
         {
           "apiVersion": "tackle.konveyor.io/v1alpha1",
-          "kind": "Addon",
-          "metadata": {
-            "name": "move2kube-plan",
-            "namespace": "konveyor-tackle"
-          },
-          "spec": {
-            "image": "quay.io/konveyor/tackle-addon-move2kube-plan:latest"
-          }
-        },
-        {
-          "apiVersion": "tackle.konveyor.io/v1alpha1",
           "kind": "Tackle",
           "metadata": {
             "name": "tackle",
@@ -31,7 +20,7 @@ metadata:
     categories: Modernization & Migration
     certified: "false"
     containerImage: quay.io/konveyor/tackle2-operator:latest
-    createdAt: "2023-06-08T20:09:08Z"
+    createdAt: "2023-07-20T17:53:39Z"
     description: Konveyor is an open-source application modernization platform that
       helps organizations safely and predictably modernize applications to Kubernetes
       at scale.
