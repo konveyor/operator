@@ -1,5 +1,4 @@
 ## Append samples you want in your CSV to this file as resources ##
 resources:
 - tackle_v1alpha1_tackle.yaml
-- tackle_v1alpha1_addon.yaml
 #+kubebuilder:scaffold:manifestskustomizesamples
