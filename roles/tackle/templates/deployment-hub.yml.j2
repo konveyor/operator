@@ -81,8 +81,6 @@ spec:
               value: "{{ hub_addon_working_path }}"
             - name: DB_PATH
               value: "{{ hub_database_volume_path }}/{{ hub_database_filename }}"
-            - name: DB_SEED_PATH
-              value: "{{ hub_seed_configmap_path }}"
             - name: BUCKET_PATH
               value: "{{ hub_bucket_volume_path }}"
             - name: BUCKET_PVC
@@ -187,9 +185,6 @@ spec:
               mountPath: {{ hub_database_volume_path }}
             - name: {{ hub_bucket_volume_name }}
               mountPath: {{ hub_bucket_volume_path }}
-            - name: {{ hub_seed_configmap_name }}
-              mountPath: {{ hub_seed_configmap_path }}
-              readOnly: true
 {% if rwx_supported|bool %}
             - name: {{ cache_data_volume_name }}
               mountPath: {{ cache_mount_path }}
@@ -210,9 +205,6 @@ spec:
         - name: {{ hub_bucket_volume_name }}
           persistentVolumeClaim:
             claimName: {{ hub_bucket_volume_claim_name }}
-        - name: {{ hub_seed_configmap_name }}
-          configMap:
-            name: {{ hub_seed_configmap_name }}
 {% if hub_tls_enabled|bool %}
         - name: {{ hub_tls_secret_name }}
           secret:

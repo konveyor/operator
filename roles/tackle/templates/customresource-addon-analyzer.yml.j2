@@ -1,0 +1,20 @@
+---
+kind: Addon
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  name: {{ analyzer_name }}
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/name: {{ analyzer_service_name }}
+    app.kubernetes.io/component: {{ analyzer_component_name }}
+    app.kubernetes.io/part-of: {{ app_name }}
+spec:
+  image: {{ analyzer_fqin }}
+  imagePullPolicy: {{ image_pull_policy }}
+  resources:
+    limits:
+      cpu: {{ analyzer_container_limits_cpu }}
+      memory: {{ analyzer_container_limits_memory }}
+    requests:
+      cpu: {{ analyzer_container_requests_cpu }}
+      memory: {{ analyzer_container_requests_memory }}
