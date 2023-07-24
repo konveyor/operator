@@ -1,0 +1,7 @@
+apiVersion: tackle.konveyor.io/v1alpha1
+kind: Addon
+metadata:
+    name: move2kube-plan
+    namespace: konveyor-tackle
+spec:
+    image: 'quay.io/konveyor/tackle-addon-move2kube-plan:latest'
