@@ -100,7 +100,11 @@ kubectl wait \
   --namespace konveyor-tackle \
   --for=condition=Successful \
   --timeout=600s \
-  tackles.tackle.konveyor.io/tackle
+  tackles.tackle.konveyor.io/tackle \
+|| kubectl get \
+  --namespace konveyor-tackle \
+  -o yaml
+  tackles.tackle.konveyor.io/tackle # Print debug output when waiting failed
 
 # Now wait for all the tackle deployments
 kubectl wait \
