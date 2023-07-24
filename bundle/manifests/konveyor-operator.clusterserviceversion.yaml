@@ -6,6 +6,17 @@ metadata:
       [
         {
           "apiVersion": "tackle.konveyor.io/v1alpha1",
+          "kind": "Addon",
+          "metadata": {
+            "name": "move2kube-plan",
+            "namespace": "konveyor-tackle"
+          },
+          "spec": {
+            "image": "quay.io/konveyor/tackle-addon-move2kube-plan:latest"
+          }
+        },
+        {
+          "apiVersion": "tackle.konveyor.io/v1alpha1",
           "kind": "Tackle",
           "metadata": {
             "name": "tackle",
@@ -20,7 +31,7 @@ metadata:
     categories: Modernization & Migration
     certified: "false"
     containerImage: quay.io/konveyor/tackle2-operator:latest
-    createdAt: "2023-07-20T17:53:39Z"
+    createdAt: "2023-06-08T20:09:08Z"
     description: Konveyor is an open-source application modernization platform that
       helps organizations safely and predictably modernize applications to Kubernetes
       at scale.
@@ -181,8 +192,8 @@ spec:
                   value: quay.io/konveyor/tackle2-ui:latest
                 - name: RELATED_IMAGE_ADDON_ADMIN
                   value: quay.io/konveyor/tackle2-addon:latest
-                - name: RELATED_IMAGE_ADDON_ANALYZER
-                  value: quay.io/konveyor/tackle2-addon-analyzer:latest
+                - name: RELATED_IMAGE_ADDON_WINDUP
+                  value: quay.io/konveyor/tackle2-addon-windup:latest
                 image: quay.io/konveyor/tackle2-operator:latest
                 imagePullPolicy: Always
                 livenessProbe:
@@ -371,6 +382,6 @@ spec:
     name: tackle-ui
   - image: quay.io/konveyor/tackle2-addon:latest
     name: addon-admin
-  - image: quay.io/konveyor/tackle2-addon-analyzer:latest
-    name: addon-analyzer
+  - image: quay.io/konveyor/tackle2-addon-windup:latest
+    name: addon-windup
   version: 99.0.0

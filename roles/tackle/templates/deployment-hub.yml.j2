@@ -81,6 +81,8 @@ spec:
               value: "{{ hub_addon_working_path }}"
             - name: DB_PATH
               value: "{{ hub_database_volume_path }}/{{ hub_database_filename }}"
+            - name: DB_SEED_PATH
+              value: "{{ hub_seed_configmap_path }}"
             - name: BUCKET_PATH
               value: "{{ hub_bucket_volume_path }}"
             - name: BUCKET_PVC
