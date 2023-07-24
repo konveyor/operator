@@ -156,8 +156,8 @@ spec:
                   value: quay.io/konveyor/tackle2-ui:{{ tag }}
                 - name: RELATED_IMAGE_ADDON_ADMIN
                   value: quay.io/konveyor/tackle2-addon:{{ tag }}
-                - name: RELATED_IMAGE_ADDON_WINDUP
-                  value: quay.io/konveyor/tackle2-addon-windup:{{ tag }}
+                - name: RELATED_IMAGE_ADDON_ANALYZER
+                  value: quay.io/konveyor/tackle2-addon-analyzer:{{ tag }}
                 name: tackle-operator
                 image: quay.io/konveyor/tackle2-operator:{{ tag }}
                 imagePullPolicy: Always
@@ -353,8 +353,8 @@ spec:
     image: quay.io/konveyor/tackle2-ui:{{ tag }}
   - name: addon-admin
     image: quay.io/konveyor/tackle2-addon:{{ tag }}
-  - name: addon-windup
-    image: quay.io/konveyor/tackle2-addon-windup:{{ tag }}
+  - name: addon-analyzer
+    image: quay.io/konveyor/tackle2-addon-analyzer:{{ tag }}
   - name: pathfinder
     image: quay.io/konveyor/tackle-pathfinder:1.3.1-native
   - name: keycloak-sso
