@@ -103,7 +103,7 @@ kubectl wait \
   tackles.tackle.konveyor.io/tackle \
 || kubectl get \
   --namespace konveyor-tackle \
-  -o yaml
+  -o yaml \
   tackles.tackle.konveyor.io/tackle # Print debug output when waiting failed
 
 # Now wait for all the tackle deployments
