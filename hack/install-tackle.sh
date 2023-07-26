@@ -70,7 +70,8 @@ spec:
   sourceNamespace: konveyor-tackle
 EOF
 # If on MacOS, need to install `brew install coreutils` to get `timeout`
-timeout 600s bash -c 'until kubectl get customresourcedefinitions.apiextensions.k8s.io tackles.tackle.konveyor.io; do sleep 30; done'
+timeout 600s bash -c 'until kubectl get customresourcedefinitions.apiextensions.k8s.io tackles.tackle.konveyor.io; do sleep 30; done' \
+|| kubectl get subscription --namespace konveyor-tackle -o yaml konveyor-operator # Print subscription details when timed out
 
 # Create, and wait for, tackle
 kubectl wait \
