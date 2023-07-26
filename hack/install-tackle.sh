@@ -104,7 +104,7 @@ kubectl wait \
 || kubectl get \
   --namespace konveyor-tackle \
   -o yaml \
-  tackles.tackle.konveyor.io/tackle # Print debug output when waiting failed
+  tackles.tackle.konveyor.io/tackle # Print tackle debug when timed out
 
 # Now wait for all the tackle deployments
 kubectl wait \
@@ -112,4 +112,10 @@ kubectl wait \
   --selector="app.kubernetes.io/part-of=tackle" \
   --for=condition=Available \
   --timeout=600s \
-  deployments.apps
+  deployments.apps \
+|| kubectl get \
+  --namespace konveyor-tackle \
+  --selector="app.kubernetes.io/part-of=tackle" \
+  --field-selector=status.phase!=Running  \
+  -o yaml \
+  pods # Print not running tackle pods when timed out
