@@ -70,7 +70,8 @@ spec:
   sourceNamespace: konveyor-tackle
 EOF
 # If on MacOS, need to install `brew install coreutils` to get `timeout`
-timeout 600s bash -c 'until kubectl get customresourcedefinitions.apiextensions.k8s.io tackles.tackle.konveyor.io; do sleep 30; done'
+timeout 600s bash -c 'until kubectl get customresourcedefinitions.apiextensions.k8s.io tackles.tackle.konveyor.io; do sleep 30; done' \
+|| kubectl get subscription --namespace konveyor-tackle -o yaml konveyor-operator # Print subscription details when timed out
 
 # Create, and wait for, tackle
 kubectl wait \
@@ -100,7 +101,11 @@ kubectl wait \
   --namespace konveyor-tackle \
   --for=condition=Successful \
   --timeout=600s \
-  tackles.tackle.konveyor.io/tackle
+  tackles.tackle.konveyor.io/tackle \
+|| kubectl get \
+  --namespace konveyor-tackle \
+  -o yaml \
+  tackles.tackle.konveyor.io/tackle # Print tackle debug when timed out
 
 # Now wait for all the tackle deployments
 kubectl wait \
@@ -108,4 +113,10 @@ kubectl wait \
   --selector="app.kubernetes.io/part-of=tackle" \
   --for=condition=Available \
   --timeout=600s \
-  deployments.apps
+  deployments.apps \
+|| kubectl get \
+  --namespace konveyor-tackle \
+  --selector="app.kubernetes.io/part-of=tackle" \
+  --field-selector=status.phase!=Running  \
+  -o yaml \
+  pods # Print not running tackle pods when timed out
