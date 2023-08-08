@@ -27,64 +27,84 @@ on:
         required: true
         type: string
 
-
 jobs:
   # TODO(djzager): This is where we would want to do some integration testing
   # test:
   #   ...
   # might consider creating "rc" releases, building and testing those before
   # publishing a release.
-  release-components:
-    strategy:
-      matrix:
-        repository:
-          - konveyor/tackle2-hub
-          - konveyor/tackle2-ui
-          - konveyor/tackle2-addon
-          - konveyor/tackle2-addon-analyzer
-          - konveyor/operator
-          - konveyor/tackle-pathfinder
-          - konveyor/tackle-keycloak-theme
-    uses: konveyor/release-tools/.github/workflows/create-release.yml@main
-    with:
-      version: ${{ inputs.version }}
-      repository: ${{ matrix.repository }}
-      ref: ${{ inputs.branch }}
-    secrets:
-      token: ${{ secrets.GH_TOKEN }}
-      # TODO(djzager) Next we'll need to force the multi-arch build steps to run
 
-  wait-for-images:
+  release-bases:
     runs-on: ubuntu-20.04
-    needs: release-components
     strategy:
       matrix:
-        image:
-          - konveyor/tackle2-hub
-          - konveyor/tackle2-ui
-          - konveyor/tackle2-addon
-          - konveyor/tackle2-addon-analyzer
-          - konveyor/tackle2-operator
-          - konveyor/tackle-pathfinder
-          - konveyor/tackle-keycloak-init
+        max-parallel: 1
+        projects:
+          - repo: konveyor/java-analyzer-bundle
+            image: konveyor/jdtls-server-base
+          - repo: konveyor/analyzer-lsp
+            image: konveyor/analyzer-lsp
+          - repo: konveyor/windup-shim
+            image: konveyor/windup-shim
+          - repo: konveyor/tackle2-addon-analyzer
+            image: konveyor/tackle2-addon-analyzer
+      fail-fast: true
     steps:
-      - name: Pull the image
-        run: |
+      - uses: konveyor/release-tools/create-release@main
+        with:
+          version: ${{ inputs.version }}
+          repository: ${{ matrix.projects.repo }}
+          ref: ${{ inputs.branch }}
+          github_token: ${{ secrets.GH_TOKEN }}
+      - run: |
           #!/bin/bash
-          while ! docker pull quay.io/${{ matrix.image }}:${{ inputs.version }} &> /dev/null; do
+          while ! docker pull quay.io/${{ matrix.projects.image }}:${{ inputs.version }} &> /dev/null; do
               sleep 3m
           done
-          docker image inspect quay.io/${{ matrix.image }}:${{ inputs.version }}
+          docker image inspect quay.io/${{ matrix.projects.image }}:${{ inputs.version }}
+
+  release-components:
+    runs-on: ubuntu-20.04
+    needs: release-bases
+    strategy:
+      matrix:
+        projects:
+          - repo: konveyor/tackle2-hub
+            image: konveyor/tackle2-hub
+          - repo: konveyor/tackle2-ui
+            image: konveyor/tackle2-ui
+          - repo: konveyor/tackle2-addon
+            image: konveyor/tackle2-addon
+          - repo: konveyor/operator
+            image: konveyor/operator
+          - repo: konveyor/tackle-pathfinder
+            image: konveyor/tackle-pathfinder
+          - repo: konveyor/tackle-keycloak-theme
+            image: konveyor/tackle-keycloak-init
+      fail-fast: true
+    steps:
+      - uses: konveyor/release-tools/create-release@main
+        with:
+          version: ${{ inputs.version }}
+          repository: ${{ matrix.projects.repo }}
+          ref: ${{ inputs.branch }}
+          github_token: ${{ secrets.GH_TOKEN }}
+      - run: |
+          #!/bin/bash
+          while ! docker pull quay.io/${{ matrix.projects.image }}:${{ inputs.version }} &> /dev/null; do
+              sleep 3m
+          done
+          docker image inspect quay.io/${{ matrix.projects.image }}:${{ inputs.version }}
 
   publish:
     name: Build and Push Manifest
-    needs: wait-for-images
+    needs: release-components
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
     steps:
     - name: Checkout Push to Registry action
-      uses: actions/checkout@main
+      uses: actions/checkout@v3
       with:
         ref: ${{ inputs.branch }}
 
