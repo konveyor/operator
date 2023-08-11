@@ -37,31 +37,56 @@ jobs:
   release-bases:
     runs-on: ubuntu-20.04
     strategy:
-      matrix:
-        max-parallel: 1
-        projects:
-          - repo: konveyor/java-analyzer-bundle
-            image: konveyor/jdtls-server-base
-          - repo: konveyor/analyzer-lsp
-            image: konveyor/analyzer-lsp
-          - repo: konveyor/windup-shim
-            image: konveyor/windup-shim
-          - repo: konveyor/tackle2-addon-analyzer
-            image: konveyor/tackle2-addon-analyzer
       fail-fast: true
     steps:
       - uses: konveyor/release-tools/create-release@main
         with:
           version: ${{ inputs.version }}
-          repository: ${{ matrix.projects.repo }}
+          repository: konveyor/java-analyzer-bundle
           ref: ${{ inputs.branch }}
           github_token: ${{ secrets.GH_TOKEN }}
       - run: |
           #!/bin/bash
-          while ! docker pull quay.io/${{ matrix.projects.image }}:${{ inputs.version }} &> /dev/null; do
+          while ! docker pull quay.io/konveyor/jdtls-server-base:${{ inputs.version }} &> /dev/null; do
               sleep 3m
           done
-          docker image inspect quay.io/${{ matrix.projects.image }}:${{ inputs.version }}
+          docker image inspect quay.io/konveyor/jdtls-server-base:${{ inputs.version }}
+      - uses: konveyor/release-tools/create-release@main
+        with:
+          version: ${{ inputs.version }}
+          repository: konveyor/analyzer-lsp
+          ref: ${{ inputs.branch }}
+          github_token: ${{ secrets.GH_TOKEN }}
+      - run: |
+          #!/bin/bash
+          while ! docker pull quay.io/konveyor/analyzer-lsp:${{ inputs.version }} &> /dev/null; do
+              sleep 3m
+          done
+          docker image inspect quay.io/konveyor/analyzer-lsp:${{ inputs.version }}
+      - uses: konveyor/release-tools/create-release@main
+        with:
+          version: ${{ inputs.version }}
+          repository: konveyor/windup-shim
+          ref: ${{ inputs.branch }}
+          github_token: ${{ secrets.GH_TOKEN }}
+      - run: |
+          #!/bin/bash
+          while ! docker pull quay.io/konveyor/windup-shim:${{ inputs.version }} &> /dev/null; do
+              sleep 3m
+          done
+          docker image inspect quay.io/konveyor/windup-shim:${{ inputs.version }}
+      - uses: konveyor/release-tools/create-release@main
+        with:
+          version: ${{ inputs.version }}
+          repository: konveyor/tackle2-addon-analyzer
+          ref: ${{ inputs.branch }}
+          github_token: ${{ secrets.GH_TOKEN }}
+      - run: |
+          #!/bin/bash
+          while ! docker pull quay.io/konveyor/tackle2-addon-analyzer:${{ inputs.version }} &> /dev/null; do
+              sleep 3m
+          done
+          docker image inspect quay.io/konveyor/tackle2-addon-analyzer:${{ inputs.version }}
 
   release-components:
     runs-on: ubuntu-20.04
