@@ -101,7 +101,7 @@ jobs:
           - repo: konveyor/tackle2-addon
             image: konveyor/tackle2-addon
           - repo: konveyor/operator
-            image: konveyor/operator
+            image: konveyor/tackle2-operator
           - repo: konveyor/tackle-pathfinder
             image: konveyor/tackle-pathfinder
           - repo: konveyor/tackle-keycloak-theme
