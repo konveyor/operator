@@ -42,6 +42,7 @@ jobs:
       - uses: konveyor/release-tools/create-release@main
         with:
           version: ${{ inputs.version }}
+          prev_version: ${{ inputs.previous_version }}
           repository: konveyor/java-analyzer-bundle
           ref: ${{ inputs.branch }}
           github_token: ${{ secrets.GH_TOKEN }}
@@ -54,6 +55,7 @@ jobs:
       - uses: konveyor/release-tools/create-release@main
         with:
           version: ${{ inputs.version }}
+          prev_version: ${{ inputs.previous_version }}
           repository: konveyor/analyzer-lsp
           ref: ${{ inputs.branch }}
           github_token: ${{ secrets.GH_TOKEN }}
@@ -66,6 +68,7 @@ jobs:
       - uses: konveyor/release-tools/create-release@main
         with:
           version: ${{ inputs.version }}
+          prev_version: ${{ inputs.previous_version }}
           repository: konveyor/windup-shim
           ref: ${{ inputs.branch }}
           github_token: ${{ secrets.GH_TOKEN }}
@@ -78,6 +81,7 @@ jobs:
       - uses: konveyor/release-tools/create-release@main
         with:
           version: ${{ inputs.version }}
+          prev_version: ${{ inputs.previous_version }}
           repository: konveyor/tackle2-addon-analyzer
           ref: ${{ inputs.branch }}
           github_token: ${{ secrets.GH_TOKEN }}
@@ -111,6 +115,7 @@ jobs:
       - uses: konveyor/release-tools/create-release@main
         with:
           version: ${{ inputs.version }}
+          prev_version: ${{ inputs.previous_version }}
           repository: ${{ matrix.projects.repo }}
           ref: ${{ inputs.branch }}
           github_token: ${{ secrets.GH_TOKEN }}

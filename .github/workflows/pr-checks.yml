@@ -19,6 +19,7 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
 
   build-operator:
+    needs: check-title
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -32,6 +33,7 @@ jobs:
     - run: make bundle bundle-build bundle-push
 
   operator-install:
+    needs: build-bundle
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
