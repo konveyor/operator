@@ -12,3 +12,6 @@ spec:
     enabled: true
   externalAccess:
     enabled: {{ rhsso_external_access }}
+  keycloakDeploymentSpec:
+    podlabels:
+      role: {{ rhsso_service_name }}
