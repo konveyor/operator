@@ -272,68 +272,71 @@
       retries: 30
       delay: 5
 
-- name: "Setup PathFinder PostgreSQL PersistentVolume"
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'persistentvolumeclaim-pathfinder-postgresql.yml.j2') }}"
-
-- name: "Check if PathFinder PostgreSQL Secret exists already so we don't update it"
-  k8s_info:
-    api_version: v1
-    kind: Secret
-    name: "{{ pathfinder_database_secret_name }}"
-    namespace: "{{ app_namespace }}"
-  register: pathfinder_database_secret_status
-
-- when: (pathfinder_database_secret_status.resources | length) == 0
+- when:
+    - feature_pathfinder|bool
   block:
-    - name: "Generate random values for PathFinder PostgreSQL username and password"
-      set_fact:
-        pathfinder_database_db_username: "user-{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=4') }}"
-        pathfinder_database_db_password: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=16') }}"
-
-    - name: "Encode PathFinder PostgreSQL username and password"
-      set_fact:
-        pathfinder_database_db_username_b64: "{{ pathfinder_database_db_username | b64encode }}"
-        pathfinder_database_db_password_b64: "{{ pathfinder_database_db_password | b64encode }}"
-
-    - name: "Setup PathFinder PostgreSQL Secret"
+    - name: "Setup PathFinder PostgreSQL PersistentVolume"
       k8s:
         state: present
-        definition: "{{ lookup('template', 'secret-pathfinder-postgresql.yml.j2') }}"
+        definition: "{{ lookup('template', 'persistentvolumeclaim-pathfinder-postgresql.yml.j2') }}"
 
-- name: "Setup PathFinder PostgreSQL Service"
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'service-pathfinder-postgresql.yml.j2') }}"
+    - name: "Check if PathFinder PostgreSQL Secret exists already so we don't update it"
+      k8s_info:
+        api_version: v1
+        kind: Secret
+        name: "{{ pathfinder_database_secret_name }}"
+        namespace: "{{ app_namespace }}"
+      register: pathfinder_database_secret_status
 
-- name: "Setup PathFinder PostgreSQL Deployment"
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'deployment-pathfinder-postgresql.yml.j2') }}"
+    - when: (pathfinder_database_secret_status.resources | length) == 0
+      block:
+        - name: "Generate random values for PathFinder PostgreSQL username and password"
+          set_fact:
+            pathfinder_database_db_username: "user-{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=4') }}"
+            pathfinder_database_db_password: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=16') }}"
 
-- name: "Check status of PathFinder PostgreSQL"
-  kubernetes.core.k8s_info:
-    api_version: v1
-    kind: Pod
-    namespace: "{{ app_namespace }}"
-    label_selectors:
-      - app.kubernetes.io/name = {{ pathfinder_database_service_name }}
-    wait: true
-    wait_condition:
-      type: "Ready"
-      status: "True"
-    wait_timeout: 240
+        - name: "Encode PathFinder PostgreSQL username and password"
+          set_fact:
+            pathfinder_database_db_username_b64: "{{ pathfinder_database_db_username | b64encode }}"
+            pathfinder_database_db_password_b64: "{{ pathfinder_database_db_password | b64encode }}"
 
-- name: "Setup PathFinder Service"
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'service-pathfinder.yml.j2') }}"
+        - name: "Setup PathFinder PostgreSQL Secret"
+          k8s:
+            state: present
+            definition: "{{ lookup('template', 'secret-pathfinder-postgresql.yml.j2') }}"
 
-- name: "Setup PathFinder Deployment"
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'deployment-pathfinder.yml.j2') }}"
+    - name: "Setup PathFinder PostgreSQL Service"
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'service-pathfinder-postgresql.yml.j2') }}"
+
+    - name: "Setup PathFinder PostgreSQL Deployment"
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'deployment-pathfinder-postgresql.yml.j2') }}"
+
+    - name: "Check status of PathFinder PostgreSQL"
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: "{{ app_namespace }}"
+        label_selectors:
+          - app.kubernetes.io/name = {{ pathfinder_database_service_name }}
+        wait: true
+        wait_condition:
+          type: "Ready"
+          status: "True"
+        wait_timeout: 240
+
+    - name: "Setup PathFinder Service"
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'service-pathfinder.yml.j2') }}"
+
+    - name: "Setup PathFinder Deployment"
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'deployment-pathfinder.yml.j2') }}"
 
 - name: "Setup Hub API Database PersistentVolumeClaim"
   k8s:
