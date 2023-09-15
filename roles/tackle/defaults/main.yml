@@ -9,6 +9,7 @@ app_version: "{{ lookup('env', 'VERSION') }}"
 feature_auth_required: "{{ false if app_profile == 'konveyor' else true }}"
 feature_auth_type: keycloak
 feature_isolate_namespace: true
+feature_pathfinder: true
 
 # Environment
 openshift_cluster: false
