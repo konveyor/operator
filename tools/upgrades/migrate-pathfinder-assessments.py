@@ -73,11 +73,11 @@ def migrateAssessments(pathfinder_url, hub_base_url, token):
     print("There are %d Applications, looking for their Assessments.." % len(apps))
     for app in apps:
         # If there would be more assessments, only first one is migrated.
-        for passmnt in apiJSON(pathfinder_url + "/assessments?applicationId=%d" % app.id, token):
+        for passmnt in apiJSON(pathfinder_url + "/assessments?applicationId=%d" % app['id'], token):
             print("# Assessment for Application %s" % passmnt["applicationId"])
             appAssessmentsPath = "/applications/%d/assessments" % passmnt["applicationId"]
             # Skip if Assessment for given Application already exists
-            if len(apiJSON(hub_base_url + appAssessmentsPath, token, data={"questionnaire": {"id": 1}})) > 0:
+            if len(apiJSON(hub_base_url + appAssessmentsPath, token)) > 0:
                 print("  Assessment already exists, skipping.")
                 continue
             
