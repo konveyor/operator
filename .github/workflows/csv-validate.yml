@@ -1,13 +1,13 @@
-name: Validate bundle CSV
+name: Validate Bundle CSV
 
 on:
   pull_request:
     branches:
     - main
-    - 'release-*.*.*'
+    - 'release-*.*'
     paths:
     - 'bundle/**'
-    workflow_dispatch:
+    - 'config/**'
 
 jobs:
   build:
@@ -26,8 +26,4 @@ jobs:
 
       - name: Check config/ is in sync with bundle/
         run: |
-          make bundle bundle-ignore-createdAt
-          git diff --exit-code bundle/
-
-      - name: Validate bundle
-        run: ./bin/operator-sdk bundle validate ./bundle
+          make bundle bundle-sync-check
