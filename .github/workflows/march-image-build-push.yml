@@ -52,7 +52,7 @@ jobs:
     - name: Build index
       run: |
         CONTAINER_RUNTIME=podman \
-        CATALOG_IMG=quay.io/knoveyor/tackle2-operator-index:latest \
+        CATALOG_IMG=quay.io/konveyor/tackle2-operator-index:latest \
         BUNDLE_IMG=quay.io/konveyor/tackle2-operator-bundle:latest \
         make catalog-build
       if: ${{ github.ref == 'refs/heads/main' }}
