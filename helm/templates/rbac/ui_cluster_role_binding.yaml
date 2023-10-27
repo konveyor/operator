@@ -9,3 +9,4 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: tackle-ui
+  namespace: {{ .Release.Namespace }}

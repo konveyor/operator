@@ -1,3 +1,4 @@
+{{ if .Values.olm }}
 apiVersion: operators.coreos.com/v1alpha1
 kind: ClusterServiceVersion
 metadata:
@@ -10,7 +11,7 @@ metadata:
     description: Konveyor is an open-source application modernization platform that
       helps organizations safely and predictably modernize applications to Kubernetes
       at scale.
-    olm.skipRange: '>=0.0.0 <99.0.0'
+    olm.skipRange: '>=0.0.0 <{{ substr 1 -1 .Chart.Version }}'
     operatorframework.io/initialization-resource: |-
       {
         "apiVersion": "tackle.konveyor.io/v1alpha1",
@@ -26,7 +27,7 @@ metadata:
     operatorframework.io/suggested-namespace: konveyor-tackle
     repository: https://github.com/konveyor/tackle2-operator
     support: https://github.com/konveyor/tackle2-operator/issues
-  name: konveyor-operator.v0.0.0
+  name: konveyor-operator.{{ .Chart.Version }}
   namespace: konveyor-tackle
 spec:
   apiservicedefinitions: {}
@@ -110,4 +111,5 @@ spec:
   provider:
     name: Konveyor
     url: https://www.konveyor.io
-  version: 0.0.0
+  version: {{ substr 1 -1 .Chart.Version }}
+{{ end }}

@@ -1,0 +1,14 @@
+# true in the case we want to render manifests for OLM stuff
+olm: false
+
+images:
+  operator: quay.io/konveyor/tackle2-operator:latest
+  oauth_proxy: quay.io/openshift/origin-oauth-proxy:latest
+  tackle_hub: quay.io/konveyor/tackle2-hub:latest
+  tackle_postgres: quay.io/centos7/postgresql-12-centos7:latest
+  pathfinder: quay.io/konveyor/tackle-pathfinder:1.3.1-native
+  keycloak_sso: quay.io/keycloak/keycloak:18.0.2-legacy
+  keycloak_init: quay.io/konveyor/tackle-keycloak-init:latest
+  tackle_ui: quay.io/konveyor/tackle2-ui:latest
+  addon_admin: quay.io/konveyor/tackle2-addon:latest
+  addon_analyzer: quay.io/konveyor/tackle2-addon-analyzer:latest
