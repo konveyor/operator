@@ -98,6 +98,7 @@ tackle-pathfinder-6c58447d8f-rd6rr                             1/1     Running  
 tackle-pathfinder-postgresql-5fff469bcc-bc5z2                  1/1     Running     0          130m
 tackle-ui-5f694bddcb-scbh5                                     1/1     Running     0          130m
 ```
+You can access the Konveyor UI in your browser through the `$(minikube ip)` IP.
 
 If you're looking to install Konveyor operator on macOS, follow the guide [here](docs/installation-macos.md).
 
