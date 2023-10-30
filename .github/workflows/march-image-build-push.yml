@@ -44,12 +44,17 @@ jobs:
         quay_publish_token: ${{ secrets.QUAY_PUBLISH_TOKEN }}
         ref: ${{ github.ref }}
 
-    - name: Install opm
-      run: wget $(curl -s https://api.github.com/repos/operator-framework/operator-registry/releases/latest | grep 'browser_' | cut -d\" -f4 | grep linux) -O opm && chmod +x opm
-      if: ${{ github.ref == 'refs/heads/main' }}
+    - name: Checkout PR branch
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
 
     - name: Build index
-      run: ./opm index add -c podman --mode semver --tag quay.io/konveyor/tackle2-operator-index:latest --bundles quay.io/konveyor/tackle2-operator-bundle:latest
+      run: |
+        CONTAINER_RUNTIME=podman \
+        CATALOG_IMG=quay.io/konveyor/tackle2-operator-index:latest \
+        BUNDLE_IMG=quay.io/konveyor/tackle2-operator-bundle:latest \
+        make catalog-build
       if: ${{ github.ref == 'refs/heads/main' }}
 
     - name: Push index

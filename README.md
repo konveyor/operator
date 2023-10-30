@@ -1,6 +1,6 @@
 # Konveyor Operator
 
-[![Operator Repository on Quay](https://quay.io/repository/konveyor/tackle2-operator/status "Operator Repository on Quay")](https://quay.io/repository/konveyor/tackle2-operator) [![License](http://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html) [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/konveyor/tackle2-operator/pulls) [![OpenSSF Best Practices](https://bestpractices.coreinfrastructure.org/projects/7355/badge)](https://bestpractices.coreinfrastructure.org/projects/7355)
+[![License](http://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html) [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/konveyor/tackle2-operator/pulls) [![OpenSSF Best Practices](https://bestpractices.coreinfrastructure.org/projects/7355/badge)](https://bestpractices.coreinfrastructure.org/projects/7355)
 
 The Konveyor Operator fully manages the deployment and life cycle of Konveyor on Kubernetes and OpenShift.
 
@@ -16,7 +16,7 @@ Please ensure the following requirements are met prior installation.
 
 ### Installing OLM support
 
-We strongly suggest OLM support for Tackle deployments, in some production kubernetes clusters OLM might already be present, if not, see the following examples in how to add OLM support to minikube or standard kubernetes clusters below:
+We strongly suggest OLM support for Tackle deployments, in some production Kubernetes clusters, OLM might already be present. If not, see the following examples on how to add OLM support to Minikube or standard Kubernetes clusters below:
 
 #### Minikube:
 
@@ -30,7 +30,7 @@ We strongly suggest OLM support for Tackle deployments, in some production kuber
 
 `$ kubectl apply -f https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/master/deploy/upstream/quickstart/olm.yaml`
 
-For details and official instructions in how to add OLM support to kubernetes and customize your installation see [here](https://github.com/operator-framework/operator-lifecycle-manager/blob/master/doc/install/install.md)
+For detailed and official instructions on adding OLM support to Kubernetes and customizing your installation, refer to [here](https://github.com/operator-framework/operator-lifecycle-manager/blob/master/doc/install/install.md).
 
 **Note:** Please wait a few minutes for OLM support to become available if this is a new deployment.
 
@@ -52,19 +52,21 @@ Deploy Konveyor using manifest:
 
 `$ kubectl apply -f https://raw.githubusercontent.com/konveyor/tackle2-operator/main/tackle-k8s.yaml`
 
-This step will create the konveyor-tackle namespace, catalogsource and other OLM related objects.
+This step will create the konveyor-tackle namespace, catalogsource, and other OLM-related objects.
 
 ### Installing _beta_ (or special branches)
 
-If you need to deploy a beta release (or special branch) please replace the *main* branch in URL with the desired beta branch (i.e v2.0.0-beta.0):
+If you need to deploy a beta release (or special branch), please replace the *main* branch in the URL with the desired beta branch (i.e v2.0.0-beta.0):
 
 `$ kubectl apply -f https://raw.githubusercontent.com/konveyor/tackle2-operator/v2.0.0-beta.0/tackle-k8s.yaml`
 
-**Note:** Upgrades between beta releases are **not guaranteed** , once installed, we strongly suggest to edit your subscription and switch to Manual upgrade mode for beta releases: `$ kubectl edit subscription` -> installPlanApproval: Manual
+**Note:** Upgrades between beta releases are **not guaranteed**. Once installed, we strongly suggest editing your subscription and switching to Manual upgrade mode for beta releases: `$ kubectl edit subscription` -> installPlanApproval: Manual
 
 ### Creating a _Tackle_ CR
 
-**Note:** Tackle **requires** a storage class that supports RWX volumes, please review storage requirements **prior** creating the Tackle CR in case you need to adjust settings.
+**Note:** Tackle **requires** a storage class that supports RWX volumes. Please review storage requirements **prior** to creating the Tackle CR, in case you need to adjust settings.
+
+Use the following command to create the CR:
 
 ```
 $ cat << EOF | kubectl apply -f -
@@ -77,11 +79,11 @@ spec:
 EOF
 ```
 
-Once the CR is created, the operator will deploy the hub, UI and configure the rest of required components.
+Once the CR is created, the operator will deploy the hub, UI and configure the rest of the required components.
 
 ### Verify _Tackle_ Deployment
 
-Depending on your hardware it should take around 1-3 minutes to deploy Tackle, below is a sample output of a successful deployment
+Depending on your hardware, it should take around 1-3 minutes to deploy Tackle, below is a sample output of a successful deployment
 
 ```
 $ kubectl get pods
@@ -98,7 +100,8 @@ tackle-ui-5f694bddcb-scbh5                                     1/1     Running  
 ```
 You can access the Konveyor UI in your browser through the `$(minikube ip)` IP.
 
-If you are looking to install Konveyor operator in MacOS, follow along [this guide](docs/installation-macos.md). 
+If you're looking to install Konveyor operator on macOS, follow the guide [here](docs/installation-macos.md).
+
 ## Konveyor Operator Installation on OKD/OpenShift
 
 ### Installing _released versions_
@@ -106,28 +109,29 @@ If you are looking to install Konveyor operator in MacOS, follow along [this gui
 Released (or public betas) of Konveyor are installable on OpenShift via community operators which appear in [OCP](https://openshift.com/) and [OKD](https://www.okd.io/).
 
 1. Visit the OpenShift Web Console.
-1. Navigate to _Operators => OperatorHub_.
-1. Search for _Konveyor_.
-1. Install the desired _Konveyor_ version.
+2. Navigate to _Operators => OperatorHub_.
+3. Search for _Konveyor_.
+4. Install the desired _Konveyor_ version.
 
 ### Installing _latest_
 
-Installing latest is almost an identical procedure to released versions but requires creating a new catalog source.
+Installing the latest version is almost identical to installing released versions but requires creating a new catalog source.
 
 1. `oc apply -f https://raw.githubusercontent.com/konveyor/tackle2-operator/main/konveyor-operator-catalog.yaml`
-1. Visit the OpenShift Web Console.
-1. Navigate to _Operators => OperatorHub_.
-1. Search for _Konveyor_.
-1. There should be two _Konveyor_ available for installation now.
-1. Select the _Konveyor_ **without** the _community_ tag.
-1. Proceed to install latest using the _development_ channel in the subscription step.
+
+2. Visit the OpenShift Web Console.
+3. Navigate to _Operators => OperatorHub_.
+4. Search for _Konveyor_.
+5. There should be two _Konveyor_ available for installation now.
+6. Select the _Konveyor_ version **without** the _community_ tag.
+7. Proceed to install the latest version using the _development_ channel during the subscription step.
 
 ### Tackle CR Creation
 
-1. Visit OpenShift Web Console, navigate to _Operators => Installed Operators_.
-1. Select _Konveyor_.
-1. Locate _Konveyor_ on the top menu and click on it.
-1. Adjust settings if desired and click Create instance.
+1. Visit the OpenShift Web Console, navigate to _Operators => Installed Operators_.
+2. Select _Konveyor_.
+3. Locate _Konveyor_ in the top menu and click on it.
+4. Adjust settings if desired and click "Create instance".
 
 ## Tackle CR Settings
 

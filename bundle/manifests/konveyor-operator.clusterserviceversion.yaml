@@ -20,7 +20,7 @@ metadata:
     categories: Modernization & Migration
     certified: "false"
     containerImage: quay.io/konveyor/tackle2-operator:latest
-    createdAt: "2023-07-24T15:04:42Z"
+    createdAt: "2023-10-23T14:59:12Z"
     description: Konveyor is an open-source application modernization platform that
       helps organizations safely and predictably modernize applications to Kubernetes
       at scale.
@@ -166,7 +166,7 @@ spec:
                 - name: VERSION
                   value: 99.0.0
                 - name: RELATED_IMAGE_OAUTH_PROXY
-                  value: docker.io/openshift/oauth-proxy:latest
+                  value: quay.io/openshift/origin-oauth-proxy:latest
                 - name: RELATED_IMAGE_TACKLE_HUB
                   value: quay.io/konveyor/tackle2-hub:latest
                 - name: RELATED_IMAGE_TACKLE_POSTGRES
@@ -355,7 +355,7 @@ spec:
     name: Konveyor
     url: https://www.konveyor.io
   relatedImages:
-  - image: docker.io/openshift/oauth-proxy:latest
+  - image: quay.io/openshift/origin-oauth-proxy:latest
     name: oauth-proxy
   - image: quay.io/konveyor/tackle2-hub:latest
     name: tackle-hub

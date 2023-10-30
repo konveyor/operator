@@ -43,7 +43,7 @@ spec:
         - name: VERSION
           value: 99.0.0
         - name: RELATED_IMAGE_OAUTH_PROXY
-          value: docker.io/openshift/oauth-proxy:latest
+          value: quay.io/openshift/origin-oauth-proxy:latest
         - name: RELATED_IMAGE_TACKLE_HUB
           value: quay.io/konveyor/tackle2-hub:latest
         - name: RELATED_IMAGE_TACKLE_POSTGRES

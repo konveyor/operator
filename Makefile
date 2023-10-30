@@ -105,7 +105,7 @@ endif
 # To properly provided solutions that supports more than one platform you should use this option.
 PLATFORMS ?= linux/arm64,linux/amd64,linux/s390x,linux/ppc64le
 .PHONY: docker-buildx
-docker-buildx: test ## Build and push docker image for the manager for cross-platform support
+docker-buildx: ## Build and push docker image for the manager for cross-platform support
 	# copy existing Dockerfile and insert --platform=${BUILDPLATFORM} into Dockerfile.cross, and preserve the original Dockerfile
 	sed -e '1 s/\(^FROM\)/FROM --platform=\$$\{BUILDPLATFORM\}/; t' -e ' 1,// s//FROM --platform=\$$\{BUILDPLATFORM\}/' Dockerfile > Dockerfile.cross
 	- docker buildx create --name project-v3-builder
@@ -211,11 +211,9 @@ bundle: kustomize operator-sdk ## Generate bundle manifests and metadata, then v
 	$(KUSTOMIZE) build config/manifests | $(OPERATOR_SDK) generate bundle -q --overwrite --extra-service-accounts tackle-hub,tackle-ui --version $(VERSION) $(BUNDLE_METADATA_OPTS)
 	$(OPERATOR_SDK) bundle validate ./bundle
 
-# Workaround to undo createdAt changes in bundle manifests if its the only change.
-# https://github.com/operator-framework/operator-sdk/issues/6285#issuecomment-1532150678
-.PHONY: bundle-ignore-createdAt
-bundle-ignore-createdAt:
-	git diff --quiet -I'^    createdAt: ' bundle && git checkout bundle || true
+.PHONY: bundle-sync-check
+bundle-sync-check:
+	git diff --exit-code -I'^    createdAt: ' bundle
 
 .PHONY: bundle-build
 bundle-build: ## Build the bundle image.
@@ -237,7 +235,7 @@ ifeq (,$(shell which opm 2>/dev/null))
 	@{ \
 	set -e ;\
 	mkdir -p $(dir $(OPM)) ;\
-	curl -sSLo $(OPM) https://github.com/operator-framework/operator-registry/releases/download/v1.23.0/$(OS)-$(ARCH)-opm ;\
+	curl -sSLo $(OPM) https://github.com/operator-framework/operator-registry/releases/download/v1.30.0/$(OS)-$(ARCH)-opm ;\
 	chmod +x $(OPM) ;\
 	}
 else
