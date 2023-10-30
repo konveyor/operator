@@ -50,7 +50,7 @@ Released (or public betas) of Konveyor are installable on Kubernetes via [Operat
 
 Deploy Konveyor using manifest:
 
-`$ kubectl apply -f https://raw.githubusercontent.com/konveyor/tackle2-operator/main/tackle-k8s.yaml`
+`$ kubectl apply -f https://raw.githubusercontent.com/konveyor/konveyor-operator/main/tackle-k8s.yaml`
 
 This step will create the konveyor-tackle namespace, catalogsource and other OLM related objects.
 
@@ -58,7 +58,7 @@ This step will create the konveyor-tackle namespace, catalogsource and other OLM
 
 If you need to deploy a beta release (or special branch) please replace the *main* branch in URL with the desired beta branch (i.e v2.0.0-beta.0):
 
-`$ kubectl apply -f https://raw.githubusercontent.com/konveyor/tackle2-operator/v2.0.0-beta.0/tackle-k8s.yaml`
+`$ kubectl apply -f https://raw.githubusercontent.com/konveyor/konveyor-operator/v2.0.0-beta.0/tackle-k8s.yaml`
 
 **Note:** Upgrades between beta releases are **not guaranteed** , once installed, we strongly suggest to edit your subscription and switch to Manual upgrade mode for beta releases: `$ kubectl edit subscription` -> installPlanApproval: Manual
 
@@ -112,7 +112,7 @@ Released (or public betas) of Konveyor are installable on OpenShift via communit
 
 Installing latest is almost an identical procedure to released versions but requires creating a new catalog source.
 
-1. `oc apply -f https://raw.githubusercontent.com/konveyor/tackle2-operator/main/konveyor-operator-catalog.yaml`
+1. `oc apply -f https://raw.githubusercontent.com/konveyor/konveyor-operator/main/konveyor-operator-catalog.yaml`
 1. Visit the OpenShift Web Console.
 1. Navigate to _Operators => OperatorHub_.
 1. Search for _Konveyor_.
