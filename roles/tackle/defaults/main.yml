@@ -9,7 +9,6 @@ app_version: "{{ lookup('env', 'VERSION') }}"
 feature_auth_required: "{{ false if app_profile == 'konveyor' else true }}"
 feature_auth_type: keycloak
 feature_isolate_namespace: true
-feature_pathfinder: true
 
 # Environment
 openshift_cluster: false
@@ -53,41 +52,17 @@ hub_log_level: 3
 hub_metrics_enabled: true
 hub_metrics_port: "2112"
 
-pathfinder_database_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_TACKLE_POSTGRES') }}"
+pathfinder_delete_db_volume: false
 pathfinder_database_name: "pathfinder"
 pathfinder_database_component_name: "postgresql"
 pathfinder_database_service_name: "{{ app_name }}-{{ pathfinder_database_name }}-{{ pathfinder_database_component_name }}"
 pathfinder_database_secret_name: "{{ pathfinder_database_service_name }}"
 pathfinder_database_deployment_name: "{{ pathfinder_database_service_name }}"
-pathfinder_database_deployment_strategy: "Recreate"
-pathfinder_database_deployment_replicas: "1"
-pathfinder_database_container_name: "{{ pathfinder_database_service_name }}"
-pathfinder_database_container_limits_cpu: "500m"
-pathfinder_database_container_limits_memory: "800Mi"
-pathfinder_database_container_requests_cpu: "100m"
-pathfinder_database_container_requests_memory: "350Mi"
-pathfinder_database_data_volume_name: "{{ pathfinder_database_service_name }}-database"
-pathfinder_database_data_volume_size: "1Gi"
-pathfinder_database_data_volume_path: "/var/lib/pgsql"
 pathfinder_database_data_volume_claim_name: "{{ pathfinder_database_service_name }}-volume-claim"
-pathfinder_database_db_name: "pathfinder_db"
-pathfinder_database_db_name_b64: "{{ pathfinder_database_db_name | b64encode }}"
 
-pathfinder_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_PATHFINDER') }}"
 pathfinder_component_name: "pathfinder"
 pathfinder_service_name: "{{ app_name }}-{{ pathfinder_component_name }}"
 pathfinder_deployment_name: "{{ pathfinder_service_name }}"
-pathfinder_deployment_replicas: "1"
-pathfinder_container_name: "{{ pathfinder_service_name }}"
-pathfinder_container_limits_cpu: "1000m"
-pathfinder_container_limits_memory: "2Gi"
-pathfinder_container_requests_cpu: "100m"
-pathfinder_container_requests_memory: "350Mi"
-pathfinder_tls_enabled: false
-pathfinder_tls_secret_name: "{{ pathfinder_service_name }}-serving-cert"
-pathfinder_port: "{{ '8443' if pathfinder_tls_enabled | bool else '8080' }}"
-pathfinder_proto: "{{ 'https' if pathfinder_tls_enabled | bool else 'http' }}"
-pathfinder_url: "{{ pathfinder_proto }}://{{ pathfinder_service_name }}.{{ app_namespace }}.svc:{{ pathfinder_port }}"
 
 keycloak_database_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_TACKLE_POSTGRES') }}"
 keycloak_database_name: "keycloak"

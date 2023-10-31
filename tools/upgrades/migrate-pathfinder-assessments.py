@@ -82,6 +82,7 @@ def migrateAssessments(pathfinder_url, hub_base_url, token):
                 continue
             
             # Prepare new Assessment
+            passmnt = apiJSON(pathfinder_url + "/assessments/%d" % passmnt['id'], token)
             assmnt = dict()
             assmnt['questionnaire'] = {"id": 1} # Default new Questionnaire "Pathfinder Legacy"
             assmnt['application'] = {"id": passmnt["applicationId"]}

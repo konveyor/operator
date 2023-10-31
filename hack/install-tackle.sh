@@ -20,7 +20,6 @@ export PATH="${__bin_dir}:${PATH}"
 NAMESPACE="${NAMESPACE:-konveyor-tackle}"
 OPERATOR_BUNDLE_IMAGE="${OPERATOR_BUNDLE_IMAGE:-quay.io/konveyor/tackle2-operator-bundle:latest}"
 HUB_IMAGE="${HUB_IMAGE:-quay.io/konveyor/tackle2-hub:latest}"
-PATHFINDER_IMAGE="${PATHFINDER_IMAGE:-quay.io/konveyor/tackle-pathfinder:1.3.0-native}"
 UI_IMAGE="${UI_IMAGE:-quay.io/konveyor/tackle2-ui:latest}"
 UI_INGRESS_CLASS_NAME="${UI_INGRESS_CLASS_NAME:-nginx}"
 ADDON_ADMIN_IMAGE="${ADDON_ADMIN_IMAGE:-quay.io/konveyor/tackle2-addon:latest}"
@@ -73,7 +72,6 @@ metadata:
 spec:
   feature_auth_required: ${FEATURE_AUTH_REQUIRED}
   hub_image_fqin: ${HUB_IMAGE}
-  pathfinder_image_fqin: ${PATHFINDER_IMAGE}
   ui_image_fqin: ${UI_IMAGE}
   ui_ingress_class_name: ${UI_INGRESS_CLASS_NAME}
   admin_fqin: ${ADDON_ADMIN_IMAGE}

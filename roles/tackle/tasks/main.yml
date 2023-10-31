@@ -272,72 +272,6 @@
       retries: 30
       delay: 5
 
-- when:
-    - feature_pathfinder|bool
-  block:
-    - name: "Setup PathFinder PostgreSQL PersistentVolume"
-      k8s:
-        state: present
-        definition: "{{ lookup('template', 'persistentvolumeclaim-pathfinder-postgresql.yml.j2') }}"
-
-    - name: "Check if PathFinder PostgreSQL Secret exists already so we don't update it"
-      k8s_info:
-        api_version: v1
-        kind: Secret
-        name: "{{ pathfinder_database_secret_name }}"
-        namespace: "{{ app_namespace }}"
-      register: pathfinder_database_secret_status
-
-    - when: (pathfinder_database_secret_status.resources | length) == 0
-      block:
-        - name: "Generate random values for PathFinder PostgreSQL username and password"
-          set_fact:
-            pathfinder_database_db_username: "user-{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=4') }}"
-            pathfinder_database_db_password: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=16') }}"
-
-        - name: "Encode PathFinder PostgreSQL username and password"
-          set_fact:
-            pathfinder_database_db_username_b64: "{{ pathfinder_database_db_username | b64encode }}"
-            pathfinder_database_db_password_b64: "{{ pathfinder_database_db_password | b64encode }}"
-
-        - name: "Setup PathFinder PostgreSQL Secret"
-          k8s:
-            state: present
-            definition: "{{ lookup('template', 'secret-pathfinder-postgresql.yml.j2') }}"
-
-    - name: "Setup PathFinder PostgreSQL Service"
-      k8s:
-        state: present
-        definition: "{{ lookup('template', 'service-pathfinder-postgresql.yml.j2') }}"
-
-    - name: "Setup PathFinder PostgreSQL Deployment"
-      k8s:
-        state: present
-        definition: "{{ lookup('template', 'deployment-pathfinder-postgresql.yml.j2') }}"
-
-    - name: "Check status of PathFinder PostgreSQL"
-      kubernetes.core.k8s_info:
-        api_version: v1
-        kind: Pod
-        namespace: "{{ app_namespace }}"
-        label_selectors:
-          - app.kubernetes.io/name = {{ pathfinder_database_service_name }}
-        wait: true
-        wait_condition:
-          type: "Ready"
-          status: "True"
-        wait_timeout: 240
-
-    - name: "Setup PathFinder Service"
-      k8s:
-        state: present
-        definition: "{{ lookup('template', 'service-pathfinder.yml.j2') }}"
-
-    - name: "Setup PathFinder Deployment"
-      k8s:
-        state: present
-        definition: "{{ lookup('template', 'deployment-pathfinder.yml.j2') }}"
-
 - name: "Setup Hub API Database PersistentVolumeClaim"
   k8s:
     state: present
@@ -391,7 +325,6 @@
       k8s:
         state: present
         definition: "{{ lookup('template', 'secret-hub.yml.j2') }}"
-
 
 - name: "Look up Keycloak DB Secret for Hashing"
   set_fact:
@@ -519,3 +452,112 @@
   when:
     - hub_metrics_enabled|bool
     - openshift_cluster|bool
+
+- name: "Check if pathfinder exists"
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: "{{ app_namespace }}"
+    label_selectors:
+      - app.kubernetes.io/name = {{ app_name }}-{{ pathfinder_component_name }}
+  register: pathfinder_pod
+
+- when:
+    - (pathfinder_pod.resources | length) > 0
+  block:
+    - name: "Wait for Pathfinder to be Ready"
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: "{{ app_namespace }}"
+        label_selectors:
+          - app.kubernetes.io/name = {{ app_name }}-{{ pathfinder_component_name }}
+        wait: true
+        wait_condition:
+          type: "Ready"
+          status: "True"
+        wait_timeout: 240
+
+    - name: "Wait for the Hub to be Ready"
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: "{{ app_namespace }}"
+        label_selectors:
+          - app.kubernetes.io/name = {{ app_name }}-{{ hub_component_name }}
+        wait: true
+        wait_condition:
+          type: "Ready"
+          status: "True"
+        wait_timeout: 240
+
+    - name: Retrieve Hub Secret
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Secret
+        name: "{{ hub_secret_name }}"
+        namespace: "{{ app_namespace }}"
+      register: hub_secret
+
+    - name: Set Hub key
+      set_fact:
+        hub_key: "{{ hub_secret.resources[0].data.addon_token | b64decode }}"
+
+    - name: Migrate assessments
+      shell: |
+        /usr/local/bin/migrate-pathfinder-assessments.py \
+        -p http://{{ pathfinder_service_name }}:8080/pathfinder \
+        -b http://{{ hub_service_name }}:8080 \
+        -t $(/usr/local/bin/jwt.sh {{ hub_key }})
+      changed_when: false
+
+    - name: "Remove Pathfinder PostgreSQL Secret"
+      k8s:
+        state: absent
+        api_version: v1
+        kind: Secret
+        name: "{{ pathfinder_database_secret_name }}"
+        namespace: "{{ app_namespace }}"
+
+    - name: "Remove Pathfinder PostgreSQL Service"
+      k8s:
+        state: absent
+        api_version: v1
+        kind: Service
+        name: "{{ pathfinder_database_service_name }}"
+        namespace: "{{ app_namespace }}"
+
+    - name: "Remove Pathfinder PostgreSQL Deployment"
+      k8s:
+        state: absent
+        api_version: apps/v1
+        kind: Deployment
+        name: "{{ pathfinder_database_deployment_name }}"
+        namespace: "{{ app_namespace }}"
+
+    - name: "Remove Pathfinder Service"
+      k8s:
+        state: absent
+        api_version: v1
+        kind: Service
+        name: "{{ pathfinder_service_name }}"
+        namespace: "{{ app_namespace }}"
+
+    - name: "Remove Pathfinder Deployment"
+      k8s:
+        state: absent
+        api_version: apps/v1
+        kind: Deployment
+        name: "{{ pathfinder_deployment_name }}"
+        namespace: "{{ app_namespace }}"
+
+- name: "Remove Pathfinder PostgreSQL Volume"
+  k8s:
+    state: absent
+    api_version: v1
+    kind: PersistentVolumeClaim
+    name: "{{ pathfinder_database_data_volume_claim_name }}"
+    namespace: "{{ app_namespace }}"
+  when:
+    - (pathfinder_delete_db_volume|bool)
+    - (pathfinder_pod.resources|length) == 0
