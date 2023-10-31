@@ -39,46 +39,53 @@ jobs:
     strategy:
       fail-fast: true
     steps:
-      - uses: konveyor/release-tools/create-release@main
+      - name: java-analyzer-bundle
+        uses: konveyor/release-tools/create-release@main
         with:
           version: ${{ inputs.version }}
           prev_version: ${{ inputs.previous_version }}
           repository: konveyor/java-analyzer-bundle
           ref: ${{ inputs.branch }}
           github_token: ${{ secrets.GH_TOKEN }}
-      - run: |
+      - name: wait for java-analyzer-bundle
+        run: |
           #!/bin/bash
           while ! docker pull quay.io/konveyor/jdtls-server-base:${{ inputs.version }} &> /dev/null; do
               sleep 3m
           done
           docker image inspect quay.io/konveyor/jdtls-server-base:${{ inputs.version }}
-      - uses: konveyor/release-tools/create-release@main
+      - name: analyzer-lsp
+        uses: konveyor/release-tools/create-release@main
         with:
           version: ${{ inputs.version }}
           prev_version: ${{ inputs.previous_version }}
           repository: konveyor/analyzer-lsp
           ref: ${{ inputs.branch }}
           github_token: ${{ secrets.GH_TOKEN }}
-      - run: |
+      - name: wait for analyzer-lsp
+        run: |
           #!/bin/bash
           while ! docker pull quay.io/konveyor/analyzer-lsp:${{ inputs.version }} &> /dev/null; do
               sleep 3m
           done
           docker image inspect quay.io/konveyor/analyzer-lsp:${{ inputs.version }}
-      - uses: konveyor/release-tools/create-release@main
+      - name: windup-shim
+        uses: konveyor/release-tools/create-release@main
         with:
           version: ${{ inputs.version }}
           prev_version: ${{ inputs.previous_version }}
           repository: konveyor/windup-shim
           ref: ${{ inputs.branch }}
           github_token: ${{ secrets.GH_TOKEN }}
-      - run: |
+      - name: wait for windup-shim
+        run: |
           #!/bin/bash
           while ! docker pull quay.io/konveyor/windup-shim:${{ inputs.version }} &> /dev/null; do
               sleep 3m
           done
           docker image inspect quay.io/konveyor/windup-shim:${{ inputs.version }}
-      - uses: konveyor/release-tools/create-release@main
+      - name: tackle2-addon-analyzer
+        uses: konveyor/release-tools/create-release@main
         with:
           version: ${{ inputs.version }}
           prev_version: ${{ inputs.previous_version }}
