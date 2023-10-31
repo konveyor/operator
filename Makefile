@@ -195,9 +195,11 @@ $(OPERATOR_SDK):
 	curl -Lo $(OPERATOR_SDK) https://github.com/operator-framework/operator-sdk/releases/download/$(OPERATOR_SDK_VERSION)/operator-sdk_$(shell go env GOOS)_$(shell go env GOARCH) && \
 	chmod +x $(OPERATOR_SDK);
 
+# HELM_TEMPLATE_OPTS="--set images.operator=quay.io/mine/tackle2-operator:foobar"
+# putting it last allows the operator image to be overridden
 .PHONY: bundle
 bundle: helm operator-sdk ## Generate bundle manifests and metadata, then validate generated files.
-	helm template --set olm=true ./helm | $(OPERATOR_SDK) generate bundle -q --overwrite --extra-service-accounts tackle-hub,tackle-ui --version $(VERSION) $(BUNDLE_METADATA_OPTS)
+	helm template --set images.operator=${IMG} --set olm=true $(HELM_TEMPLATE_OPTS) ./helm | $(OPERATOR_SDK) generate bundle -q --overwrite --extra-service-accounts tackle-hub,tackle-ui --version $(VERSION) $(BUNDLE_METADATA_OPTS)
 	$(OPERATOR_SDK) bundle validate ./bundle
 
 .PHONY: bundle-sync-check
@@ -263,3 +265,7 @@ start-minikube:
 .PHONY: install-tackle
 install-tackle:
 	$(shell pwd)/hack/install-tackle.sh
+
+.PHONY: install-konveyor
+install-konveyor:
+	$(shell pwd)/hack/install-konveyor.sh
