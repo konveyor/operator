@@ -112,4 +112,13 @@ spec:
     name: Konveyor
     url: https://www.konveyor.io
   version: {{ substr 1 -1 .Chart.Version }}
+{{ if .Values.csv.replaces }}
+  replaces: {{ .Values.csv.replaces }}
+{{ end }}
+{{ if .Values.csv.skips }}
+  skips:
+{{ range .Values.csv.skips }}
+    - {{ . }}
+{{ end }}
+{{ end }}
 {{ end }}
