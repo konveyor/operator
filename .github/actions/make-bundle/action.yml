@@ -21,10 +21,6 @@ inputs:
     description: "image uri for tackle-postgres"
     required: false
     default: ""
-  pathfinder:
-    description: "image uri for pathfinder image"
-    required: false
-    default: ""
   keycloak_sso:
     description: "image uri for keycloak_sso image"
     required: false
@@ -57,7 +53,6 @@ runs:
       [ -n "${{ inputs.oauth_proxy }}" ] && OPTS+=" --set images.oauth_proxy=${{ inputs.oauth_proxy }}"
       [ -n "${{ inputs.tackle_hub }}" ] && OPTS+=" --set images.tackle_hub=${{ inputs.tackle_hub }}"
       [ -n "${{ inputs.tackle_postgres }}" ] && OPTS+=" --set images.tackle_postgres=${{ inputs.tackle_postgres }}"
-      [ -n "${{ inputs.pathfinder }}" ] && OPTS+=" --set images.pathfinder=${{ inputs.pathfinder }}"
       [ -n "${{ inputs.keycloack_sso }}" ] && OPTS+=" --set images.keycloack_sso=${{ inputs.keycloack_sso }}"
       [ -n "${{ inputs.keycloack_init }}" ] && OPTS+=" --set images.keycloack_init=${{ inputs.keycloack_init }}"
       [ -n "${{ inputs.tackle_ui }}" ] && OPTS+=" --set images.tackle_ui=${{ inputs.tackle_ui }}"
