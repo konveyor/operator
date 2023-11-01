@@ -10,10 +10,6 @@ inputs:
     description: "image url for tackle-hub"
     required: false
     default: "quay.io/konveyor/tackle2-hub:latest"
-  pathfinder-image:
-    description: "image url for pathfinder image"
-    required: false
-    default: "quay.io/konveyor/tackle-pathfinder:1.3.0-native"
   ui-image:
     description: "image url for tackle-ui"
     required: false
@@ -47,7 +43,6 @@ runs:
     run: |
       export OPERATOR_BUNDLE_IMAGE="${{ inputs.operator-bundle-image }}"
       export HUB_IMAGE="${{ inputs.hub-image }}"
-      export PATHFINDER_IMAGE="${{ inputs.pathfinder-image }}"
       export UI_IMAGE="${{ inputs.ui-image }}"
       export ADDON_ADMIN_IMAGE="${{ inputs.addon-admin-image }}"
       export ADDON_ANALYZER_IMAGE="${{ inputs.addon-analyzer-image }}"

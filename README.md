@@ -94,8 +94,6 @@ tackle-hub-6b6ff674dd-c6xbr                                    1/1     Running  
 tackle-keycloak-postgresql-57f5c44bcc-r9w9s                    1/1     Running     0          131m
 tackle-keycloak-sso-c65cd79bf-6j4xr                            1/1     Running     0          130m
 tackle-operator-6b65fccb7f-q9lpf                               1/1     Running     0          133m
-tackle-pathfinder-6c58447d8f-rd6rr                             1/1     Running     0          130m
-tackle-pathfinder-postgresql-5fff469bcc-bc5z2                  1/1     Running     0          130m
 tackle-ui-5f694bddcb-scbh5                                     1/1     Running     0          130m
 ```
 You can access the Konveyor UI in your browser through the `$(minikube ip)` IP.
@@ -145,7 +143,6 @@ rwx_supported: | true | Whether or not RWX volumes are supported in the cluster
 hub_database_volume_size | 5Gi | Size requested for Hub database volume
 hub_bucket_volume_size | 100gi | Size requested for Hub bucket volume
 keycloak_database_data_volume_size | 1Gi | Size requested for Keycloak DB volume
-pathfinder_database_data_volume_size | 1Gi | Size requested for Pathfinder DB volume
 cache_data_volume_size | 100Gi | Size requested for Tackle Cache volume
 cache_storage_class | N/A | Storage class requested for Tackle Cache volume
 hub_bucket_storage_class | N/A | Storage class requested for Tackle Hub Bucket volume
@@ -165,7 +162,6 @@ Name | Default Size | Access Mode | Description
 hub database | 5Gi | RWO | Hub DB
 hub bucket | 100Gi | RWX | Hub file storage
 keycloak postgresql | 1Gi | RWO | Keycloak backend DB
-pathfinder postgresql | 1Gi | RWO | Pathfinder backend DB
 cache | 100Gi | RWX | cache repository
 
 ### Konveyor Storage Custom Settings Example

@@ -41,8 +41,6 @@ $ kubectl get pods -n my-konveyor-operator
 NAME                                           READY   STATUS      RESTARTS   AGE
 tackle-hub-7f7cc9d574-b5kkl                    1/1     Running     0          109m
 tackle-operator-56c574d689-jmvs7               1/1     Running     0          111m
-tackle-pathfinder-7688f4ddc5-wmv9v             1/1     Running     0          109m
-tackle-pathfinder-postgresql-fbd985767-glx8k   1/1     Running     0          109m
 tackle-ui-5bdb565bcd-g6gsr                     1/1     Running     0          109m
 task-1-x6fmv                                 0/1     Completed   0          4m6s 
 ```

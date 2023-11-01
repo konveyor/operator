@@ -55,7 +55,6 @@ spec:
 
     * Hub, to manage the application inventory and coordinate the migration process.
     * UI, the web console to manage the application inventory and drive the migration waves.
-    * Pathfinder, a service to manage the assessment questionnaires.
 
     Authentication capabilities may be enabled via the `feature_auth_required` parameter in the Tackle CR. When enabled, the Operator installs the following components:
     * Keycloak, to manage authentication, including with 3rd-party providers.
