@@ -2,6 +2,7 @@
 
 set -e
 set -x
+set -o pipefail
 
 # Figure out where we are being run from.
 # This relies on script being run from:
@@ -15,7 +16,7 @@ __os="$(uname -s | tr '[:upper:]' '[:lower:]')"
 __arch="$(uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/')"
 
 # Update PATH for execution of this script
-export PATH="${__bin_dir}:${PATH}"
+PATH="${__bin_dir}:${PATH}"
 
 NAMESPACE="${NAMESPACE:-konveyor-tackle}"
 OPERATOR_BUNDLE_IMAGE="${OPERATOR_BUNDLE_IMAGE:-quay.io/konveyor/tackle2-operator-bundle:latest}"
@@ -39,25 +40,25 @@ fi
 
 run_bundle() {
   kubectl auth can-i create namespace --all-namespaces
-  kubectl create namespace ${NAMESPACE} || true
-  operator-sdk run bundle ${OPERATOR_BUNDLE_IMAGE} --namespace ${NAMESPACE}
+  kubectl create namespace "${NAMESPACE}" || true
+  operator-sdk run bundle "${OPERATOR_BUNDLE_IMAGE}" --namespace "${NAMESPACE}"
 
   # If on MacOS, need to install `brew install coreutils` to get `timeout`
   timeout 600s bash -c 'until kubectl get customresourcedefinitions.apiextensions.k8s.io tackles.tackle.konveyor.io; do sleep 30; done' \
-  || kubectl get subscription --namespace ${NAMESPACE} -o yaml konveyor-operator # Print subscription details when timed out
+  || kubectl get subscription --namespace "${NAMESPACE}" -o yaml konveyor-operator # Print subscription details when timed out
 }
 
 install_tackle() {
   echo "Waiting for the Tackle CRD to become available"
   kubectl wait \
-    --namespace ${NAMESPACE} \
+    --namespace "${NAMESPACE}" \
     --for=condition=established \
     customresourcedefinitions.apiextensions.k8s.io/tackles.tackle.konveyor.io
 
   if [ -n "${TACKLE_CR}" ]; then
-    echo "${TACKLE_CR}" | kubectl apply --namespace ${NAMESPACE} -f -
+    echo "${TACKLE_CR}" | kubectl apply --namespace "${NAMESPACE}" -f -
   else
-    cat <<EOF | kubectl apply --namespace ${NAMESPACE} -f -
+    cat <<EOF | kubectl apply --namespace "${NAMESPACE}" -f -
 kind: Tackle
 apiVersion: tackle.konveyor.io/v1alpha1
 metadata:
@@ -69,24 +70,24 @@ EOF
 
   # Wait for reconcile to finish
   kubectl wait \
-    --namespace ${NAMESPACE} \
+    --namespace "${NAMESPACE}" \
     --for=condition=Successful \
     --timeout=600s \
     tackles.tackle.konveyor.io/tackle \
   || kubectl get \
-    --namespace ${NAMESPACE} \
+    --namespace "${NAMESPACE}" \
     -o yaml \
     tackles.tackle.konveyor.io/tackle # Print tackle debug when timed out
 
   # Now wait for all the tackle deployments
   kubectl wait \
-    --namespace ${NAMESPACE} \
+    --namespace "${NAMESPACE}" \
     --selector="app.kubernetes.io/part-of=tackle" \
     --for=condition=Available \
     --timeout=600s \
     deployments.apps \
   || kubectl get \
-    --namespace ${NAMESPACE} \
+    --namespace "${NAMESPACE}" \
     --selector="app.kubernetes.io/part-of=tackle" \
     --field-selector=status.phase!=Running  \
     -o yaml \

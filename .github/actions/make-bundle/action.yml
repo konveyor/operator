@@ -1,44 +1,44 @@
 name: Make Operator Bundle
 description: |
-  Make an operator bundle and save it. This does not save the image for you.
+  Make an operator bundle. This does not save the image for you.
 inputs: 
   operator_bundle:
-    description: "image uri for operator bundle"
+    description: "image uri for operator bundle (ie. quay.io/<namespace>/<image-name>:<tag>)"
     required: true
   operator:
-    description: "image uri for operator"
+    description: "image uri for operator (ie. quay.io/<namespace>/<image-name>:<tag>)"
     required: false
     default: ""
   oauth_proxy:
-    description: "image uri for oauth_proxy"
+    description: "image uri for oauth_proxy (ie. quay.io/<namespace>/<image-name>:<tag>)"
     required: false
     default: ""
   tackle_hub:
-    description: "image uri for tackle-hub"
+    description: "image uri for tackle-hub (ie. quay.io/<namespace>/<image-name>:<tag>)"
     required: false
     default: ""
   tackle_postgres:
-    description: "image uri for tackle-postgres"
+    description: "image uri for tackle-postgres (ie. quay.io/<namespace>/<image-name>:<tag>)"
     required: false
     default: ""
   keycloak_sso:
-    description: "image uri for keycloak_sso image"
+    description: "image uri for keycloak_sso image (ie. quay.io/<namespace>/<image-name>:<tag>)"
     required: false
     default: ""
   keycloak_init:
-    description: "image uri for keycloak_init image"
+    description: "image uri for keycloak_init image (ie. quay.io/<namespace>/<image-name>:<tag>)"
     required: false
     default: ""
   tackle_ui:
-    description: "image uri for tackle-ui"
+    description: "image uri for tackle-ui (ie. quay.io/<namespace>/<image-name>:<tag>)"
     required: false
     default: ""
   addon_admin:
-    description: "image uri for admin addon"
+    description: "image uri for admin addon (ie. quay.io/<namespace>/<image-name>:<tag>)"
     required: false
     default: ""
   addon_analyzer:
-    description: "image uri for analyzer addon"
+    description: "image uri for analyzer addon (ie. quay.io/<namespace>/<image-name>:<tag>)"
     required: false
     default: ""
 runs:

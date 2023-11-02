@@ -8,7 +8,8 @@ metadata:
           "apiVersion": "tackle.konveyor.io/v1alpha1",
           "kind": "Tackle",
           "metadata": {
-            "name": "tackle"
+            "name": "tackle",
+            "namespace": "konveyor-tackle"
           },
           "spec": {
             "feature_auth_required": "false"
@@ -19,7 +20,7 @@ metadata:
     categories: Modernization & Migration
     certified: "false"
     containerImage: quay.io/konveyor/tackle2-operator:latest
-    createdAt: "2023-10-31T20:13:44Z"
+    createdAt: "2023-11-02T15:35:48Z"
     description: Konveyor is an open-source application modernization platform that
       helps organizations safely and predictably modernize applications to Kubernetes
       at scale.
