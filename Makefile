@@ -121,17 +121,12 @@ docker-push: ## Push docker image with the manager.
 ##@ Deployment
 
 .PHONY: install
-install: kustomize ## Install CRDs into the K8s cluster specified in ~/.kube/config.
-	$(KUSTOMIZE) build config/crd | kubectl apply -f -
+install: helm ## Install CRDs into the K8s cluster specified in ~/.kube/config.
+	$(HELM) install ./helm
 
 .PHONY: uninstall
-uninstall: kustomize ## Uninstall CRDs from the K8s cluster specified in ~/.kube/config.
-	$(KUSTOMIZE) build config/crd | kubectl delete -f -
-
-.PHONY: deploy
-deploy: kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
-	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
-	$(KUSTOMIZE) build config/default | kubectl apply -f -
+uninstall: helm ## Uninstall CRDs from the K8s cluster specified in ~/.kube/config.
+	$(HELM) uninstall ./helm
 
 GIT_REV:=$(shell git rev-parse --short HEAD)
 ## Build current branch operator image, bundle image, push and install via OLM
@@ -153,28 +148,24 @@ deploy-olm: operator-sdk ## Build current branch operator image, bundle image, p
 	rm -rf $(DEPLOY_TMP)
 	$(OPERATOR_SDK) run bundle $(THIS_BUNDLE_IMAGE) --namespace $(NAMESPACE)
 
-.PHONY: undeploy
-undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config.
-	$(KUSTOMIZE) build config/default | kubectl delete -f -
-
 OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
 ARCH := $(shell uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/')
 
-.PHONY: kustomize
-KUSTOMIZE = $(shell pwd)/bin/kustomize
-KUSTOMIZE_VERSION = v4.5.5
-kustomize: ## Download kustomize locally if necessary.
-ifeq (,$(wildcard $(KUSTOMIZE)))
-ifeq (,$(shell which kustomize 2>/dev/null))
+.PHONY: helm
+HELM = $(shell pwd)/bin/helm
+HELM_VERSION = v3.13.1
+helm: ## Download helm locally if necessary.
+ifeq (,$(wildcard $(HELM)))
+ifeq (,$(shell which helm 2>/dev/null))
 	@{ \
 	set -e &&\
-	mkdir -p $(dir $(KUSTOMIZE)) &&\
-	echo https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/$(KUSTOMIZE_VERSION)/kustomize_$(KUSTOMIZE_VERSION)_$(OS)_$(ARCH).tar.gz &&\
-	curl -sSLo - https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/$(KUSTOMIZE_VERSION)/kustomize_$(KUSTOMIZE_VERSION)_$(OS)_$(ARCH).tar.gz | \
-	tar xzf - -C bin/ ;\
+	mkdir -p $(dir $(HELM)) &&\
+	echo https://github.com/helm/helm/releases/download/$(HELM_VERSION)/helm-$(HELM_VERSION)-$(OS)-$(ARCH).tar.gz &&\
+	curl -sSLo - https://github.com/helm/helm/releases/download/$(HELM_VERSION)/helm-$(HELM_VERSION)-$(OS)-$(ARCH).tar.gz | \
+	tar xzf - -C $(dir $(HELM)) ;\
 	}
 else
-KUSTOMIZE = $(shell which kustomize)
+HELM = $(shell which helm)
 endif
 endif
 
@@ -204,11 +195,11 @@ $(OPERATOR_SDK):
 	curl -Lo $(OPERATOR_SDK) https://github.com/operator-framework/operator-sdk/releases/download/$(OPERATOR_SDK_VERSION)/operator-sdk_$(shell go env GOOS)_$(shell go env GOARCH) && \
 	chmod +x $(OPERATOR_SDK);
 
+# HELM_TEMPLATE_OPTS="--set images.operator=quay.io/mine/tackle2-operator:foobar"
+# putting it last allows the operator image to be overridden
 .PHONY: bundle
-bundle: kustomize operator-sdk ## Generate bundle manifests and metadata, then validate generated files.
-	$(OPERATOR_SDK) generate kustomize manifests -q
-	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
-	$(KUSTOMIZE) build config/manifests | $(OPERATOR_SDK) generate bundle -q --overwrite --extra-service-accounts tackle-hub,tackle-ui --version $(VERSION) $(BUNDLE_METADATA_OPTS)
+bundle: helm operator-sdk ## Generate bundle manifests and metadata, then validate generated files.
+	helm template --set images.operator=${IMG} --set olm=true $(HELM_TEMPLATE_OPTS) ./helm | $(OPERATOR_SDK) generate bundle -q --overwrite --extra-service-accounts tackle-hub,tackle-ui --version $(VERSION) $(BUNDLE_METADATA_OPTS)
 	$(OPERATOR_SDK) bundle validate ./bundle
 
 .PHONY: bundle-sync-check
@@ -274,3 +265,7 @@ start-minikube:
 .PHONY: install-tackle
 install-tackle:
 	$(shell pwd)/hack/install-tackle.sh
+
+.PHONY: install-konveyor
+install-konveyor:
+	$(shell pwd)/hack/install-konveyor.sh
