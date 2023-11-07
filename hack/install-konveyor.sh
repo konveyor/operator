@@ -68,6 +68,9 @@ spec:
 EOF
   fi
 
+  # Want to see in github logs what we just created
+  kubectl get --namespace "${NAMESPACE}" -o yaml tackles.tackle.konveyor.io/tackle
+
   # Wait for reconcile to finish
   kubectl wait \
     --namespace "${NAMESPACE}" \
