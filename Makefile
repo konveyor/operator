@@ -49,6 +49,9 @@ BUNDLE_IMG ?= $(IMAGE_TAG_BASE)-bundle:v$(VERSION)
 # BUNDLE_GEN_FLAGS are the flags passed to the operator-sdk generate bundle command
 BUNDLE_GEN_FLAGS ?= -q --overwrite --version $(VERSION) $(BUNDLE_METADATA_OPTS)
 
+HELM_RELEASE ?= my-konveyor-release
+NAMESPACE ?= konveyor-tackle
+
 # USE_IMAGE_DIGESTS defines if images are resolved via tags or digests
 # You can enable this value if you would like to use SHA Based Digests
 # To enable set flag to true
@@ -121,32 +124,14 @@ docker-push: ## Push docker image with the manager.
 ##@ Deployment
 
 .PHONY: install
-install: helm ## Install CRDs into the K8s cluster specified in ~/.kube/config.
-	$(HELM) install ./helm
+install: helm ## Install operator directly into cluster specified in ~/.kube/config
+	kubectl auth can-i create ns --all-namespaces # Check if logged in
+	kubectl create namespace $(NAMESPACE) || true
+	$(HELM) install --namespace $(NAMESPACE) $(HELM_RELEASE) ./helm
 
 .PHONY: uninstall
 uninstall: helm ## Uninstall CRDs from the K8s cluster specified in ~/.kube/config.
-	$(HELM) uninstall ./helm
-
-GIT_REV:=$(shell git rev-parse --short HEAD)
-## Build current branch operator image, bundle image, push and install via OLM
-.PHONY: deploy-olm
-deploy-olm: THIS_OPERATOR_IMAGE?=ttl.sh/konveyor-operator-$(GIT_REV):1h # Set target specific variable
-deploy-olm: THIS_BUNDLE_IMAGE?=ttl.sh/konveyor-operator-bundle-$(GIT_REV):1h # Set target specific variable
-deploy-olm: NAMESPACE?=konveyor-tackle
-deploy-olm: DEPLOY_TMP:=$(shell mktemp -d)/ # Set target specific variable
-deploy-olm: operator-sdk ## Build current branch operator image, bundle image, push and install via OLM
-	kubectl auth can-i create ns --all-namespaces # Check if logged in
-	kubectl create namespace $(NAMESPACE) || true
-	$(OPERATOR_SDK) cleanup konveyor-operator --namespace $(NAMESPACE)
-	@echo "DEPLOY_TMP: $(DEPLOY_TMP)"
-	# build and push operator and bundle image
-	# use $(OPERATOR_SDK) to install bundle to authenticated cluster
-	cp -r . $(DEPLOY_TMP) && cd $(DEPLOY_TMP) && \
-	IMG=$(THIS_OPERATOR_IMAGE) BUNDLE_IMG=$(THIS_BUNDLE_IMAGE) \
-		make docker-build docker-push bundle bundle-build bundle-push; \
-	rm -rf $(DEPLOY_TMP)
-	$(OPERATOR_SDK) run bundle $(THIS_BUNDLE_IMAGE) --namespace $(NAMESPACE)
+	$(HELM) uninstall --namespace $(NAMESPACE) $(HELM_RELEASE) 
 
 OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
 ARCH := $(shell uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/')
