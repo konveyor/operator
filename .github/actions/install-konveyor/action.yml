@@ -2,22 +2,29 @@ name: Install Konveyor
 description: |
   Install Konveyor Operator.
 inputs: 
-  bundle-image:
+  bundle_image:
     description: "image url for operator bundle container image"
-    required: true
-  tackle-cr:
-    description: "tackle custom resource string"
     required: false
-    default: 0
+    default: ""
+  namespace:
+    description: "the namespace where konveyor should be installed"
+    required: false
+    default: ""
+  tackle_cr:
+    description: "JSON encoded Tackle Custom Resource (CR) string"
+    required: false
+    default: ""
 runs:
   using: "composite"
   steps:
   # TODO(djzager): Need to figure out overriding operator image
   # or maybe just installing manager via kustomize.
   - name: Install Konveyor
+    env:
+      OPERATOR_BUNDLE_IMAGE: ${{ inputs.bundle_image }}
+      NAMESPACE: ${{ inputs.namespace }}
+      TACKLE_CR: ${{ inputs.tackle_cr }}
     run: |
-      export OPERATOR_BUNDLE_IMAGE="${{ inputs.bundle-image }}"
-      export TACKLE_CR="${{ inputs.tackle-cr }}"
       make install-konveyor
     working-directory: ${{ github.action_path }}/../../..
     shell: bash
