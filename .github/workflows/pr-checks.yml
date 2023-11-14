@@ -6,9 +6,6 @@ on:
       - main
       - 'release-*.*'
 
-env:
-  IMG: ttl.sh/konveyor-operator-${{ github.sha }}:1h
-  BUNDLE_IMG: ttl.sh/konveyor-operator-bundle-${{ github.sha }}:1h
 
 jobs:
   check-title:
@@ -21,21 +18,14 @@ jobs:
   build-operator:
     needs: check-title
     runs-on: ubuntu-latest
+    env:
+      IMG: ttl.sh/konveyor-operator-${{ github.sha }}:1h
     steps:
     - uses: actions/checkout@v3
     - run: make docker-build docker-push
 
-  build-bundle:
+  run-ci:
     needs: build-operator
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - run: make bundle bundle-build bundle-push
-
-  operator-install:
-    needs: build-bundle
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - run: make start-minikube
-    - run: OPERATOR_BUNDLE_IMAGE="${BUNDLE_IMG}" make install-tackle
+    uses: konveyor/ci/.github/workflows/global-ci-bundle.yml@main
+    with:
+      operator: ttl.sh/konveyor-operator-${{ github.sha }}:1h
