@@ -21,6 +21,7 @@ PATH="${__bin_dir}:${PATH}"
 NAMESPACE="${NAMESPACE:-konveyor-tackle}"
 OPERATOR_BUNDLE_IMAGE="${OPERATOR_BUNDLE_IMAGE:-quay.io/konveyor/tackle2-operator-bundle:latest}"
 TACKLE_CR="${TACKLE_CR:-}"
+TIMEOUT="${TIMEOUT:-10m}"
 
 if ! command -v kubectl >/dev/null 2>&1; then
   kubectl_bin="${__bin_dir}/kubectl"
@@ -38,21 +39,36 @@ if ! command -v operator-sdk >/dev/null 2>&1; then
   chmod +x "${operator_sdk_bin}"
 fi
 
+debug() {
+  echo "Install Konveyor FAILED!!!"
+  echo "What follows is some info that may be useful in debugging the failure"
+
+  kubectl get namespace "${NAMESPACE}" -o yaml || true
+  kubectl get --namespace "${NAMESPACE}" all || true
+  kubectl get --namespace "${NAMESPACE}" -o yaml \
+    subscriptions.operators.coreos.com,catalogsources.operators.coreos.com,installplans.operators.coreos.com,clusterserviceversions.operators.coreos.com \
+    || true
+  kubectl get --namespace "${NAMESPACE}" -o yaml tackles.tackle.konveyor.io/tackle || true
+
+  for pod in $(kubectl get pods -n "${NAMESPACE}" -o jsonpath='{.items[*].metadata.name}'); do
+    kubectl --namespace "${NAMESPACE}" describe pod "${pod}" || true
+  done
+  exit 1
+}
+trap 'debug' EXIT
+
 run_bundle() {
   kubectl auth can-i create namespace --all-namespaces
   kubectl create namespace "${NAMESPACE}" || true
-  operator-sdk run bundle "${OPERATOR_BUNDLE_IMAGE}" --namespace "${NAMESPACE}"
+  operator-sdk run bundle "${OPERATOR_BUNDLE_IMAGE}" --namespace "${NAMESPACE}" --timeout "${TIMEOUT}"
 
   # If on MacOS, need to install `brew install coreutils` to get `timeout`
-  timeout 600s bash -c 'until kubectl get customresourcedefinitions.apiextensions.k8s.io tackles.tackle.konveyor.io; do sleep 30; done' \
-  || kubectl get subscription --namespace "${NAMESPACE}" -o yaml konveyor-operator # Print subscription details when timed out
+  timeout 600s bash -c 'until kubectl get customresourcedefinitions.apiextensions.k8s.io tackles.tackle.konveyor.io; do sleep 30; done'
 }
 
 install_tackle() {
   echo "Waiting for the Tackle CRD to become available"
-  kubectl wait \
-    --namespace "${NAMESPACE}" \
-    --for=condition=established \
+  kubectl wait --namespace "${NAMESPACE}" --for=condition=established \
     customresourcedefinitions.apiextensions.k8s.io/tackles.tackle.konveyor.io
 
   if [ -n "${TACKLE_CR}" ]; then
@@ -76,11 +92,7 @@ EOF
     --namespace "${NAMESPACE}" \
     --for=condition=Successful \
     --timeout=600s \
-    tackles.tackle.konveyor.io/tackle \
-  || kubectl get \
-    --namespace "${NAMESPACE}" \
-    -o yaml \
-    tackles.tackle.konveyor.io/tackle # Print tackle debug when timed out
+    tackles.tackle.konveyor.io/tackle
 
   # Now wait for all the tackle deployments
   kubectl wait \
@@ -88,13 +100,7 @@ EOF
     --selector="app.kubernetes.io/part-of=tackle" \
     --for=condition=Available \
     --timeout=600s \
-    deployments.apps \
-  || kubectl get \
-    --namespace "${NAMESPACE}" \
-    --selector="app.kubernetes.io/part-of=tackle" \
-    --field-selector=status.phase!=Running  \
-    -o yaml \
-    pods # Print not running tackle pods when timed out
+    deployments.apps
 }
 
 kubectl get customresourcedefinitions.apiextensions.k8s.io tackles.tackle.konveyor.io || run_bundle
