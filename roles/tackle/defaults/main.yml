@@ -163,7 +163,7 @@ analyzer_service_name: "{{ app_name }}-{{ analyzer_name }}-{{ analyzer_component
 analyzer_container_limits_cpu: "1"
 analyzer_container_limits_memory: "4Gi"
 analyzer_container_requests_cpu: "1"
-analyzer_container_requests_memory: "2Gi"
+analyzer_container_requests_memory: "4Gi"
 
 cache_name: "cache"
 cache_data_volume_size: "100Gi"
