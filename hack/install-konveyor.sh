@@ -55,7 +55,7 @@ debug() {
   done
   exit 1
 }
-trap 'debug' EXIT
+trap 'debug' ERR
 
 run_bundle() {
   kubectl auth can-i create namespace --all-namespaces
@@ -68,8 +68,13 @@ run_bundle() {
 
 install_tackle() {
   echo "Waiting for the Tackle CRD to become available"
-  kubectl wait --namespace "${NAMESPACE}" --for=condition=established \
-    customresourcedefinitions.apiextensions.k8s.io/tackles.tackle.konveyor.io
+  kubectl wait --namespace "${NAMESPACE}" --for=condition=established customresourcedefinitions.apiextensions.k8s.io/tackles.tackle.konveyor.io
+
+  echo "Waiting for the Tackle Operator to exist"
+  timeout 2m bash -c "until kubectl --namespace ${NAMESPACE} get deployment/tackle-operator; do sleep 10; done"
+
+  echo "Waiting for the Tackle Operator to become available"
+  kubectl rollout status --namespace "${NAMESPACE}" -w deployment/tackle-operator --timeout=600s
 
   if [ -n "${TACKLE_CR}" ]; then
     echo "${TACKLE_CR}" | kubectl apply --namespace "${NAMESPACE}" -f -
