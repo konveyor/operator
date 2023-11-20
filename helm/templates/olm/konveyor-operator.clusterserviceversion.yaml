@@ -7,11 +7,11 @@ metadata:
     capabilities: Seamless Upgrades
     categories: Modernization & Migration
     certified: "false"
-    containerImage: quay.io/konveyor/tackle2-operator:latest
+    containerImage: {{ .Values.images.operator }}
     description: Konveyor is an open-source application modernization platform that
       helps organizations safely and predictably modernize applications to Kubernetes
       at scale.
-    olm.skipRange: '>=0.0.0 <{{ substr 1 -1 .Chart.Version }}'
+    olm.skipRange: '>=0.0.0 <{{ .Values.version }}'
     operatorframework.io/initialization-resource: |-
       {
         "apiVersion": "tackle.konveyor.io/v1alpha1",
@@ -27,7 +27,7 @@ metadata:
     operatorframework.io/suggested-namespace: konveyor-tackle
     repository: https://github.com/konveyor/tackle2-operator
     support: https://github.com/konveyor/tackle2-operator/issues
-  name: konveyor-operator.{{ .Chart.Version }}
+  name: konveyor-operator.v{{ .Values.version }}
   namespace: konveyor-tackle
 spec:
   apiservicedefinitions: {}
@@ -111,7 +111,7 @@ spec:
   provider:
     name: Konveyor
     url: https://www.konveyor.io
-  version: {{ substr 1 -1 .Chart.Version }}
+  version: {{ .Values.version }}
 {{ if .Values.csv.replaces }}
   replaces: {{ .Values.csv.replaces }}
 {{ end }}

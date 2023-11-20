@@ -1,3 +1,5 @@
+version: "99.0.0"
+
 # true in the case we want to render manifests for OLM stuff
 olm: false
 csv:

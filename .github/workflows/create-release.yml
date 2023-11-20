@@ -6,34 +6,18 @@ on:
       version:
         description: 'The semantic version of the release (e.g. v1.2.3)'
         required: true
-      previous_version:
-        description: 'The semantic version of the previous release (e.g. v1.2.2)'
-        required: false
-        type: string
       branch:
         description: 'The branch to create the release from (defaults to main)'
         required: false
         default: 'main'
-      operator_channel:
-        description: 'Channel to publish the new operator to'
-        required: true
-        type: string
-      github_name:
-        description: 'Your full name'
-        required: true
-        type: string
-      github_email:
-        description: 'Your e-mail address'
+      operator_channels:
+        description: |
+          Channel(s), comma separated, to which this operator version belongs.
+          First in list is assumed default channel.
         required: true
         type: string
 
 jobs:
-  # TODO(djzager): This is where we would want to do some integration testing
-  # test:
-  #   ...
-  # might consider creating "rc" releases, building and testing those before
-  # publishing a release.
-
   release-bases:
     runs-on: ubuntu-20.04
     strategy:
@@ -131,27 +115,197 @@ jobs:
           done
           docker image inspect quay.io/${{ matrix.projects.image }}:${{ inputs.version }}
 
+  test:
+    name: Test Konveyor
+    needs: release-components
+    uses: konveyor/ci/.github/workflows/global-ci-bundle.yml@main
+    with:
+      operator: quay.io/konveyor/tackle2-operator:${{ inputs.version }}
+      tackle_hub: quay.io/konveyor/tackle2-hub:${{ inputs.version }}
+      keycloack_init: quay.io/konveyor/tackle-keycloak-init:${{ inputs.version }}
+      tackle_ui: quay.io/konveyor/tackle2-ui:${{ inputs.version }}
+      addon_admin: quay.io/konveyor/tackle2-addon:${{ inputs.version }}
+      addon_analyzer: quay.io/konveyor/tackle2-addon-analyzer:${{ inputs.version }}
+
   publish:
     name: Build and Push Manifest
-    needs: release-components
+    needs: test
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
     steps:
     - name: Checkout Push to Registry action
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
+        path: operator
         ref: ${{ inputs.branch }}
 
-    - name: Run migrations
-      run: bash ./tools/konveyor-operator-publish-commands.sh
-      env:
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        GITHUB_USER: ${{ secrets.GH_USER }}
-        QUAY_ROBOT: ${{ secrets.QUAY_PUBLISH_ROBOT }}
-        QUAY_TOKEN: ${{ secrets.QUAY_PUBLISH_TOKEN }}
-        OPERATOR_SEMVER: ${{ inputs.version }}
-        OPERATOR_CHANNEL: ${{ inputs.operator_channel }}
-        PREV_OPERATOR_SEMVER: ${{ inputs.previous_version }}
-        GITHUB_NAME: ${{ inputs.github_name }}
-        GITHUB_EMAIL: ${{ inputs.github_email }}
+    - name: Mirror non-konveyor images
+      working-directory: ./operator
+      run: |
+        make yq openshift-client
+
+        IMAGE_ORG="quay.io/konveyor"
+        VERSION="${{ inputs.version }}"
+        CSV="./bundle/manifests/konveyor-operator.clusterserviceversion.yaml"
+
+        for full_image in $(yq eval '.spec.relatedImages[] | .image' "${CSV}"); do
+            image="${full_image%:*}"
+            full_image_name="${image#*/}"
+            image_name="${full_image_name#*/}"
+            mirror_image_name="${IMAGE_ORG}/${image_name}:${VERSION}"
+
+            if ! [[ "${full_image}" =~ "${IMAGE_ORG}"/.* ]]; then
+                set -x
+                oc image mirror "${full_image}" "${mirror_image_name}" || {
+                    echo "ERROR unable to mirror image"
+                    exit 1
+                }
+            fi
+        done
+
+    - name: Build bundle
+      uses: ./operator/.github/actions/make-bundle
+      with:
+        operator_bundle: ttl.sh/konveyor-operator-bundle-${github.sha}:3h
+        operator: quay.io/konveyor/tackle2-operator:${{ inputs.version }}
+        tackle_hub: quay.io/konveyor/tackle2-hub:${{ inputs.version }}
+        keycloak_init: quay.io/konveyor/tackle-keycloak-init:${{ inputs.version }}
+        tackle_ui: quay.io/konveyor/tackle2-ui:${{ inputs.version }}
+        addon_admin: quay.io/konveyor/tackle2-addon:${{ inputs.version }}
+        addon_analyzer: quay.io/konveyor/tackle2-addon-analyzer:${{ inputs.version }}
+        # The ones we don't own
+        oauth_proxy: quay.io/konveyor/origin-oauth-proxy:${{ inputs.version }}
+        tackle_postgres: quay.io/konveyor/postgresql-12-centos7:${{ inputs.version }}
+        keycloak_sso: quay.io/konveyor/keycloak:${{ inputs.version }}
+        # Bundle specific args
+        version: ${{ inputs.version }}
+        channels: ${{ inputs.operator_channel }}
+        use_image_digest: "true"
+
+    - name: Replace with digest
+      working-directory: ./operator
+      run: |
+        CSV="./bundle/manifests/konveyor-operator.clusterserviceversion.yaml"
+
+        # Handle operator image
+        operator_full_image=$(yq eval '.metadata.annotations.containerImage' "${CSV}")
+        operator_image="${operator_full_image%:*}"
+        podman pull "${operator_full_image}"
+        operator_image_sha=$(podman inspect "${operator_full_image}" --format '{{ .Digest }}')
+        sed -i "s,${operator_full_image},${operator_image}@${operator_image_sha},g" "${CSV}"
+
+        # Handle related images
+        for full_image in $(yq eval '.spec.relatedImages[] | .image' "${CSV}"); do
+          image="${full_image%:*}"
+
+          podman pull "${full_image}"
+          image_sha=$(podman inspect "${full_image}" --format '{{ .Digest }}')
+
+          sed -i "s,${full_image},${image}@${image_sha},g" "${CSV}"
+        done
+
+    - name: Update bundle annotations
+      working-directory: ./operator
+      run: |
+        ANNOTATIONS="./bundle/metadata/annotations.yaml"
+
+        yq eval --inplace 'del(.annotations["operators.operatorframework.io.test.mediatype.v1"])' ${ANNOTATIONS}
+        yq eval --inplace 'del(.annotations["operators.operatorframework.io.test.config.v1"])' ${ANNOTATIONS}
+        yq eval --inplace '.annotations["com.redhat.openshift.versions"] = "v4.9" | .annotations["com.redhat.openshift.versions"] style="double"' ${ANNOTATIONS}
+
+    - name: Checkout community operators
+      uses: actions/checkout@v4
+      with:
+        repository: k8s-operatorhub/community-operators
+        path: community-operators
+        ref: main
+        fetch-depth: 0
+
+    - name: Update community operators
+      working-directory: ./community-operators
+      run: |
+        version="${{ inputs.version }}"
+        co_version="${version:1}"
+        operator_path="./operators/konveyor-operator/${co_version}"
+        mkdir -p "${operator_path}"
+        cp -r "${GITHUB_WORKSPACE}/operator/bundle/metadata" "${GITHUB_WORKSPACE}/operator/bundle/manifests" "${operator_path}"
+        git diff
+
+    - name: Checkout redhat community operators
+      uses: actions/checkout@v4
+      with:
+        repository: redhat-openshift-ecosystem/community-operators-prod
+        path: redhat-community-operators
+        ref: main
+        fetch-depth: 0
+
+    - name: Update redhat community operators
+      working-directory: ./redhat-community-operators
+      run: |
+        version="${{ inputs.version }}"
+        co_version="${version:1}"
+        operator_path="./operators/konveyor-operator/${co_version}"
+        mkdir -p "${operator_path}"
+        cp -r "${GITHUB_WORKSPACE}/operator/bundle/metadata" "${GITHUB_WORKSPACE}/operator/bundle/manifests" "${operator_path}"
+        git diff
+
+    - name: Make unified changelog
+      run: |
+        repositories=(
+          "konveyor/tackle2-ui"
+          "konveyor/tackle2-hub"
+          "konveyor/analyzer-lsp"
+          "konveyor/java-analyzer-bundle"
+          "konveyor/windup-shim"
+          "konveyor/tackle2-addon-analyzer"
+          "konveyor/tackle2-addon"
+          "konveyor/operator"
+        )
+
+        echo "Konveyor Operator ${{ inputs.version }}" > changelog.md
+        echo "=======================================" > changelog.md
+        echo "" >> changelog.md
+
+        for repo in "${repositories[@]}"; do
+          echo "# ${repo}"
+          echo "" >> changelog.md
+          gh release view "${{ inputs.version }}" --repo "${repo}" --json body --jq .body >> changelog.md
+          echo "" >> changelog.md
+        done
+
+
+    - name: Create Pull Request - Community Operators
+      uses: peter-evans/create-pull-request@v5
+      id: co-cpr
+      with:
+        token: ${{ secrets.GH_TOKEN }}
+        path: ./community-operators
+        commit-message: "konveyor-operator-${{ inputs.version }}"
+        committer: "${{ secrets.GH_USER }} <noreply@github.com>"
+        author: "${{ secrets.GH_USER }} <${{ secrets.GH_USER }}@users.noreply.github.com>"
+        signoff: true
+        branch: ${{ inputs.version }}
+        push-to-fork: konveyor-release-bot/community-operators
+        title: "konveyor-operator-${{ inputs.version }}"
+        body-path: ./changelog.md
+
+    - name: Create Pull Request - Red Hat Community Operators
+      uses: peter-evans/create-pull-request@v5
+      id: rhco-cpr
+      with:
+        token: ${{ secrets.GH_TOKEN }}
+        path: ./redhat-community-operators
+        commit-message: "konveyor-operator-${{ inputs.version }}"
+        committer: "${{ secrets.GH_USER }} <noreply@github.com>"
+        author: "${{ secrets.GH_USER }} <${{ secrets.GH_USER }}@users.noreply.github.com>"
+        signoff: true
+        branch: ${{ inputs.version }}
+        push-to-fork: konveyor-release-bot/community-operators-prod
+        title: "konveyor-operator-${{ inputs.version }}"
+        body-path: ./changelog.md
+
+    - name: PR Notifications
+      run: |
+        echo "::notice:: Community Operators Pull Request URL - ${{ steps.co-cpr.outputs.pull-request-url }}"
+        echo "::notice:: Red Hat Community Operators Pull Request URL - ${{ steps.rhco-cpr.outputs.pull-request-url }}"
