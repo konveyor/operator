@@ -34,13 +34,13 @@ spec:
         - name: PROFILE
           value: konveyor
         - name: VERSION
-          value: 99.0.0
+          value: {{ .Values.version }}
         - name: RELATED_IMAGE_OAUTH_PROXY
           value: {{ .Values.images.oauth_proxy }}
         - name: RELATED_IMAGE_TACKLE_HUB
           value: {{ .Values.images.tackle_hub }}
         - name: RELATED_IMAGE_TACKLE_POSTGRES
-          value: quay.io/centos7/postgresql-12-centos7:latest
+          value: {{ .Values.images.tackle_postgres }}
         - name: RELATED_IMAGE_KEYCLOAK_SSO
           value: {{ .Values.images.keycloak_sso }}
         - name: RELATED_IMAGE_KEYCLOAK_INIT

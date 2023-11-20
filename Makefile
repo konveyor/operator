@@ -15,7 +15,7 @@ CONTAINER_RUNTIME ?= docker
 TARGET_ARCH ?= amd64
 
 # CHANNELS define the bundle channels used in the bundle.
-CHANNELS = "development"
+CHANNELS ?= "development"
 # Add a new line here if you would like to change its default config. (E.g CHANNELS = "candidate,fast,stable")
 # To re-generate a bundle for other specific channels without changing the standard setup, you can:
 # - use the CHANNELS as arg of the bundle target (e.g make bundle CHANNELS=candidate,fast,stable)
@@ -29,18 +29,23 @@ endif
 # To re-generate a bundle for any other default channel without changing the default setup, you can:
 # - use the DEFAULT_CHANNEL as arg of the bundle target (e.g make bundle DEFAULT_CHANNEL=stable)
 # - use environment variables to overwrite this value (e.g export DEFAULT_CHANNEL="stable")
-DEFAULT_CHANNEL = "development"
+comma := ,
+space :=
+space +=
+DEFAULT_CHANNEL ?= $(word 1,$(subst $(comma), $(space), $(CHANNELS)))
 ifneq ($(origin DEFAULT_CHANNEL), undefined)
 BUNDLE_DEFAULT_CHANNEL := --default-channel=$(DEFAULT_CHANNEL)
 endif
 BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
+
+IMAGE_ORG ?= quay.io/konveyor
 
 # IMAGE_TAG_BASE defines the docker.io namespace and part of the image name for remote images.
 # This variable is used to construct full image tags for bundle and catalog images.
 #
 # For example, running 'make bundle-build bundle-push catalog-build catalog-push' will build and push both
 # konveyor.io/tackle-operator-bundle:$VERSION and konveyor.io/tackle-operator-catalog:$VERSION.
-IMAGE_TAG_BASE ?= quay.io/konveyor/tackle2-operator
+IMAGE_TAG_BASE ?= $(IMAGE_ORG)/tackle2-operator
 
 # BUNDLE_IMG defines the image:tag used for the bundle.
 # You can use it as an arg. (E.g make bundle-build BUNDLE_IMG=<some-registry>/<project-name-bundle>:<tag>)
@@ -61,7 +66,7 @@ ifeq ($(USE_IMAGE_DIGESTS), true)
 endif
 
 # Image URL to use all building/pushing image targets
-IMG ?= quay.io/konveyor/tackle2-operator:latest
+IMG ?= $(IMAGE_ORG)/tackle2-operator:latest
 
 .PHONY: all
 all: docker-build
@@ -173,18 +178,25 @@ endif
 OPERATOR_SDK = $(shell pwd)/bin/operator-sdk
 OPERATOR_SDK_VERSION ?= v1.28.1
 .PHONY: operator-sdk
-operator-sdk: $(OPERATOR_SDK)
-
-$(OPERATOR_SDK):
-	mkdir -p $(dir $(OPERATOR_SDK)) && \
-	curl -Lo $(OPERATOR_SDK) https://github.com/operator-framework/operator-sdk/releases/download/$(OPERATOR_SDK_VERSION)/operator-sdk_$(shell go env GOOS)_$(shell go env GOARCH) && \
-	chmod +x $(OPERATOR_SDK);
+operator-sdk:
+ifeq (,$(wildcard $(OPERATOR_SDK)))
+ifeq (,$(shell which operator-sdk 2>/dev/null))
+	@{ \
+	set -e ;\
+	mkdir -p $(dir $(OPERATOR_SDK)) ;\
+	curl -Lo $(OPERATOR_SDK) https://github.com/operator-framework/operator-sdk/releases/download/$(OPERATOR_SDK_VERSION)/operator-sdk_$(shell go env GOOS)_$(shell go env GOARCH) ;\
+	chmod +x $(OPERATOR_SDK) ;\
+	}
+else
+OPERATOR_SDK = $(shell which operator-sdk)
+endif
+endif
 
 # HELM_TEMPLATE_OPTS="--set images.operator=quay.io/mine/tackle2-operator:foobar"
 # putting it last allows the operator image to be overridden
 .PHONY: bundle
 bundle: helm operator-sdk ## Generate bundle manifests and metadata, then validate generated files.
-	helm template --set images.operator=${IMG} --set olm=true $(HELM_TEMPLATE_OPTS) ./helm | $(OPERATOR_SDK) generate bundle -q --overwrite --extra-service-accounts tackle-hub,tackle-ui --version $(VERSION) $(BUNDLE_METADATA_OPTS)
+	helm template --set images.operator=${IMG} --set version=$(VERSION) --set olm=true $(HELM_TEMPLATE_OPTS) ./helm | $(OPERATOR_SDK) generate bundle -q --overwrite --extra-service-accounts tackle-hub,tackle-ui --version $(VERSION) $(BUNDLE_GEN_FLAGS)
 	$(OPERATOR_SDK) bundle validate ./bundle
 
 .PHONY: bundle-sync-check
@@ -254,3 +266,36 @@ install-tackle:
 .PHONY: install-konveyor
 install-konveyor:
 	$(shell pwd)/hack/install-konveyor.sh
+
+YQ = $(shell pwd)/bin/yq
+.PHONY: yq
+yq:
+ifeq (,$(wildcard $(YQ)))
+ifeq (,$(shell which yq 2>/dev/null))
+	@{ \
+	set -e ;\
+	mkdir -p $(dir $(YQ)) ;\
+	curl -L https://github.com/mikefarah/yq/releases/download/v4.13.5/yq_$(OS)_$(ARCH) -o $(YQ) ;\
+	chmod +x $(YQ) ;\
+	}
+else
+YQ = $(shell which yq)
+endif
+endif
+
+OPENSHIFT_CLIENT = $(shell pwd)/bin/oc
+.PHONY: openshift-client
+openshift-client:
+ifeq (,$(wildcard $(OPENSHIFT_CLIENT)))
+ifeq (,$(shell which oc 2>/dev/null))
+	@{ \
+	set -e ;\
+	mkdir -p $(dir $(OPENSHIFT_CLIENT)) ;\
+	curl -L https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/openshift-client-$(subst darwin,mac,$(OS))-$(ARCH).tar.gz -o $(dir $(OPENSHIFT_CLIENT))openshift-client.tar.gz ;\
+	tar zxf $(dir $(OPENSHIFT_CLIENT))openshift-client.tar.gz -C $(dir $(OPENSHIFT_CLIENT)) ;\
+	rm $(dir $(OPENSHIFT_CLIENT))openshift-client.tar.gz ;\
+	}
+else
+OPENSHIFT_CLIENT = $(shell which oc)
+endif
+endif
