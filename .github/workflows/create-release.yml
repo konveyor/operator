@@ -122,7 +122,7 @@ jobs:
     with:
       operator: quay.io/konveyor/tackle2-operator:${{ inputs.version }}
       tackle_hub: quay.io/konveyor/tackle2-hub:${{ inputs.version }}
-      keycloack_init: quay.io/konveyor/tackle-keycloak-init:${{ inputs.version }}
+      keycloak_init: quay.io/konveyor/tackle-keycloak-init:${{ inputs.version }}
       tackle_ui: quay.io/konveyor/tackle2-ui:${{ inputs.version }}
       addon_admin: quay.io/konveyor/tackle2-addon:${{ inputs.version }}
       addon_analyzer: quay.io/konveyor/tackle2-addon-analyzer:${{ inputs.version }}
