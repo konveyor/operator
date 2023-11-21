@@ -188,7 +188,6 @@ jobs:
         # Bundle specific args
         version: ${{ inputs.version }}
         channels: ${{ inputs.operator_channel }}
-        use_image_digest: "true"
 
     - name: Replace with digest
       working-directory: ./operator
