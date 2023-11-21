@@ -54,11 +54,12 @@ runs:
   steps:
   - name: Make bundle
     env:
-      CHANNELS: ${{ inputs.channels }}
       BUNDLE_IMAGE: ${{ inputs.operator_bundle }}
-      VERSION: ${{ inputs.version }}
     run: |
       [ -n "${VERSION}" ] && export VERSION="${VERSION:1}"
+      [ -n "${{ inputs.channels }}" ] && export CHANNELS="${{ inputs.channels }}"
+      [ -n "${{ inputs.version }}" ] && export VERSION="${{ inputs.version }}"
+
       OPTS=""
       [ -n "${{ inputs.operator }}" ] && OPTS+=" --set images.operator=${{ inputs.operator }}"
       [ -n "${{ inputs.oauth_proxy }}" ] && OPTS+=" --set images.oauth_proxy=${{ inputs.oauth_proxy }}"
