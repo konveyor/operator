@@ -140,6 +140,12 @@ jobs:
         path: operator
         ref: ${{ inputs.branch }}
 
+    - name: Log in to Quay.io
+      uses: redhat-actions/podman-login@v1
+      with:
+        username: ${{ secrets.QUAY_PUBLISH_ROBOT }}
+        password: ${{ secrets.QUAY_PUBLISH_TOKEN }}
+
     - name: Mirror non-konveyor images
       working-directory: ./operator
       run: |
