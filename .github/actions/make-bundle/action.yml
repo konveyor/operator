@@ -54,7 +54,7 @@ runs:
   steps:
   - name: Make bundle
     env:
-      BUNDLE_IMAGE: ${{ inputs.operator_bundle }}
+      BUNDLE_IMG: ${{ inputs.operator_bundle }}
     run: |
       [ -n "${VERSION}" ] && export VERSION="${VERSION:1}"
       [ -n "${{ inputs.channels }}" ] && export CHANNELS="${{ inputs.channels }}"
