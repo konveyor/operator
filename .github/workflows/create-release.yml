@@ -263,6 +263,8 @@ jobs:
         git diff
 
     - name: Make unified changelog
+      env:
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
         repositories=(
           "konveyor/tackle2-ui"
