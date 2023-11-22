@@ -187,7 +187,7 @@ jobs:
         keycloak_sso: quay.io/konveyor/keycloak:${{ inputs.version }}
         # Bundle specific args
         version: ${{ inputs.version }}
-        channels: ${{ inputs.operator_channel }}
+        channels: ${{ inputs.operator_channels }}
 
     - name: Replace with digest
       working-directory: ./operator

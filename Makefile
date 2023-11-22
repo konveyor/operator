@@ -196,7 +196,7 @@ endif
 # putting it last allows the operator image to be overridden
 .PHONY: bundle
 bundle: helm operator-sdk ## Generate bundle manifests and metadata, then validate generated files.
-	helm template --set images.operator=${IMG} --set version=$(VERSION) --set olm=true $(HELM_TEMPLATE_OPTS) ./helm | $(OPERATOR_SDK) generate bundle -q --overwrite --extra-service-accounts tackle-hub,tackle-ui --version $(VERSION) $(BUNDLE_GEN_FLAGS)
+	helm template --set images.operator=${IMG} --set version=$(VERSION) --set olm=true $(HELM_TEMPLATE_OPTS) ./helm | $(OPERATOR_SDK) generate bundle --extra-service-accounts tackle-hub,tackle-ui $(BUNDLE_GEN_FLAGS)
 	$(OPERATOR_SDK) bundle validate ./bundle
 
 .PHONY: bundle-sync-check

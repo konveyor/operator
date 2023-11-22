@@ -56,9 +56,9 @@ runs:
     env:
       BUNDLE_IMG: ${{ inputs.operator_bundle }}
     run: |
-      [ -n "${VERSION}" ] && export VERSION="${VERSION:1}"
       [ -n "${{ inputs.channels }}" ] && export CHANNELS="${{ inputs.channels }}"
       [ -n "${{ inputs.version }}" ] && export VERSION="${{ inputs.version }}"
+      [ -n "${VERSION}" ] && export VERSION="${VERSION:1}"
 
       OPTS=""
       [ -n "${{ inputs.operator }}" ] && OPTS+=" --set images.operator=${{ inputs.operator }}"
