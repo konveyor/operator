@@ -174,7 +174,7 @@ jobs:
     - name: Build bundle
       uses: ./operator/.github/actions/make-bundle
       with:
-        operator_bundle: ttl.sh/konveyor-operator-bundle-${github.sha}:3h
+        operator_bundle: quay.io/konveyor/tackle2-operator-bundle:${{ inputs.version }}
         operator: quay.io/konveyor/tackle2-operator:${{ inputs.version }}
         tackle_hub: quay.io/konveyor/tackle2-hub:${{ inputs.version }}
         keycloak_init: quay.io/konveyor/tackle-keycloak-init:${{ inputs.version }}
@@ -219,6 +219,12 @@ jobs:
         yq eval --inplace 'del(.annotations["operators.operatorframework.io.test.mediatype.v1"])' ${ANNOTATIONS}
         yq eval --inplace 'del(.annotations["operators.operatorframework.io.test.config.v1"])' ${ANNOTATIONS}
         yq eval --inplace '.annotations["com.redhat.openshift.versions"] = "v4.9" | .annotations["com.redhat.openshift.versions"] style="double"' ${ANNOTATIONS}
+
+    - name: Build and Push Bundle Image
+      working-directory: ./operator
+      env:
+        BUNDLE_IMG: quay.io/konveyor/tackle2-operator-bundle:${{ inputs.version }}
+      run: make bundle-build bundle-push
 
     - name: Checkout community operators
       uses: actions/checkout@v4
