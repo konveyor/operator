@@ -6,6 +6,9 @@ on:
       version:
         description: 'The semantic version of the release (e.g. v1.2.3)'
         required: true
+      previous_version:
+        description: 'The semantic version of the previous release (e.g. v1.2.3)'
+        required: true
       branch:
         description: 'The branch to create the release from (defaults to main)'
         required: false
@@ -278,11 +281,11 @@ jobs:
         )
 
         echo "Konveyor Operator ${{ inputs.version }}" > changelog.md
-        echo "=======================================" > changelog.md
+        echo "=======================================" >> changelog.md
         echo "" >> changelog.md
 
         for repo in "${repositories[@]}"; do
-          echo "# ${repo}"
+          echo "# ${repo}" >> changelog.md
           echo "" >> changelog.md
           gh release view "${{ inputs.version }}" --repo "${repo}" --json body --jq .body >> changelog.md
           echo "" >> changelog.md
