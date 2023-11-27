@@ -70,7 +70,7 @@ runs:
       [ -n "${{ inputs.tackle_ui }}" ] && OPTS+=" --set images.tackle_ui=${{ inputs.tackle_ui }}"
       [ -n "${{ inputs.addon_admin }}" ] && OPTS+=" --set images.addon_admin=${{ inputs.addon_admin }}"
       [ -n "${{ inputs.addon_analyzer }}" ] && OPTS+=" --set images.addon_analyzer=${{ inputs.addon_analyzer }}"
-      HELM_TEMPLATE_OPTS="${OPTS}" make bundle
+      HELM_OPTS="${OPTS}" make bundle
       cat ./bundle/manifests/konveyor-operator.clusterserviceversion.yaml
       make bundle-build
     working-directory: ${{ github.action_path }}/../../..
