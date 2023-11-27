@@ -128,11 +128,12 @@ docker-push: ## Push docker image with the manager.
 
 ##@ Deployment
 
+# HELM_OPTS="--set images.operator=quay.io/mine/tackle2-operator:foobar"
 .PHONY: install
 install: helm ## Install operator directly into cluster specified in ~/.kube/config
 	kubectl auth can-i create ns --all-namespaces # Check if logged in
 	kubectl create namespace $(NAMESPACE) || true
-	$(HELM) install --namespace $(NAMESPACE) $(HELM_RELEASE) ./helm
+	$(HELM) install $(HELM_RELEASE) ./helm --namespace $(NAMESPACE) $(HELM_OPTS)
 
 .PHONY: uninstall
 uninstall: helm ## Uninstall CRDs from the K8s cluster specified in ~/.kube/config.
@@ -192,11 +193,11 @@ OPERATOR_SDK = $(shell which operator-sdk)
 endif
 endif
 
-# HELM_TEMPLATE_OPTS="--set images.operator=quay.io/mine/tackle2-operator:foobar"
+# HELM_OPTS="--set images.operator=quay.io/mine/tackle2-operator:foobar"
 # putting it last allows the operator image to be overridden
 .PHONY: bundle
 bundle: helm operator-sdk ## Generate bundle manifests and metadata, then validate generated files.
-	helm template --set images.operator=${IMG} --set version=$(VERSION) --set olm=true $(HELM_TEMPLATE_OPTS) ./helm | $(OPERATOR_SDK) generate bundle --extra-service-accounts tackle-hub,tackle-ui $(BUNDLE_GEN_FLAGS)
+	$(HELM) template --set images.operator=${IMG} --set version=$(VERSION) --set olm=true $(HELM_OPTS) ./helm | $(OPERATOR_SDK) generate bundle --extra-service-accounts tackle-hub,tackle-ui $(BUNDLE_GEN_FLAGS)
 	$(OPERATOR_SDK) bundle validate ./bundle
 
 .PHONY: bundle-sync-check
