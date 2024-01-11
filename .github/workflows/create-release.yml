@@ -35,7 +35,7 @@ jobs:
           ref: ${{ inputs.branch }}
           github_token: ${{ secrets.GH_TOKEN }}
       - name: wait for static-report
-        run:
+        run: |
           #!/bin/bash
           while ! docker pull quay.io/konveyor/static-report:${{ inputs.version }} &> /dev/null; do
               sleep 3m
