@@ -272,6 +272,19 @@
       retries: 30
       delay: 5
 
+- name: "Retrieve Hub API Database PersistentVolumeClaim"
+  k8s_info:
+    api_version: v1
+    kind: PersistentVolumeClaim
+    name: "{{ hub_database_volume_claim_name }}"
+    namespace: "{{ app_namespace }}"
+  register: hub_database
+
+- name: "Set database volume request size based on existing size"
+  when: hub_database.resources | length > 0 and not expand_volume_sizes
+  set_fact:
+    hub_database_volume_size: " {{ (hub_database.resources | first).spec.resources.requests.storage }}"
+
 - name: "Setup Hub API Database PersistentVolumeClaim"
   k8s:
     state: present

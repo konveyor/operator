@@ -17,6 +17,9 @@ http_proxy: "{{ lookup('env', 'HTTP_PROXY') }}"
 https_proxy: "{{ lookup('env', 'HTTPS_PROXY') }}"
 no_proxy: "{{ lookup('env', 'NO_PROXY') }}"
 
+# PVC Handling
+expand_volume_sizes: true
+
 # Components
 hub_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_TACKLE_HUB') }}"
 hub_component_name: "hub"
