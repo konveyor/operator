@@ -1,0 +1,13 @@
+name: PR Title Check
+
+on:
+  pull_request_target:
+    types: [opened, edited, reopened, synchronize]
+
+jobs:
+  verify-pr:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: konveyor/release-tools/cmd/verify-pr@main
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
