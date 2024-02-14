@@ -14,10 +14,6 @@ inputs:
     description: "image url for tackle-ui"
     required: false
     default: "quay.io/konveyor/tackle2-ui:latest"
-  addon-admin-image:
-    description: "image urd for admin addon"
-    required: false
-    default: "quay.io/konveyor/tackle2-addon:latest"
   addon-analyzer-image:
     description: "image url for analyzer addon"
     required: false
@@ -44,7 +40,6 @@ runs:
       export OPERATOR_BUNDLE_IMAGE="${{ inputs.operator-bundle-image }}"
       export HUB_IMAGE="${{ inputs.hub-image }}"
       export UI_IMAGE="${{ inputs.ui-image }}"
-      export ADDON_ADMIN_IMAGE="${{ inputs.addon-admin-image }}"
       export ADDON_ANALYZER_IMAGE="${{ inputs.addon-analyzer-image }}"
       export IMAGE_PULL_POLICY="${{ inputs.image-pull-policy }}"
       export ANALYZER_CONTAINER_REQUESTS_MEMORY="${{ inputs.analyzer-container-memory }}"

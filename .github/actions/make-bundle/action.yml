@@ -33,10 +33,6 @@ inputs:
     description: "image uri for tackle-ui (ie. quay.io/<namespace>/<image-name>:<tag>)"
     required: false
     default: ""
-  addon_admin:
-    description: "image uri for admin addon (ie. quay.io/<namespace>/<image-name>:<tag>)"
-    required: false
-    default: ""
   addon_analyzer:
     description: "image uri for analyzer addon (ie. quay.io/<namespace>/<image-name>:<tag>)"
     required: false
@@ -68,7 +64,6 @@ runs:
       [ -n "${{ inputs.keycloak_sso }}" ] && OPTS+=" --set images.keycloak_sso=${{ inputs.keycloak_sso }}"
       [ -n "${{ inputs.keycloak_init }}" ] && OPTS+=" --set images.keycloak_init=${{ inputs.keycloak_init }}"
       [ -n "${{ inputs.tackle_ui }}" ] && OPTS+=" --set images.tackle_ui=${{ inputs.tackle_ui }}"
-      [ -n "${{ inputs.addon_admin }}" ] && OPTS+=" --set images.addon_admin=${{ inputs.addon_admin }}"
       [ -n "${{ inputs.addon_analyzer }}" ] && OPTS+=" --set images.addon_analyzer=${{ inputs.addon_analyzer }}"
       HELM_OPTS="${OPTS}" make bundle
       cat ./bundle/manifests/konveyor-operator.clusterserviceversion.yaml

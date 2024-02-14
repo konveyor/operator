@@ -149,12 +149,7 @@ oauth_access_rule: "{{ oauth_default_openshift_sar if oauth_provider == 'openshi
 oauth_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_OAUTH_PROXY') }}"
 oauth_ssl_port: 9443
 
-admin_fqin: "{{ lookup('env', 'RELATED_IMAGE_ADDON_ADMIN') }}"
 admin_name: "admin"
-admin_component_name: "addon"
-admin_service_name: "{{ app_name }}-{{ admin_name }}-{{ admin_component_name }}"
-admin_container_requests_cpu: "50m"
-admin_container_requests_memory: "50Mi"
 
 analyzer_fqin: "{{ lookup('env', 'RELATED_IMAGE_ADDON_ANALYZER') }}"
 analyzer_name: "analyzer"
