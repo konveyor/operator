@@ -47,8 +47,6 @@ spec:
           value: {{ .Values.images.keycloak_init }}
         - name: RELATED_IMAGE_TACKLE_UI
           value: {{ .Values.images.tackle_ui }}
-        - name: RELATED_IMAGE_ADDON_ADMIN
-          value: {{ .Values.images.addon_admin }}
         - name: RELATED_IMAGE_ADDON_ANALYZER
           value: {{ .Values.images.addon_analyzer }}
         name: tackle-operator

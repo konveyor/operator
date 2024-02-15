@@ -113,7 +113,7 @@ jobs:
           - repo: konveyor/tackle2-ui
             image: konveyor/tackle2-ui
           - repo: konveyor/tackle2-addon
-            image: konveyor/tackle2-addon
+            image: ''
           - repo: konveyor/operator
             image: konveyor/tackle2-operator
           - repo: konveyor/tackle-keycloak-theme
@@ -129,7 +129,8 @@ jobs:
           repository: ${{ matrix.projects.repo }}
           ref: ${{ inputs.branch }}
           github_token: ${{ secrets.GH_TOKEN }}
-      - run: |
+      - if: ${{ matrix.projects.image != '' }}
+        run: |
           #!/bin/bash
           while ! docker pull quay.io/${{ matrix.projects.image }}:${{ inputs.version }} &> /dev/null; do
               sleep 3m

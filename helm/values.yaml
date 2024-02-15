@@ -18,5 +18,4 @@ images:
   keycloak_sso: quay.io/keycloak/keycloak:18.0.2-legacy
   keycloak_init: quay.io/konveyor/tackle-keycloak-init:latest
   tackle_ui: quay.io/konveyor/tackle2-ui:latest
-  addon_admin: quay.io/konveyor/tackle2-addon:latest
   addon_analyzer: quay.io/konveyor/tackle2-addon-analyzer:latest
