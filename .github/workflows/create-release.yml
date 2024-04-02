@@ -205,7 +205,7 @@ jobs:
         addon_analyzer: quay.io/konveyor/tackle2-addon-analyzer:${{ inputs.version }}
         # The ones we don't own
         oauth_proxy: quay.io/konveyor/origin-oauth-proxy:${{ inputs.version }}
-        tackle_postgres: quay.io/konveyor/postgresql-12-centos7:${{ inputs.version }}
+        tackle_postgres: quay.io/konveyor/postgresql-15-c9s:${{ inputs.version }}
         keycloak_sso: quay.io/konveyor/keycloak:${{ inputs.version }}
         # Bundle specific args
         version: ${{ inputs.version }}

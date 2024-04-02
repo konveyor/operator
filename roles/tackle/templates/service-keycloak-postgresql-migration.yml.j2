@@ -6,7 +6,7 @@ metadata:
     app.kubernetes.io/name: {{ keycloak_database_service_name }}
     app.kubernetes.io/component: {{ keycloak_database_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
-  name: {{ keycloak_database_service_k8s_resource_name }}
+  name: {{ keycloak_database_service_k8s_resource_name }}-migration
   namespace: {{ app_namespace }}
 spec:
   ports:
