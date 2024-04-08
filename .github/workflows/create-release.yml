@@ -146,7 +146,6 @@ jobs:
       tackle_hub: quay.io/konveyor/tackle2-hub:${{ inputs.version }}
       keycloak_init: quay.io/konveyor/tackle-keycloak-init:${{ inputs.version }}
       tackle_ui: quay.io/konveyor/tackle2-ui:${{ inputs.version }}
-      addon_admin: quay.io/konveyor/tackle2-addon:${{ inputs.version }}
       addon_analyzer: quay.io/konveyor/tackle2-addon-analyzer:${{ inputs.version }}
 
   publish:
@@ -201,7 +200,6 @@ jobs:
         tackle_hub: quay.io/konveyor/tackle2-hub:${{ inputs.version }}
         keycloak_init: quay.io/konveyor/tackle-keycloak-init:${{ inputs.version }}
         tackle_ui: quay.io/konveyor/tackle2-ui:${{ inputs.version }}
-        addon_admin: quay.io/konveyor/tackle2-addon:${{ inputs.version }}
         addon_analyzer: quay.io/konveyor/tackle2-addon-analyzer:${{ inputs.version }}
         # The ones we don't own
         oauth_proxy: quay.io/konveyor/origin-oauth-proxy:${{ inputs.version }}
