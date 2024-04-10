@@ -147,6 +147,8 @@ jobs:
       keycloak_init: quay.io/konveyor/tackle-keycloak-init:${{ inputs.version }}
       tackle_ui: quay.io/konveyor/tackle2-ui:${{ inputs.version }}
       addon_analyzer: quay.io/konveyor/tackle2-addon-analyzer:${{ inputs.version }}
+      api_tests_ref: ${{ inputs.branch }}
+      ui_tests_ref: ${{ inputs.branch }}
 
   publish:
     name: Build and Push Manifest
