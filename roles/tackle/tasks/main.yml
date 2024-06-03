@@ -130,11 +130,6 @@
         name: "{{ keycloak_database_service_name }}"
         namespace: "{{ app_namespace }}"
 
-    - name: "Setup Keycloak PostgreSQL Service"
-      k8s:
-        state: present
-        definition: "{{ lookup('template', 'service-keycloak-postgresql.yml.j2') }}"
-
     - name: "Setup Keycloak PostgreSQL Deployment"
       k8s:
         state: present
@@ -152,6 +147,69 @@
           type: "Ready"
           status: "True"
         wait_timeout: 240
+
+    - name: "Check for old postgresql version deployment"
+      k8s_info:
+        api_version: v1
+        kind: Deployment
+        name: "{{ keycloak_database_service_name }}"
+        namespace: "{{ app_namespace }}"
+      register: pgsql_old_deployment
+
+    - when: ( pgsql_old_deployment.resources | length ) > 0
+      block:
+        - name: Set up the temporary migration service
+          k8s:
+            state: present
+            definition: "{{ lookup('template', 'service-keycloak-postgresql-migration.yml.j2') }}"
+
+        - name: "Get the keycloak DB secret"
+          k8s_info:
+            api_version: v1
+            kind: Secret
+            name: "tackle-keycloak-postgresql"
+            namespace: "konveyor-tackle"
+          register: pgsql_secret
+
+        - name: "Set the keycloak DB credentials"
+          set_fact:
+            dbm_user: "{{ pgsql_secret.resources[0].data['database-user'] | b64decode }}"
+            dbm_pass: "{{ pgsql_secret.resources[0].data['database-password'] | b64decode }}"
+
+        - name: "Generate DB URLs"
+          set_fact:
+            dbm_src: postgresql://{{ dbm_user }}:{{ dbm_pass }}@{{ keycloak_database_service_k8s_resource_name }}/{{ keycloak_database_db_name }}
+            dbm_dst: postgresql://{{ dbm_user }}:{{ dbm_pass }}@{{ keycloak_database_service_k8s_resource_name }}-migration/{{ keycloak_database_db_name }}
+
+        - name: "Perform the DB upgrade"
+          shell: |
+                 set -o pipefail
+                 sleep 10 # give the service a few seconds to be available
+                 pg_dump {{ dbm_src }} | psql {{ dbm_dst }}
+          changed_when: false
+
+        - name: "Remove the temporary migration service"
+          k8s:
+            state: absent
+            definition: "{{ lookup('template', 'service-keycloak-postgresql-migration.yml.j2') }}"
+
+        - name: "Remove the old deployment"
+          k8s:
+            state: absent
+            api_version: v1
+            kind: Deployment
+            name: "{{ keycloak_database_service_name }}"
+            namespace: "{{ app_namespace }}"
+
+        - name: "Remove the service so it can be recreated"
+          k8s:
+            state: absent
+            definition: "{{ lookup('template', 'service-keycloak-postgresql.yml.j2') }}"
+
+    - name: "Setup Keycloak PostgreSQL Service"
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'service-keycloak-postgresql.yml.j2') }}"
 
     - name: "Check if Keycloak SSO Secret exists already so we don't update it"
       k8s_info:

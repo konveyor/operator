@@ -2,12 +2,13 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ keycloak_database_deployment_name }}
+  name: {{ keycloak_database_deployment_name }}-{{ keycloak_database_db_version }}
   namespace: {{ app_namespace }}
   labels:
     app.kubernetes.io/name: {{ keycloak_database_service_name }}
     app.kubernetes.io/component: {{ keycloak_database_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
+    version: "{{ keycloak_database_db_version }}"
 spec:
   replicas: {{ keycloak_database_deployment_replicas }}
   selector:
@@ -15,6 +16,7 @@ spec:
       app.kubernetes.io/name: {{ keycloak_database_service_name }}
       app.kubernetes.io/component: {{ keycloak_database_component_name }}
       app.kubernetes.io/part-of: {{ app_name }}
+      version: "{{ keycloak_database_db_version }}"
 {% if keycloak_database_deployment_strategy == 'Recreate' %}
   strategy:
     type: {{ keycloak_database_deployment_strategy }}
@@ -27,6 +29,7 @@ spec:
         app.kubernetes.io/part-of: {{ app_name }}
         app: {{ app_name }}
         role: {{ keycloak_database_service_name }}
+        version: "{{ keycloak_database_db_version }}"
     spec:
       containers:
         - name: {{ keycloak_database_container_name }}
