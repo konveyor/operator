@@ -20,7 +20,7 @@ metadata:
     categories: Modernization & Migration
     certified: "false"
     containerImage: quay.io/konveyor/tackle2-operator:latest
-    createdAt: "2024-06-03T20:19:41Z"
+    createdAt: "2024-06-05T18:28:14Z"
     description: Konveyor is an open-source application modernization platform that
       helps organizations safely and predictably modernize applications to Kubernetes
       at scale.
@@ -58,10 +58,20 @@ spec:
       kind: Addon
       name: addons.tackle.konveyor.io
       version: v1alpha1
+    - description: Tackle Extension
+      displayName: Extension
+      kind: Extension
+      name: extensions.tackle.konveyor.io
+      version: v1alpha1
     - description: Tackle
       displayName: Tackle
       kind: Tackle
       name: tackles.tackle.konveyor.io
+      version: v1alpha1
+    - description: Tackle Task
+      displayName: Task
+      kind: Task
+      name: tasks.tackle.konveyor.io
       version: v1alpha1
   description: |
     Konveyor is an open-source application modernization platform that helps organizations safely and predictably modernize applications to new technologies, with an initial focus on accelerating the adoption of legacy applications to Kubernetes.
@@ -183,6 +193,10 @@ spec:
                   value: quay.io/konveyor/tackle2-ui:latest
                 - name: RELATED_IMAGE_ADDON_ANALYZER
                   value: quay.io/konveyor/tackle2-addon-analyzer:latest
+                - name: RELATED_IMAGE_PROVIDER_GENERIC
+                  value: quay.io/konveyor/generic-external-provider:latest
+                - name: RELATED_IMAGE_PROVIDER_JAVA
+                  value: quay.io/konveyor/java-external-provider:lateest
                 image: quay.io/konveyor/tackle2-operator:latest
                 imagePullPolicy: Always
                 livenessProbe:
@@ -369,4 +383,8 @@ spec:
     name: tackle-ui
   - image: quay.io/konveyor/tackle2-addon-analyzer:latest
     name: addon-analyzer
+  - image: quay.io/konveyor/generic-external-provider:latest
+    name: provider-generic
+  - image: quay.io/konveyor/java-external-provider:lateest
+    name: provider-java
   version: 99.0.0

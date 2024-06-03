@@ -49,6 +49,10 @@ spec:
           value: {{ .Values.images.tackle_ui }}
         - name: RELATED_IMAGE_ADDON_ANALYZER
           value: {{ .Values.images.addon_analyzer }}
+        - name: RELATED_IMAGE_PROVIDER_GENERIC
+          value: {{ .Values.images.provider_generic }}
+        - name: RELATED_IMAGE_PROVIDER_JAVA
+          value: {{ .Values.images.provider_java }}
         name: tackle-operator
         image: {{ .Values.images.operator }}
         imagePullPolicy: Always

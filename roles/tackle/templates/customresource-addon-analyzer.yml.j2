@@ -9,12 +9,104 @@ metadata:
     app.kubernetes.io/component: {{ analyzer_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
 spec:
-  image: {{ analyzer_fqin }}
-  imagePullPolicy: {{ image_pull_policy }}
-  resources:
-    limits:
-      cpu: {{ analyzer_container_limits_cpu }}
-      memory: {{ analyzer_container_limits_memory }}
-    requests:
-      cpu: {{ analyzer_container_requests_cpu }}
-      memory: {{ analyzer_container_requests_memory }}
+  task: {{ analyzer_name }}
+  container:
+    name: {{ analyzer_component_name }}
+    image: {{ analyzer_fqin }}
+    imagePullPolicy: {{ image_pull_policy }}
+    resources:
+      limits:
+        cpu: {{ analyzer_container_limits_cpu }}
+        memory: {{ analyzer_container_limits_memory }}
+      requests:
+        cpu: {{ analyzer_container_requests_cpu }}
+        memory: {{ analyzer_container_requests_memory }}
+---
+kind: Extension
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  name: {{ provider_java_name }}
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/name: {{ provider_java_service_name }}
+    app.kubernetes.io/component: {{ provider_java_component_name }}
+    app.kubernetes.io/part-of: {{ app_name }}
+spec:
+  addon: {{ analyzer_name }}
+  selector: tag:Language=Java || !tag:Language
+  container:
+    name: {{ provider_java_name }}
+    image: {{ provider_java_image_fqin }}
+    imagePullPolicy: {{ image_pull_policy }}
+    args:
+    - --port
+    - $(PORT)
+    env:
+    - name: PORT
+      value: ${seq:8000}
+    resources:
+      limits:
+        cpu: {{ provider_java_container_limits_cpu }}
+        memory: {{ provider_java_container_limits_memory }}
+      requests:
+        cpu: {{ provider_java_container_requests_cpu }}
+        memory: {{ provider_java_container_requests_memory }}
+  metadata:
+    resources:
+    - selector: identity:kind=maven
+      fields:
+      - name: settings
+        path: /shared/creds/maven/settings.xml
+        key: maven.settings.path
+    provider:
+      name: {{ provider_java_name }}
+      address: localhost:$(PORT)
+      initConfig:
+      - providerSpecificConfig:
+          bundles: /jdtls/java-analyzer-bundle/java-analyzer-bundle.core/target/java-analyzer-bundle.core-1.0.0-SNAPSHOT.jar
+          depOpenSourceLabelsFile: /usr/local/etc/maven.default.index
+          lspServerPath: /jdtls/bin/jdtls
+          mavenSettingsFile: $(maven.settings.path)
+---
+kind: Extension
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  name: {{ provider_generic_name }}
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/name: {{ provider_generic_service_name }}
+    app.kubernetes.io/component: {{ provider_generic_component_name }}
+    app.kubernetes.io/part-of: {{ app_name }}
+spec:
+  addon: {{ analyzer_name }}
+  selector: tag:Language=Golang || tag:Language=Python
+  container:
+    name: {{ provider_generic_name }}
+    image: {{ provider_generic_image_fqin }}
+    imagePullPolicy: {{ image_pull_policy }}
+    args:
+    - --port
+    - $(PORT)
+    env:
+    - name: PORT
+      value: ${seq:8000}
+    resources:
+      limits:
+        cpu: {{ provider_generic_container_limits_cpu }}
+        memory: {{ provider_generic_container_limits_memory }}
+      requests:
+        cpu: {{ provider_generic_container_requests_cpu }}
+        memory: {{ provider_generic_container_requests_memory }}
+  metadata:
+    provider:
+      name: {{ provider_generic_name }} 
+      address: localhost:$(PORT)
+      initConfig:
+---
+kind: Task
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  namespace: {{ app_namespace }}
+  name: {{ analyzer_name }}
+spec:
+  priority: 10

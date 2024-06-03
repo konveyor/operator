@@ -4,14 +4,14 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.10.0
   creationTimestamp: null
-  name: addons.tackle.konveyor.io
+  name: extensions.tackle.konveyor.io
 spec:
   group: tackle.konveyor.io
   names:
-    kind: Addon
-    listKind: AddonList
-    plural: addons
-    singular: addon
+    kind: Extension
+    listKind: ExtensionList
+    plural: extensions
+    singular: extension
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -38,8 +38,11 @@ spec:
           metadata:
             type: object
           spec:
-            description: AddonSpec defines the desired state of Addon
+            description: ExtensionSpec defines the desired state of Extension
             properties:
+              addon:
+                description: Addon compatibility.
+                type: string
               container:
                 description: Container details.
                 properties:
@@ -1245,14 +1248,12 @@ spec:
               selector:
                 description: Selector
                 type: string
-              task:
-                description: Task (kind) compatibility.
-                type: string
             required:
+            - addon
             - container
             type: object
           status:
-            description: AddonStatus defines the observed state of Addon
+            description: ExtensionStatus defines the observed state of Extension
             properties:
               observedGeneration:
                 description: The most recent generation observed by the controller.
