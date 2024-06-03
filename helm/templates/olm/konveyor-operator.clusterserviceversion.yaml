@@ -27,6 +27,11 @@ metadata:
     operatorframework.io/suggested-namespace: konveyor-tackle
     repository: https://github.com/konveyor/tackle2-operator
     support: https://github.com/konveyor/tackle2-operator/issues
+  labels:
+    operatorframework.io/arch.amd64: supported
+    operatorframework.io/arch.arm64: supported
+    operatorframework.io/arch.ppc64le: unsupported
+    operatorframework.io/arch.s390x: unsupported
   name: konveyor-operator.v{{ .Values.version }}
   namespace: konveyor-tackle
 spec:
