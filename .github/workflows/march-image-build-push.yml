@@ -47,7 +47,7 @@ jobs:
     - name: Build Operator Index
       uses: konveyor/release-tools/build-push-quay@main
       with:
-        architectures: "amd64 arm64"
+        architectures: "amd64, arm64"
         pre_build_cmd: |
           CONTAINER_RUNTIME=podman \
           CATALOG_IMG=quay.io/konveyor/tackle2-operator-index:latest \
