@@ -5,11 +5,11 @@ USER 0
 COPY tools/upgrades/migrate-pathfinder-assessments.py /usr/local/bin/migrate-pathfinder-assessments.py
 COPY tools/upgrades/jwt.sh /usr/local/bin/jwt.sh
 RUN dnf -y install openssl && dnf clean all
-RUN echo -e "[centos8-appstream]" \
- "\nname = centos8-appstream" \
- "\nbaseurl = https://vault.centos.org/8-stream/AppStream/x86_64/os/" \
+RUN echo -e "[almalinux8-appstream]" \
+ "\nname = almalinux8-appstream" \
+ "\nbaseurl = https://repo.almalinux.org/almalinux/8/AppStream/x86_64/os/" \
  "\nenabled = 1" \
- "\ngpgcheck = 0" > /etc/yum.repos.d/centos.repo
+ "\ngpgcheck = 0" > /etc/yum.repos.d/almalinux.repo
 RUN dnf -y module enable postgresql:15 && dnf -y install postgresql && dnf clean all
 USER 1001
 
