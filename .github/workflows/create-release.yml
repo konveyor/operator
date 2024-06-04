@@ -34,13 +34,6 @@ jobs:
           repository: konveyor/rulesets
           ref: ${{ inputs.branch }}
           github_token: ${{ secrets.GH_TOKEN }}
-      - name: wait for rulesets
-        run: |
-          #!/bin/bash
-          while ! docker pull quay.io/konveyor/rulesets:${{ inputs.version }} &> /dev/null; do
-              sleep 3m
-          done
-          docker image inspect quay.io/konveyor/rulesets:${{ inputs.version }}
       - name: static-report
         uses: konveyor/release-tools/create-release@main
         with:
