@@ -20,7 +20,7 @@ metadata:
     categories: Modernization & Migration
     certified: "false"
     containerImage: quay.io/konveyor/tackle2-operator:latest
-    createdAt: "2024-02-14T17:22:48Z"
+    createdAt: "2024-06-03T20:19:41Z"
     description: Konveyor is an open-source application modernization platform that
       helps organizations safely and predictably modernize applications to Kubernetes
       at scale.
@@ -42,6 +42,11 @@ metadata:
     operators.operatorframework.io/project_layout: ansible.sdk.operatorframework.io/v1
     repository: https://github.com/konveyor/tackle2-operator
     support: https://github.com/konveyor/tackle2-operator/issues
+  labels:
+    operatorframework.io/arch.amd64: supported
+    operatorframework.io/arch.arm64: supported
+    operatorframework.io/arch.ppc64le: unsupported
+    operatorframework.io/arch.s390x: unsupported
   name: konveyor-operator.v99.0.0
   namespace: konveyor-tackle
 spec:
