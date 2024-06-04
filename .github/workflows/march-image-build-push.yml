@@ -49,14 +49,22 @@ jobs:
       with:
         ref: ${{ github.event.pull_request.head.sha }}
 
-    - name: Build index
+    - name: Generate Operator Index Dockerfile
       run: |
         CONTAINER_RUNTIME=podman \
         CATALOG_IMG=quay.io/konveyor/tackle2-operator-index:latest \
         BUNDLE_IMG=quay.io/konveyor/tackle2-operator-bundle:latest \
-        make catalog-build
+        make catalog-index
       if: ${{ github.ref == 'refs/heads/main' }}
 
-    - name: Push index
-      run: podman push quay.io/konveyor/tackle2-operator-index:latest --creds=${{ secrets.QUAY_PUBLISH_ROBOT }}:${{ secrets.QUAY_PUBLISH_TOKEN }}
-      if: ${{ github.ref == 'refs/heads/main' }}
+    - name: Build Operator Index
+      uses: konveyor/release-tools/build-push-quay@main
+      with:
+        architectures: "amd64 arm64"
+        containerfile: "./index.Dockerfile"
+        image_name: "tackle2-operator-index"
+        image_namespace: "konveyor"
+        image_registry: "quay.io"
+        quay_publish_robot: ${{ secrets.QUAY_PUBLISH_ROBOT }}
+        quay_publish_token: ${{ secrets.QUAY_PUBLISH_TOKEN }}
+        ref: ${{ github.ref }}
