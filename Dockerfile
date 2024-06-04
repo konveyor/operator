@@ -7,7 +7,7 @@ COPY tools/upgrades/jwt.sh /usr/local/bin/jwt.sh
 RUN dnf -y install openssl && dnf clean all
 RUN echo -e "[almalinux8-appstream]" \
  "\nname = almalinux8-appstream" \
- "\nbaseurl = https://repo.almalinux.org/almalinux/8/AppStream/x86_64/os/" \
+ "\nbaseurl = https://repo.almalinux.org/almalinux/8/AppStream/\$basearch/os/" \
  "\nenabled = 1" \
  "\ngpgcheck = 0" > /etc/yum.repos.d/almalinux.repo
 RUN dnf -y module enable postgresql:15 && dnf -y install postgresql && dnf clean all
