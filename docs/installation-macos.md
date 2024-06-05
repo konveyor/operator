@@ -16,7 +16,7 @@ podman machine start
 3. Install ingress addon
 `minikube addons enable ingress`
 4. Install OLM to manage Konveyor operator
-`curl -sL https://github.com/operator-framework/operator-lifecycle-manager/releases/download/v0.21.2/install.sh | bash -s v0.21.2`
+`curl -sL https://github.com/operator-framework/operator-lifecycle-manager/releases/download/v0.27.0/install.sh | bash -s v0.27.0`
 5. Install Konveyor operator
 `kubectl create -f https://operatorhub.io/install/konveyor-operator.yaml`
 6. Verify if the Konveyor operator pod is running or not
