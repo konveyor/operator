@@ -153,6 +153,12 @@ Custom settings can be applied by editing the `Tackle` CR.
 
 `oc edit tackle -n <your-tackle-namespace>`
 
+## Keycloak Auth
+If `feature_auth_required` is enabled keycloak will be installed and a random password will be generated.
+
+To view these credentials:
+`oc -n konveyor-tackle extract secret/tackle-keycloak-sso --to=-`
+
 ## Konveyor Storage Requirements
 
 Konveyor requires a total of 5 persistent volumes (PVs) used by different components to successfully deploy, 3 RWO volumes and 2 RWX volumes will be requested via PVCs.
