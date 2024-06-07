@@ -41,7 +41,7 @@ jobs:
     needs: detect-changes
     runs-on: ubuntu-latest
     env:
-      IMG: ttl.sh/konveyor-operator-${{ github.sha }}:1h
+      IMG: ttl.sh/konveyor-operator-${{ github.sha }}:2h
     steps:
     - uses: actions/checkout@v3
     - run: make docker-build docker-push
@@ -50,4 +50,4 @@ jobs:
     needs: build-operator
     uses: konveyor/ci/.github/workflows/global-ci-bundle.yml@main
     with:
-      operator: ttl.sh/konveyor-operator-${{ github.sha }}:1h
+      operator: ttl.sh/konveyor-operator-${{ github.sha }}:2h
