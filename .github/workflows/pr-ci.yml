@@ -6,9 +6,6 @@ on:
       - main
       - 'release-*.*'
 
-env:
-  IMG: ttl.sh/konveyor-operator-${{ github.sha }}:2h
-
 jobs:
   detect-changes:
     runs-on: ubuntu-latest
@@ -43,6 +40,8 @@ jobs:
   build-operator:
     needs: detect-changes
     runs-on: ubuntu-latest
+    env:
+      IMG: ttl.sh/konveyor-operator-${{ github.sha }}:1h
     steps:
     - uses: actions/checkout@v3
     - run: make docker-build docker-push
@@ -51,4 +50,4 @@ jobs:
     needs: build-operator
     uses: konveyor/ci/.github/workflows/global-ci-bundle.yml@main
     with:
-      operator: ${{ env.IMG }}
+      operator: ttl.sh/konveyor-operator-${{ github.sha }}:1h
