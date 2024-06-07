@@ -30,24 +30,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout PR branch
-        uses: actions/checkout@v2
-
+        uses: actions/checkout@v4
       - name: Ansible Lint
         uses: ansible/ansible-lint-action@main
         with:
           path: "roles/"
 
-  build-operator:
+  build-operator-bundle:
     needs: detect-changes
     runs-on: ubuntu-latest
     env:
       IMG: ttl.sh/konveyor-operator-${{ github.sha }}:2h
+      BUNDLE_IMG: ttl.sh/konveyor-operator-bundle-${{ github.sha }}:2h
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - run: make docker-build docker-push
+    - run: make bundle-build bundle-push
+
 
   run-ci:
-    needs: build-operator
+    needs: build-operator-bundle
     uses: konveyor/ci/.github/workflows/global-ci-bundle.yml@main
     with:
-      operator: ttl.sh/konveyor-operator-${{ github.sha }}:2h
+      operator_bundle: ttl.sh/konveyor-operator-bundle-${{ github.sha }}:2h
