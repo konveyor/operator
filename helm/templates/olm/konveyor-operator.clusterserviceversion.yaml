@@ -38,15 +38,25 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
+    - description: Tackle Addon
+      displayName: Addon
+      kind: Addon
+      name: addons.tackle.konveyor.io
+      version: v1alpha1
+    - description: Tackle Extension
+      displayName: Extension
+      kind: Extension
+      name: extensions.tackle.konveyor.io
+      version: v1alpha1
     - description: Tackle
       displayName: Tackle
       kind: Tackle
       name: tackles.tackle.konveyor.io
       version: v1alpha1
-    - description: Tackle Addon
-      displayName: Addon
-      kind: Addon
-      name: addons.tackle.konveyor.io
+    - description: Tackle Task
+      displayName: Task
+      kind: Task
+      name: tasks.tackle.konveyor.io
       version: v1alpha1
   description: |
     Konveyor is an open-source application modernization platform that helps organizations safely and predictably modernize applications to new technologies, with an initial focus on accelerating the adoption of legacy applications to Kubernetes.
