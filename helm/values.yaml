@@ -20,4 +20,4 @@ images:
   tackle_ui: quay.io/konveyor/tackle2-ui:latest
   addon_analyzer: quay.io/konveyor/tackle2-addon-analyzer:latest
   provider_generic: quay.io/konveyor/generic-external-provider:latest
-  provider_java: quay.io/konveyor/java-external-provider:lateest
+  provider_java: quay.io/konveyor/java-external-provider:latest
