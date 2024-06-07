@@ -97,6 +97,8 @@ rules:
   - tackles/status
   - tackles/finalizers
   - addons
+  - extensions
+  - tasks
   verbs:
   - create
   - delete
