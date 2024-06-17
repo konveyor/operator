@@ -96,7 +96,7 @@ run: ansible-operator ## Run against the configured Kubernetes cluster in ~/.kub
 	$(ANSIBLE_OPERATOR) run
 
 TARGET_PLATFORMS ?= linux/${TARGET_ARCH}
-CONTAINER_BUILDARGS ?= --build-arg OPERATOR_SDK_VERSION=v1.28.1
+CONTAINER_BUILDARGS ?= --build-arg OPERATOR_SDK_VERSION=v1.34.2
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.
 ifeq ($(CONTAINER_RUNTIME), podman)

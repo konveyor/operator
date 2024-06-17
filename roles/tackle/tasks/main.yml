@@ -454,7 +454,7 @@
   k8s:
     state: absent
     kind: Addon
-    api_version: tackle.konveyor.io/v1alpha1
+    api_version: tackle.konveyor.io/v1alpha2
     name: "{{ admin_name }}"
     namespace: "{{ app_namespace }}"
 
