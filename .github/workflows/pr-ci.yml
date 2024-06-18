@@ -45,7 +45,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - run: make docker-build docker-push
-    - run: make bundle-build bundle-push
+    - run: make bundle bundle-build bundle-push
 
 
   run-ci:
