@@ -7,7 +7,7 @@ spec:
   displayName: Konveyor Operator
   publisher: Konveyor
   sourceType: grpc
-  image: quay.io/jmontleon/tackle2-operator-index:latest
+  image: quay.io/konveyor/tackle2-operator-index:latest
   updateStrategy:
     registryPoll:
       interval: 10m
