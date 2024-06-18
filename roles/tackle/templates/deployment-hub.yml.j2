@@ -178,6 +178,13 @@ spec:
             - name: NO_PROXY
               value: {{ no_proxy }}
 {% endif %}
+{% if feature_analysis_archiver|bool %}
+            - name: ANALYSIS_ARCHIVER_ENABLED
+              value: "true"
+{% else %}
+            - name: ANALYSIS_ARCHIVER_ENABLED
+              value: "false"
+{% endif %}
           ports:
             - containerPort: {{ hub_port }}
               protocol: TCP
