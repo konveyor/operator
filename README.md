@@ -139,6 +139,7 @@ Name | Default | Description
 --- | --- | ---
 feature_auth_required | true | Enable keycloak auth or false (single user/noauth)
 feature_isolate_namespace | true | Enable namespace isolation via network policies
+feature_analysis_archiver | true | If enabled, automatically archives old analysis reports when a new one is created
 rwx_supported: | true | Whether or not RWX volumes are supported in the cluster
 hub_database_volume_size | 5Gi | Size requested for Hub database volume
 hub_bucket_volume_size | 100gi | Size requested for Hub bucket volume
