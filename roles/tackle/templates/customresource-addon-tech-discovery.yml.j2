@@ -2,37 +2,37 @@
 kind: Addon
 apiVersion: tackle.konveyor.io/v1alpha2
 metadata:
-  name: {{ analyzer_name }}
+  name: {{ tech_discovery_name }}
   namespace: {{ app_namespace }}
   labels:
-    app.kubernetes.io/name: {{ analyzer_service_name }}
-    app.kubernetes.io/component: {{ analyzer_component_name }}
+    app.kubernetes.io/name: {{ tech_discovery_service_name }}
+    app.kubernetes.io/component: {{ tech_discovery_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
 spec:
-  task: {{ analyzer_name }}
+  task: {{ tech_discovery_name }}
   container:
-    name: {{ analyzer_component_name }}
-    image: {{ analyzer_fqin }}
+    name: {{ tech_discovery_component_name }}
+    image: {{ tech_discovery_fqin }}
     imagePullPolicy: {{ image_pull_policy }}
     resources:
       limits:
-        cpu: {{ analyzer_container_limits_cpu }}
-        memory: {{ analyzer_container_limits_memory }}
+        cpu: {{ tech_discovery_container_limits_cpu }}
+        memory: {{ tech_discovery_container_limits_memory }}
       requests:
-        cpu: {{ analyzer_container_requests_cpu }}
-        memory: {{ analyzer_container_requests_memory }}
+        cpu: {{ tech_discovery_container_requests_cpu }}
+        memory: {{ tech_discovery_container_requests_memory }}
 ---
 kind: Extension
 apiVersion: tackle.konveyor.io/v1alpha2
 metadata:
-  name: {{ provider_java_name }}
+  name: {{ tech_discovery_provider_java_name }}
   namespace: {{ app_namespace }}
   labels:
     app.kubernetes.io/name: {{ provider_java_service_name }}
     app.kubernetes.io/component: {{ provider_java_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
 spec:
-  addon: {{ analyzer_name }}
+  addon: {{ tech_discovery_name }}
   selector: tag:Language=Java || !tag:Language
   container:
     name: {{ provider_java_name }}
@@ -71,14 +71,14 @@ spec:
 kind: Extension
 apiVersion: tackle.konveyor.io/v1alpha2
 metadata:
-  name: {{ provider_generic_name }}
+  name: {{ tech_discovery_provider_generic_name }}
   namespace: {{ app_namespace }}
   labels:
     app.kubernetes.io/name: {{ provider_generic_service_name }}
     app.kubernetes.io/component: {{ provider_generic_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
 spec:
-  addon: {{ analyzer_name }}
+  addon: {{ tech_discovery_name }}
   selector: tag:Language=Golang || tag:Language=Python
   container:
     name: {{ provider_generic_name }}
@@ -99,7 +99,7 @@ spec:
         memory: {{ provider_generic_container_requests_memory }}
   metadata:
     provider:
-      name: {{ provider_generic_name }} 
+      name: {{ provider_generic_name }}
       address: localhost:$(PORT)
       initConfig:
 ---
@@ -107,7 +107,18 @@ kind: Task
 apiVersion: tackle.konveyor.io/v1alpha2
 metadata:
   namespace: {{ app_namespace }}
-  name: {{ analyzer_name }}
+  name: {{ tech_discovery_name }}
+  labels:
+    konveyor.io/discovery: "technology"
 spec:
   priority: 10
   dependencies: [ {{ language_discovery_name }} ]
+  data:
+    mode:
+      discovery: true
+    tagger:
+      enabled: true
+      source: tech-discovery
+    rules:
+      labels:
+        included: ["discovery"]

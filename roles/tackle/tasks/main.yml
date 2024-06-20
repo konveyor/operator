@@ -463,6 +463,16 @@
     state: present
     definition: "{{ lookup('template', 'customresource-addon-analyzer.yml.j2') }}"
 
+- name: "Create Language Discovery Addon CR"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'customresource-addon-language-discovery.yml.j2') }}"
+
+- name: "Create Tech Discovery Addon CR"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'customresource-addon-tech-discovery.yml.j2') }}"
+
 - name: "Create Network Policy"
   k8s:
     state: present

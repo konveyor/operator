@@ -214,6 +214,8 @@ spec:
                   value: quay.io/konveyor/generic-external-provider:latest
                 - name: RELATED_IMAGE_PROVIDER_JAVA
                   value: quay.io/konveyor/java-external-provider:latest
+                - name: RELATED_IMAGE_ADDON_LANGUAGE_DISCOVERY
+                  value: quay.io/konveyor/tackle2-addon-discovery:latest
                 image: quay.io/konveyor/tackle2-operator:latest
                 imagePullPolicy: Always
                 livenessProbe:
@@ -408,4 +410,6 @@ spec:
     name: provider-generic
   - image: quay.io/konveyor/java-external-provider:latest
     name: provider-java
+  - image: quay.io/konveyor/tackle2-addon-discovery:latest
+    name: addon-language-discovery
   version: 99.0.0
