@@ -20,7 +20,7 @@ metadata:
     categories: Modernization & Migration
     certified: "false"
     containerImage: quay.io/konveyor/tackle2-operator:latest
-    createdAt: "2024-06-17T20:49:11Z"
+    createdAt: "2024-06-21T13:13:06Z"
     description: Konveyor is an open-source application modernization platform that
       helps organizations safely and predictably modernize applications to Kubernetes
       at scale.
@@ -48,7 +48,7 @@ metadata:
         }
       }
     operatorframework.io/suggested-namespace: konveyor-tackle
-    operators.operatorframework.io/builder: operator-sdk-v1.28.1
+    operators.operatorframework.io/builder: operator-sdk-v1.34.2
     operators.operatorframework.io/project_layout: ansible.sdk.operatorframework.io/v1
     repository: https://github.com/konveyor/tackle2-operator
     support: https://github.com/konveyor/tackle2-operator/issues
@@ -208,6 +208,8 @@ spec:
                   value: quay.io/konveyor/tackle2-ui:latest
                 - name: RELATED_IMAGE_ADDON_ANALYZER
                   value: quay.io/konveyor/tackle2-addon-analyzer:latest
+                - name: RELATED_IMAGE_ADDON_DISCOVERY
+                  value: quay.io/konveyor/tackle2-addon-discovery:latest
                 - name: RELATED_IMAGE_PROVIDER_GENERIC
                   value: quay.io/konveyor/generic-external-provider:latest
                 - name: RELATED_IMAGE_PROVIDER_JAVA
@@ -400,6 +402,8 @@ spec:
     name: tackle-ui
   - image: quay.io/konveyor/tackle2-addon-analyzer:latest
     name: addon-analyzer
+  - image: quay.io/konveyor/tackle2-addon-discovery:latest
+    name: addon-discovery
   - image: quay.io/konveyor/generic-external-provider:latest
     name: provider-generic
   - image: quay.io/konveyor/java-external-provider:latest
