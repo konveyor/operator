@@ -143,6 +143,8 @@ jobs:
             image: konveyor/tackle-keycloak-init
           - repo: konveyor/kantra
             image: konveyor/kantra
+          - repo: konveyor/tackle2-addon-discovery
+            image: konveyor/tackle2-addon-discovery
       fail-fast: true
     steps:
       - uses: konveyor/release-tools/create-release@main

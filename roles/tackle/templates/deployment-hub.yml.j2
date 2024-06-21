@@ -185,6 +185,13 @@ spec:
             - name: ANALYSIS_ARCHIVER_ENABLED
               value: "false"
 {% endif %}
+{% if feature_discovery|bool %}
+            - name: DISCOVERY_ENABLED
+              value: "true"
+{% else %}
+            - name: DISCOVERY_ENABLED
+              value: "false"
+{% endif %}
           ports:
             - containerPort: {{ hub_port }}
               protocol: TCP

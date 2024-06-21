@@ -10,6 +10,7 @@ feature_auth_required: "{{ false if app_profile == 'konveyor' else true }}"
 feature_auth_type: keycloak
 feature_isolate_namespace: true
 feature_analysis_archiver: true
+feature_discovery: true
 
 # Environment
 openshift_cluster: false
@@ -179,6 +180,26 @@ provider_java_container_requests_memory: "4Gi"
 provider_java_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_PROVIDER_JAVA') }}"
 provider_java_name: "java"
 provider_java_service_name: "{{ app_name }}-{{ provider_java_name }}-{{ analyzer_component_name }}"
+
+language_discovery_fqin: "{{ lookup('env', 'RELATED_IMAGE_ADDON_DISCOVERY') }}"
+language_discovery_name: "language-discovery"
+language_discovery_component_name: "addon"
+language_discovery_service_name: "{{ app_name }}-{{ language_discovery_name }}-{{ language_discovery_component_name }}"
+language_discovery_container_limits_cpu: "500m"
+language_discovery_container_limits_memory: "512Mi"
+language_discovery_container_requests_cpu: "500m"
+language_discovery_container_requests_memory: "512Mi"
+
+tech_discovery_fqin: "{{ analyzer_fqin }}"
+tech_discovery_name: "tech-discovery"
+tech_discovery_component_name: "addon"
+tech_discovery_service_name: "{{ app_name }}-{{ tech_discovery_name }}-{{ tech_discovery_component_name }}"
+tech_discovery_container_limits_cpu: "{{ analyzer_container_limits_cpu }}"
+tech_discovery_container_limits_memory: "{{ analyzer_container_limits_memory }}"
+tech_discovery_container_requests_cpu: "{{ analyzer_container_requests_cpu }}"
+tech_discovery_container_requests_memory: "{{ analyzer_container_requests_memory }}"
+tech_discovery_provider_java_name: "discovery-java"
+tech_discovery_provider_generic_name: "discovery-generic"
 
 cache_name: "cache"
 cache_data_volume_size: "100Gi"
