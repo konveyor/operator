@@ -49,6 +49,8 @@ spec:
           value: {{ .Values.images.tackle_ui }}
         - name: RELATED_IMAGE_ADDON_ANALYZER
           value: {{ .Values.images.addon_analyzer }}
+        - name: RELATED_IMAGE_ADDON_DISCOVERY
+          value: {{ .Values.images.addon_discovery }}
         - name: RELATED_IMAGE_PROVIDER_GENERIC
           value: {{ .Values.images.provider_generic }}
         - name: RELATED_IMAGE_PROVIDER_JAVA

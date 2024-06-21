@@ -37,6 +37,10 @@ inputs:
     description: "image uri for analyzer addon (ie. quay.io/<namespace>/<image-name>:<tag>)"
     required: false
     default: ""
+  addon_discovery:
+    description: "image uri for discovery addon (ie. quay.io/<namespace>/<image-name>:<tag>)"
+    required: false
+    default: ""
   version:
     description: "operator version"
     required: false
@@ -65,6 +69,7 @@ runs:
       [ -n "${{ inputs.keycloak_init }}" ] && OPTS+=" --set images.keycloak_init=${{ inputs.keycloak_init }}"
       [ -n "${{ inputs.tackle_ui }}" ] && OPTS+=" --set images.tackle_ui=${{ inputs.tackle_ui }}"
       [ -n "${{ inputs.addon_analyzer }}" ] && OPTS+=" --set images.addon_analyzer=${{ inputs.addon_analyzer }}"
+      [ -n "${{ inputs.addon_discovery }}" ] && OPTS+=" --set images.addon_discovery=${{ inputs.addon_discovery }}"
       HELM_OPTS="${OPTS}" make bundle
       cat ./bundle/manifests/konveyor-operator.clusterserviceversion.yaml
       make bundle-build

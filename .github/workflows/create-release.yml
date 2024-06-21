@@ -109,6 +109,21 @@ jobs:
               sleep 3m
           done
           docker image inspect quay.io/konveyor/tackle2-addon-analyzer:${{ inputs.version }}
+      - name: tackle2-addon-discovery
+        uses: konveyor/release-tools/create-release@main
+        with:
+          version: ${{ inputs.version }}
+          prev_version: ${{ inputs.previous_version }}
+          repository: konveyor/tackle2-addon-discovery
+          ref: ${{ inputs.branch }}
+          github_token: ${{ secrets.GH_TOKEN }}
+      - name: wait for tackle2-addon-discovery
+        run: |
+          #!/bin/bash
+          while ! docker pull quay.io/konveyor/tackle2-addon-discovery:${{ inputs.version }} &> /dev/null; do
+              sleep 3m
+          done
+          docker image inspect quay.io/konveyor/tackle2-addon-discovery:${{ inputs.version }}
 
   release-components:
     runs-on: ubuntu-20.04
@@ -155,6 +170,7 @@ jobs:
       keycloak_init: quay.io/konveyor/tackle-keycloak-init:${{ inputs.version }}
       tackle_ui: quay.io/konveyor/tackle2-ui:${{ inputs.version }}
       addon_analyzer: quay.io/konveyor/tackle2-addon-analyzer:${{ inputs.version }}
+      addon_discovery: quay.io/konveyor/tackle2-addon-discovery:${{ inputs.version }}
       api_tests_ref: ${{ inputs.branch }}
       ui_tests_ref: ${{ inputs.branch }}
 
@@ -211,6 +227,7 @@ jobs:
         keycloak_init: quay.io/konveyor/tackle-keycloak-init:${{ inputs.version }}
         tackle_ui: quay.io/konveyor/tackle2-ui:${{ inputs.version }}
         addon_analyzer: quay.io/konveyor/tackle2-addon-analyzer:${{ inputs.version }}
+        addon_discovery: quay.io/konveyor/tackle2-addon-discovery:${{ inputs.version }}
         # The ones we don't own
         oauth_proxy: quay.io/konveyor/origin-oauth-proxy:${{ inputs.version }}
         tackle_postgres: quay.io/konveyor/postgresql-15-c9s:${{ inputs.version }}
@@ -303,6 +320,7 @@ jobs:
           "konveyor/java-analyzer-bundle"
           "konveyor/windup-shim"
           "konveyor/tackle2-addon-analyzer"
+          "konveyor/tackle2-addon-discovery"
           "konveyor/tackle2-addon"
           "konveyor/operator"
         )
