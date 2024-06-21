@@ -168,6 +168,7 @@ jobs:
     uses: konveyor/ci/.github/workflows/global-ci-bundle.yml@main
     with:
       operator: quay.io/konveyor/tackle2-operator:${{ inputs.version }}
+      operator_bundle: quay.io/konveyor/tackle2-operator-bundle:${{ inputs.version }}
       tackle_hub: quay.io/konveyor/tackle2-hub:${{ inputs.version }}
       keycloak_init: quay.io/konveyor/tackle-keycloak-init:${{ inputs.version }}
       tackle_ui: quay.io/konveyor/tackle2-ui:${{ inputs.version }}
