@@ -162,23 +162,9 @@ jobs:
           done
           docker image inspect quay.io/${{ matrix.projects.image }}:${{ inputs.version }}
 
-  test:
-    name: Test Konveyor
+  build-bundle:
+    name: Build Bundle Manifest
     needs: release-components
-    uses: konveyor/ci/.github/workflows/global-ci-bundle.yml@main
-    with:
-      operator: quay.io/konveyor/tackle2-operator:${{ inputs.version }}
-      tackle_hub: quay.io/konveyor/tackle2-hub:${{ inputs.version }}
-      keycloak_init: quay.io/konveyor/tackle-keycloak-init:${{ inputs.version }}
-      tackle_ui: quay.io/konveyor/tackle2-ui:${{ inputs.version }}
-      addon_analyzer: quay.io/konveyor/tackle2-addon-analyzer:${{ inputs.version }}
-      addon_discovery: quay.io/konveyor/tackle2-addon-discovery:${{ inputs.version }}
-      api_tests_ref: ${{ inputs.branch }}
-      ui_tests_ref: ${{ inputs.branch }}
-
-  publish:
-    name: Build and Push Manifest
-    needs: test
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
@@ -275,6 +261,30 @@ jobs:
         BUNDLE_IMG: quay.io/konveyor/tackle2-operator-bundle:${{ inputs.version }}
       run: make bundle-build bundle-push
 
+  test:
+    name: Test Konveyor
+    needs: build-bundle
+    uses: konveyor/ci/.github/workflows/global-ci-bundle.yml@main
+    with:
+      operator_bundle: quay.io/konveyor/tackle2-operator-bundle:${{ inputs.version }}
+      tackle_hub: quay.io/konveyor/tackle2-hub:${{ inputs.version }}
+      keycloak_init: quay.io/konveyor/tackle-keycloak-init:${{ inputs.version }}
+      tackle_ui: quay.io/konveyor/tackle2-ui:${{ inputs.version }}
+      addon_analyzer: quay.io/konveyor/tackle2-addon-analyzer:${{ inputs.version }}
+      addon_discovery: quay.io/konveyor/tackle2-addon-discovery:${{ inputs.version }}
+      api_tests_ref: ${{ inputs.branch }}
+      ui_tests_ref: ${{ inputs.branch }}
+
+  publish-bundle:
+    name: Publish Bundle Manifest
+    needs: test
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+    steps:
+    - name: Create scratch bundle image
+      run: |
+        docker create --name extract "quay.io/konveyor/tackle2-operator-bundle:${{ inputs.version }}" foo
     - name: Checkout community operators
       uses: actions/checkout@v4
       with:
@@ -290,7 +300,8 @@ jobs:
         co_version="${version:1}"
         operator_path="./operators/konveyor-operator/${co_version}"
         mkdir -p "${operator_path}"
-        cp -r "${GITHUB_WORKSPACE}/operator/bundle/metadata" "${GITHUB_WORKSPACE}/operator/bundle/manifests" "${operator_path}"
+        docker cp extract:/metadata "${operator_path}"
+        docker cp extract:/manifests "${operator_path}"
         git diff
 
     - name: Checkout redhat community operators
@@ -308,7 +319,8 @@ jobs:
         co_version="${version:1}"
         operator_path="./operators/konveyor-operator/${co_version}"
         mkdir -p "${operator_path}"
-        cp -r "${GITHUB_WORKSPACE}/operator/bundle/metadata" "${GITHUB_WORKSPACE}/operator/bundle/manifests" "${operator_path}"
+        docker cp extract:/metadata "${operator_path}"
+        docker cp extract:/manifests "${operator_path}"
         git diff
 
     - name: Make unified changelog
