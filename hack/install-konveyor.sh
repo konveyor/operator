@@ -64,7 +64,6 @@ run_bundle() {
 
   # If on MacOS, need to install `brew install coreutils` to get `timeout`
   timeout 600s bash -c 'until kubectl get customresourcedefinitions.apiextensions.k8s.io tackles.tackle.konveyor.io; do sleep 30; done'
-  kubectl get clusterserviceversions.operators.coreos.com -n "${NAMESPACE}" -o yaml
 }
 
 install_tackle() {
@@ -107,8 +106,6 @@ EOF
     --for=condition=Available \
     --timeout=600s \
     deployments.apps
-
-  kubectl get deployments.apps -n "${NAMESPACE}" -o yaml
 }
 
 kubectl get customresourcedefinitions.apiextensions.k8s.io tackles.tackle.konveyor.io || run_bundle
