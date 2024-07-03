@@ -41,14 +41,6 @@ inputs:
     description: "image uri for discovery addon (ie. quay.io/<namespace>/<image-name>:<tag>)"
     required: false
     default: ""
-  provider_generic:
-    description: "image uri for generic provider (ie. quay.io/<namespace>/<image-name>:<tag>)"
-    required: false
-    default: ""
-  provider_java:
-    description: "image uri for generic provider (ie. quay.io/<namespace>/<image-name>:<tag>)"
-    required: false
-    default: ""
   version:
     description: "operator version"
     required: false
@@ -78,8 +70,6 @@ runs:
       [ -n "${{ inputs.tackle_ui }}" ] && OPTS+=" --set images.tackle_ui=${{ inputs.tackle_ui }}"
       [ -n "${{ inputs.addon_analyzer }}" ] && OPTS+=" --set images.addon_analyzer=${{ inputs.addon_analyzer }}"
       [ -n "${{ inputs.addon_discovery }}" ] && OPTS+=" --set images.addon_discovery=${{ inputs.addon_discovery }}"
-      [ -n "${{ inputs.provider_generic }}" ] && OPTS+=" --set images.provider_generic=${{ inputs.provider_generic }}"
-      [ -n "${{ inputs.provider_java }}" ] && OPTS+=" --set images.provider_java=${{ inputs.provider_java }}"
       HELM_OPTS="${OPTS}" make bundle
       cat ./bundle/manifests/konveyor-operator.clusterserviceversion.yaml
       make bundle-build

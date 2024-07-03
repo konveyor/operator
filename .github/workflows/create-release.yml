@@ -216,8 +216,6 @@ jobs:
         tackle_ui: quay.io/konveyor/tackle2-ui:${{ inputs.version }}
         addon_analyzer: quay.io/konveyor/tackle2-addon-analyzer:${{ inputs.version }}
         addon_discovery: quay.io/konveyor/tackle2-addon-discovery:${{ inputs.version }}
-        provider_generic: quay.io/konveyor/generic-external-provider:${{ inputs.version }}
-        provider_java: quay.io/konveyor/java-external-provider:${{ inputs.version }}
         # The ones we don't own
         oauth_proxy: quay.io/konveyor/origin-oauth-proxy:${{ inputs.version }}
         tackle_postgres: quay.io/konveyor/postgresql-15-c9s:${{ inputs.version }}
@@ -269,6 +267,11 @@ jobs:
     uses: konveyor/ci/.github/workflows/global-ci-bundle.yml@main
     with:
       operator_bundle: quay.io/konveyor/tackle2-operator-bundle:${{ inputs.version }}
+      tackle_hub: quay.io/konveyor/tackle2-hub:${{ inputs.version }}
+      keycloak_init: quay.io/konveyor/tackle-keycloak-init:${{ inputs.version }}
+      tackle_ui: quay.io/konveyor/tackle2-ui:${{ inputs.version }}
+      addon_analyzer: quay.io/konveyor/tackle2-addon-analyzer:${{ inputs.version }}
+      addon_discovery: quay.io/konveyor/tackle2-addon-discovery:${{ inputs.version }}
       api_tests_ref: ${{ inputs.branch }}
       ui_tests_ref: ${{ inputs.branch }}
 
