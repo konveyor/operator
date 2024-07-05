@@ -4,39 +4,19 @@ set -e
 set -x
 set -o pipefail
 
-# Figure out where we are being run from.
-# This relies on script being run from:
-#  - ${PROJECT_ROOT}/hack/install-tackle.sh
-#  - ${PROJECT_ROOT}/bin/install-tackle.sh
-__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-__root="$(cd "$(dirname "${__dir}")" && pwd)"
-__repo="$(basename "${__root}")"
-__bin_dir="${__root}/bin"
-__os="$(uname -s | tr '[:upper:]' '[:lower:]')"
-__arch="$(uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/')"
-
-# Update PATH for execution of this script
-PATH="${__bin_dir}:${PATH}"
-
 NAMESPACE="${NAMESPACE:-konveyor-tackle}"
 OPERATOR_BUNDLE_IMAGE="${OPERATOR_BUNDLE_IMAGE:-quay.io/konveyor/tackle2-operator-bundle:latest}"
 TACKLE_CR="${TACKLE_CR:-}"
 TIMEOUT="${TIMEOUT:-10m}"
 
 if ! command -v kubectl >/dev/null 2>&1; then
-  kubectl_bin="${__bin_dir}/kubectl"
-  mkdir -p "${__bin_dir}"
-  curl -Lo "${kubectl_bin}" "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/${__os}/${__arch}/kubectl"
-  chmod +x "${kubectl_bin}"
+  echo "Please install kubectl. See https://kubernetes.io/docs/tasks/tools/"
+  exit 1
 fi
 
 if ! command -v operator-sdk >/dev/null 2>&1; then
-  operator_sdk_bin="${__bin_dir}/operator-sdk"
-  mkdir -p "${__bin_dir}"
-
-  version=$(curl --silent "https://api.github.com/repos/operator-framework/operator-sdk/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
-  curl -Lo "${operator_sdk_bin}" "https://github.com/operator-framework/operator-sdk/releases/download/${version}/operator-sdk_${__os}_${__arch}"
-  chmod +x "${operator_sdk_bin}"
+  echo "Please install operator-sdk. See https://sdk.operatorframework.io/docs/installation/"
+  exit 1
 fi
 
 debug() {
@@ -108,5 +88,6 @@ EOF
     deployments.apps
 }
 
+kubectl get customresourcedefinitions.apiextensions.k8s.io clusterserviceversions.operators.coreos.com || operator-sdk olm install
 kubectl get customresourcedefinitions.apiextensions.k8s.io tackles.tackle.konveyor.io || run_bundle
 install_tackle

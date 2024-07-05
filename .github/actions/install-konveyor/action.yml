@@ -17,8 +17,24 @@ inputs:
 runs:
   using: "composite"
   steps:
-  # TODO(djzager): Need to figure out overriding operator image
-  # or maybe just installing manager via kustomize.
+  - name: Install kubectl
+    shell: bash
+    run: |
+      if command -v kubectl >/dev/null 2>&1; then
+        echo "kubectl is already installed...yay"
+        exit 0
+      fi
+      curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+      sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+  - name: Install operator-sdk
+    shell: bash
+    run: |
+      if command -v operator-sdk >/dev/null 2>&1; then
+        echo "operator-sdk is already installed...yay"
+        exit 0
+      fi
+      curl -LO https://github.com/operator-framework/operator-sdk/releases/download/v1.35.0/operator-sdk_linux_amd64
+      sudo install -o root -g root -m 0755 operator-sdk_linux_amd64 /usr/local/bin/operator-sdk
   - name: Install Konveyor
     env:
       OPERATOR_BUNDLE_IMAGE: ${{ inputs.bundle_image }}
