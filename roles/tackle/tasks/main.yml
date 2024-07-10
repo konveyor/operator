@@ -167,8 +167,8 @@
           k8s_info:
             api_version: v1
             kind: Secret
-            name: "tackle-keycloak-postgresql"
-            namespace: "konveyor-tackle"
+            name: "{{ app_name }}-keycloak-postgresql"
+            namespace: "{{ app_namespace }}"
           register: pgsql_secret
 
         - name: "Set the keycloak DB credentials"
