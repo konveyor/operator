@@ -183,8 +183,9 @@
 
         - name: "Perform the DB upgrade"
           shell: |
-                 set -o pipefail
-                 sleep 10 # give the service a few seconds to be available
+                 set -euo pipefail
+                 until pg_isready -U {{ dbm_user }} -h {{ keycloak_database_service_k8s_resource_name }} -d {{ keycloak_database_db_name }}; do sleep 10; done
+                 until pg_isready -U {{ dbm_user }} -h {{ keycloak_database_service_k8s_resource_name }}-migration -d {{ keycloak_database_db_name }}; do sleep 10; done
                  pg_dump {{ dbm_src }} | psql {{ dbm_dst }}
           changed_when: false
 
