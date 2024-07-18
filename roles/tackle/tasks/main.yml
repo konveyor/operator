@@ -163,6 +163,71 @@
             state: present
             definition: "{{ lookup('template', 'service-keycloak-postgresql-migration.yml.j2') }}"
 
+        - name: Scale down RHSSO
+          when: app_name == "mta"
+          k8s:
+            state: present
+            definition: "{{ lookup('template', 'customresource-rhsso-keycloak.yml.j2') }}"
+          vars:
+            rhsso_instances: 0
+
+        - name: Scale down Keycloak
+          when: app_name == "tackle"
+          k8s:
+            state: present
+            definition: "{{ lookup('template', 'deployment-keycloak-sso.yml.j2') }}"
+          vars:
+            keycloak_sso_deployment_replicas: 0
+
+        - when: app_profile == "mta"
+          block:
+            - name: "Get PostgreSQL Keycloak Secret"
+              k8s_info:
+                api_version: v1
+                kind: Secret
+                name: "{{ keycloak_database_secret_name }}"
+                namespace: "{{ app_namespace }}"
+              register: keycloak_database_secret
+
+            - name: "Get DNS operator CR"
+              k8s_info:
+                api_version: operator.openshift.io/v1
+                kind: DNS
+                name: default
+              register: default_dns_operator
+
+            - name: "Collect service name components"
+              set_fact:
+                pgsql_svc_fqdn_parts:
+                  - "{{ keycloak_database_service_k8s_resource_name }}"
+                  - "{{ app_namespace }}"
+                  - "svc"
+                  - "{{ default_dns_operator.resources[0].status.clusterDomain }}"
+
+            - name: "Assemble service name"
+              set_fact:
+                pgsql_svc_fqdn: "{{ pgsql_svc_fqdn_parts | join('.') }}"
+
+            - name: "Collect database coordinates"
+              set_fact:
+                rhsso_db_pass_b64: "{{ keycloak_database_secret.resources[0].data['database-password'] }}"
+                rhsso_db_user_b64: "{{ keycloak_database_secret.resources[0].data['database-user'] }}"
+                rhsso_db_host_b64: "{{ pgsql_svc_fqdn | b64encode }}"
+                rhsso_db_name_b64: "{{ keycloak_database_secret.resources[0].data['database-name'] }}"
+
+            - name: "Look up Keycloak DB Secret for Hashing"
+              set_fact:
+                keycloak_db_secret:
+                  env: "{{ lookup('template', 'secret-keycloak-db.yml.j2') | from_yaml }}"
+
+        - name: Scale down Hub
+          k8s:
+            state: present
+            definition: "{{ lookup('template', 'deployment-hub.yml.j2') }}"
+            merge_type: merge
+          vars:
+            hub_deployment_replicas: 0
+
         - name: "Get the keycloak DB secret"
           k8s_info:
             api_version: v1
