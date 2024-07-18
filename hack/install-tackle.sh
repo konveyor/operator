@@ -55,6 +55,7 @@ install_operator() {
 }
 
 kubectl get customresourcedefinitions.apiextensions.k8s.io clusterserviceversions.operators.coreos.com || operator-sdk olm install
+kubectl wait --timeout=600s --for=condition=established customresourcedefinitions.apiextensions.k8s.io clusterserviceversions.operators.coreos.com
 kubectl get customresourcedefinitions.apiextensions.k8s.io tackles.tackle.konveyor.io || install_operator
 
 
