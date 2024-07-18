@@ -54,6 +54,7 @@ install_operator() {
   || kubectl get subscription --namespace ${NAMESPACE} -o yaml konveyor-operator # Print subscription details when timed out
 }
 
+kubectl get customresourcedefinitions.apiextensions.k8s.io clusterserviceversions.operators.coreos.com || operator-sdk olm install
 kubectl get customresourcedefinitions.apiextensions.k8s.io tackles.tackle.konveyor.io || install_operator
 
 
