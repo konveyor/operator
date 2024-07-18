@@ -27,6 +27,7 @@ IMAGE_PULL_POLICY="${IMAGE_PULL_POLICY:-Always}"
 ANALYZER_CONTAINER_REQUESTS_MEMORY="${ANALYZER_CONTAINER_REQUESTS_MEMORY:-0}"
 ANALYZER_CONTAINER_REQUESTS_CPU="${ANALYZER_CONTAINER_REQUESTS_CPU:-0}"
 FEATURE_AUTH_REQUIRED="${FEATURE_AUTH_REQUIRED:-false}"
+TIMEOUT="${TIMEOUT:-10m}"
 
 if ! command -v kubectl >/dev/null 2>&1; then
   kubectl_bin="${__bin_dir}/kubectl"
@@ -47,7 +48,7 @@ fi
 install_operator() {
   kubectl auth can-i create namespace --all-namespaces
   kubectl create namespace ${NAMESPACE} || true
-  operator-sdk run bundle ${OPERATOR_BUNDLE_IMAGE} --namespace ${NAMESPACE}
+  operator-sdk run bundle "${OPERATOR_BUNDLE_IMAGE}" --namespace "${NAMESPACE}" --timeout "${TIMEOUT}"
 
   # If on MacOS, need to install `brew install coreutils` to get `timeout`
   timeout 600s bash -c 'until kubectl get customresourcedefinitions.apiextensions.k8s.io tackles.tackle.konveyor.io; do sleep 30; done' \
