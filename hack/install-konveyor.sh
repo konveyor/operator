@@ -7,7 +7,7 @@ set -o pipefail
 NAMESPACE="${NAMESPACE:-konveyor-tackle}"
 OPERATOR_BUNDLE_IMAGE="${OPERATOR_BUNDLE_IMAGE:-quay.io/konveyor/tackle2-operator-bundle:latest}"
 TACKLE_CR="${TACKLE_CR:-}"
-TIMEOUT="${TIMEOUT:-10m}"
+TIMEOUT="${TIMEOUT:-15m}"
 
 if ! command -v kubectl >/dev/null 2>&1; then
   echo "Please install kubectl. See https://kubernetes.io/docs/tasks/tools/"
