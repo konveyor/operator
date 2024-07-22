@@ -241,7 +241,7 @@
             dbm_user: "{{ pgsql_secret.resources[0].data['database-user'] | b64decode }}"
             dbm_pass: "{{ pgsql_secret.resources[0].data['database-password'] | b64decode }}"
 
-        - name: ping source database
+        - name: Ping source database
           postgresql_ping:
             db: "{{ keycloak_database_db_name }}"
             login_host: "{{ keycloak_database_service_k8s_resource_name }}"
@@ -249,10 +249,10 @@
             login_password: "{{ dbm_pass }}"
           register: src_ping
           retries: 12
-          until: src_ping.is_available
+          until: src_ping.is_available and src_ping.server_version.major == 12
           delay: 10
 
-        - name: ping destination database
+        - name: Ping destination database
           postgresql_ping:
             db: "{{ keycloak_database_db_name }}"
             login_host: "{{ keycloak_database_service_k8s_resource_name }}-migration"
@@ -260,7 +260,7 @@
             login_password: "{{ dbm_pass }}"
           register: dst_ping
           retries: 12
-          until: dst_ping.is_available
+          until: dst_ping.is_available and dst_ping.server_version.major == 15
           delay: 10
 
         - name: Dump database

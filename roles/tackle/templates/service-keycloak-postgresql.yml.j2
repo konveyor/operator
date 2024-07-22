@@ -15,7 +15,7 @@ spec:
       targetPort: 5432
       protocol: TCP
   selector:
-    app.kubernetes.io/name: {{ keycloak_database_service_name }}
+    app.kubernetes.io/name: {{ keycloak_database_service_name }}-{{ keycloak_database_db_version }}
     app.kubernetes.io/component: {{ keycloak_database_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
     version: "{{ keycloak_database_db_version }}"
