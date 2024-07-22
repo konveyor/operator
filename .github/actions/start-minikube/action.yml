@@ -36,7 +36,7 @@ runs:
       container-runtime: ${{ inputs.container-runtime }}
       kubernetes-version: ${{ inputs.kubernetes-version }}
       cpus: ${{ inputs.cpus }}
-      memory: ${{ inputs.memory }}
+      memory: 8000
       cni: ${{ inputs.cni }}
   # Don't pass minikube start ${ARGS} as they are handled in setup-minikube
   - name: Start minikube

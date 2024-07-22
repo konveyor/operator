@@ -458,6 +458,30 @@
     - feature_auth_required|bool
     - app_profile == "mta"
 
+# Create all the neccessary CR's before the hub deployment is created
+- name: "Remove Admin Addon CR"
+  k8s:
+    state: absent
+    kind: Addon
+    api_version: tackle.konveyor.io/v1alpha2
+    name: "{{ admin_name }}"
+    namespace: "{{ app_namespace }}"
+
+- name: "Create Windup Addon CR"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'customresource-addon-analyzer.yml.j2') }}"
+
+- name: "Create Language Discovery Addon CR"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'customresource-addon-language-discovery.yml.j2') }}"
+
+- name: "Create Tech Discovery Addon CR"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'customresource-addon-tech-discovery.yml.j2') }}"
+
 - name: "Setup Hub API Service"
   k8s:
     state: present
@@ -515,29 +539,6 @@
     api_version: v1
     name: "{{ app_name }}-maven-volume-claim"
     namespace: "{{ app_namespace }}"
-
-- name: "Remove Admin Addon CR"
-  k8s:
-    state: absent
-    kind: Addon
-    api_version: tackle.konveyor.io/v1alpha2
-    name: "{{ admin_name }}"
-    namespace: "{{ app_namespace }}"
-
-- name: "Create Windup Addon CR"
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'customresource-addon-analyzer.yml.j2') }}"
-
-- name: "Create Language Discovery Addon CR"
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'customresource-addon-language-discovery.yml.j2') }}"
-
-- name: "Create Tech Discovery Addon CR"
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'customresource-addon-tech-discovery.yml.j2') }}"
 
 - name: "Create Network Policy"
   k8s:
