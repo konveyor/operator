@@ -6,6 +6,75 @@ metadata:
       [
         {
           "apiVersion": "tackle.konveyor.io/v1alpha1",
+          "kind": "Addon",
+          "metadata": {
+            "name": "myaddon",
+            "namespace": "konveyor-tackle"
+          },
+          "spec": {
+            "container": {
+              "image": "quay.io/konveyor/tackle2-addon-analyzer:latest",
+              "imagePullPolicy": "Always",
+              "name": "myaddon",
+              "resources": {
+                "limits": {
+                  "cpu": 1,
+                  "memory": "1Gi"
+                },
+                "requests": {
+                  "cpu": 1,
+                  "memory": "512Mi"
+                }
+              }
+            },
+            "task": "mytask"
+          }
+        },
+        {
+          "apiVersion": "tackle.konveyor.io/v1alpha1",
+          "kind": "Extension",
+          "metadata": {
+            "name": "myextension",
+            "namespace": "konveyor-tackle"
+          },
+          "spec": {
+            "addon": "myaddon",
+            "container": {
+              "args": [
+                "--port",
+                "$(PORT)"
+              ],
+              "env": [
+                {
+                  "name": "PORT",
+                  "value": "${seq:8000}"
+                }
+              ],
+              "image": "quay.io/konveyor/generic-external-provider:latest",
+              "imagePullPolicy": "Always",
+              "name": "myextension",
+              "resources": {
+                "limits": {
+                  "cpu": 1,
+                  "memory": "1Gi"
+                },
+                "requests": {
+                  "cpu": 1,
+                  "memory": "1Gi"
+                }
+              }
+            },
+            "metadata": {
+              "provider": {
+                "address": "localhost:$(PORT)",
+                "name": "myextension"
+              }
+            },
+            "selector": "tag:Language=MyLang"
+          }
+        },
+        {
+          "apiVersion": "tackle.konveyor.io/v1alpha1",
           "kind": "Tackle",
           "metadata": {
             "name": "tackle",
@@ -14,13 +83,27 @@ metadata:
           "spec": {
             "feature_auth_required": "false"
           }
+        },
+        {
+          "apiVersion": "tackle.konveyor.io/v1alpha1",
+          "kind": "Task",
+          "metadata": {
+            "name": "mytask",
+            "namespace": "konveyor-tackle"
+          },
+          "spec": {
+            "dependencies": [
+              "myaddon"
+            ],
+            "priority": 10
+          }
         }
       ]
     capabilities: Seamless Upgrades
     categories: Modernization & Migration
     certified: "false"
     containerImage: quay.io/konveyor/tackle2-operator:latest
-    createdAt: "2024-07-23T20:30:23Z"
+    createdAt: "2024-07-24T20:21:03Z"
     description: Konveyor is an open-source application modernization platform that
       helps organizations safely and predictably modernize applications to Kubernetes
       at scale.

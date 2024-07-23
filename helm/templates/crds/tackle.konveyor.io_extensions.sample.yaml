@@ -1,0 +1,31 @@
+{{ if .Values.olm }}
+apiVersion: tackle.konveyor.io/v1alpha1
+kind: Extension
+metadata:
+  name: myextension
+  namespace: konveyor-tackle
+spec:
+  addon: myaddon
+  container:
+    args:
+    - --port
+    - $(PORT)
+    env:
+    - name: PORT
+      value: ${seq:8000}
+    image: quay.io/konveyor/generic-external-provider:latest
+    imagePullPolicy: Always
+    name: myextension
+    resources:
+      limits:
+        cpu: 1
+        memory: 1Gi
+      requests:
+        cpu: 1
+        memory: 1Gi
+  metadata:
+    provider:
+      address: localhost:$(PORT)
+      name: myextension
+  selector: tag:Language=MyLang
+{{ end }}
