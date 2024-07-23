@@ -1,5 +1,5 @@
 {{ if .Values.olm }}
-apiVersion: tackle.konveyor.io/v1alpha2
+apiVersion: tackle.konveyor.io/v1alpha1
 kind: Tackle
 metadata:
     name: tackle

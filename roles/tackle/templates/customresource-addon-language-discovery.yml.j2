@@ -1,6 +1,6 @@
 ---
 kind: Addon
-apiVersion: tackle.konveyor.io/v1alpha2
+apiVersion: tackle.konveyor.io/v1alpha1
 metadata:
   name: {{ language_discovery_name }}
   namespace: {{ app_namespace }}
@@ -23,7 +23,7 @@ spec:
         memory: {{ language_discovery_container_requests_memory }}
 ---
 kind: Task
-apiVersion: tackle.konveyor.io/v1alpha2
+apiVersion: tackle.konveyor.io/v1alpha1
 metadata:
   namespace: {{ app_namespace }}
   name: {{ language_discovery_name }}

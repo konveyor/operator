@@ -1,6 +1,6 @@
 ---
 kind: Addon
-apiVersion: tackle.konveyor.io/v1alpha2
+apiVersion: tackle.konveyor.io/v1alpha1
 metadata:
   name: {{ analyzer_name }}
   namespace: {{ app_namespace }}
@@ -23,7 +23,7 @@ spec:
         memory: {{ analyzer_container_requests_memory }}
 ---
 kind: Extension
-apiVersion: tackle.konveyor.io/v1alpha2
+apiVersion: tackle.konveyor.io/v1alpha1
 metadata:
   name: {{ provider_java_name }}
   namespace: {{ app_namespace }}
@@ -69,7 +69,7 @@ spec:
           mavenSettingsFile: $(maven.settings.path)
 ---
 kind: Extension
-apiVersion: tackle.konveyor.io/v1alpha2
+apiVersion: tackle.konveyor.io/v1alpha1
 metadata:
   name: {{ provider_generic_name }}
   namespace: {{ app_namespace }}
@@ -104,7 +104,7 @@ spec:
       initConfig:
 ---
 kind: Task
-apiVersion: tackle.konveyor.io/v1alpha2
+apiVersion: tackle.konveyor.io/v1alpha1
 metadata:
   namespace: {{ app_namespace }}
   name: {{ analyzer_name }}
