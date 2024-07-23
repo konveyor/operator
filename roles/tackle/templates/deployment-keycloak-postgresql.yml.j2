@@ -5,7 +5,7 @@ metadata:
   name: {{ keycloak_database_deployment_name }}-{{ keycloak_database_db_version }}
   namespace: {{ app_namespace }}
   labels:
-    app.kubernetes.io/name: {{ keycloak_database_service_name }}
+    app.kubernetes.io/name: {{ keycloak_database_service_name }}-{{ keycloak_database_db_version }}
     app.kubernetes.io/component: {{ keycloak_database_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
     version: "{{ keycloak_database_db_version }}"
@@ -13,7 +13,7 @@ spec:
   replicas: {{ keycloak_database_deployment_replicas }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ keycloak_database_service_name }}
+      app.kubernetes.io/name: {{ keycloak_database_service_name }}-{{ keycloak_database_db_version }}
       app.kubernetes.io/component: {{ keycloak_database_component_name }}
       app.kubernetes.io/part-of: {{ app_name }}
       version: "{{ keycloak_database_db_version }}"
@@ -24,7 +24,7 @@ spec:
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ keycloak_database_service_name }}
+        app.kubernetes.io/name: {{ keycloak_database_service_name }}-{{ keycloak_database_db_version }}
         app.kubernetes.io/component: {{ keycloak_database_component_name }}
         app.kubernetes.io/part-of: {{ app_name }}
         app: {{ app_name }}

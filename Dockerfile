@@ -10,7 +10,7 @@ RUN echo -e "[almalinux8-appstream]" \
  "\nbaseurl = https://repo.almalinux.org/almalinux/8/AppStream/\$basearch/os/" \
  "\nenabled = 1" \
  "\ngpgcheck = 0" > /etc/yum.repos.d/almalinux.repo
-RUN dnf -y module enable postgresql:15 && dnf -y install postgresql && dnf clean all
+RUN dnf -y module enable postgresql:15 && dnf -y install postgresql python38-psycopg2 && dnf clean all
 USER 1001
 
 COPY requirements.yml ${HOME}/requirements.yml

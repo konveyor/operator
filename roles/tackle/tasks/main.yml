@@ -241,18 +241,50 @@
             dbm_user: "{{ pgsql_secret.resources[0].data['database-user'] | b64decode }}"
             dbm_pass: "{{ pgsql_secret.resources[0].data['database-password'] | b64decode }}"
 
-        - name: "Generate DB URLs"
-          set_fact:
-            dbm_src: postgresql://{{ dbm_user }}:{{ dbm_pass }}@{{ keycloak_database_service_k8s_resource_name }}/{{ keycloak_database_db_name }}
-            dbm_dst: postgresql://{{ dbm_user }}:{{ dbm_pass }}@{{ keycloak_database_service_k8s_resource_name }}-migration/{{ keycloak_database_db_name }}
+        - name: Ping source database
+          postgresql_ping:
+            db: "{{ keycloak_database_db_name }}"
+            login_host: "{{ keycloak_database_service_k8s_resource_name }}"
+            login_user: "{{ dbm_user }}"
+            login_password: "{{ dbm_pass }}"
+          register: src_ping
+          retries: 12
+          until: src_ping.is_available and src_ping.server_version.major == 12
+          delay: 10
 
-        - name: "Perform the DB upgrade"
-          shell: |
-                 set -euo pipefail
-                 until pg_isready -U {{ dbm_user }} -h {{ keycloak_database_service_k8s_resource_name }} -d {{ keycloak_database_db_name }}; do sleep 10; done
-                 until pg_isready -U {{ dbm_user }} -h {{ keycloak_database_service_k8s_resource_name }}-migration -d {{ keycloak_database_db_name }}; do sleep 10; done
-                 pg_dump {{ dbm_src }} | psql {{ dbm_dst }}
-          changed_when: false
+        - name: Ping destination database
+          postgresql_ping:
+            db: "{{ keycloak_database_db_name }}"
+            login_host: "{{ keycloak_database_service_k8s_resource_name }}-migration"
+            login_user: "{{ dbm_user }}"
+            login_password: "{{ dbm_pass }}"
+          register: dst_ping
+          retries: 12
+          until: dst_ping.is_available and dst_ping.server_version.major == 15
+          delay: 10
+
+        - name: Dump database
+          postgresql_db:
+            state: dump
+            name: "{{ keycloak_database_db_name }}"
+            target: /tmp/keycloak.sql
+            login_host: "{{ keycloak_database_service_k8s_resource_name }}"
+            login_user: "{{ dbm_user }}"
+            login_password: "{{ dbm_pass }}"
+
+        - name: Restore database
+          postgresql_db:
+            state: restore
+            name: "{{ keycloak_database_db_name }}"
+            target: /tmp/keycloak.sql
+            login_host: "{{ keycloak_database_service_k8s_resource_name }}-migration"
+            login_user: "{{ dbm_user }}"
+            login_password: "{{ dbm_pass }}"
+
+        - name: Clean up database dump file
+          file:
+            state: absent
+            path: /tmp/keycloak.sql
 
         - name: "Remove the temporary migration service"
           k8s:
