@@ -56,7 +56,10 @@ install_operator() {
 }
 
 kubectl get customresourcedefinitions.apiextensions.k8s.io clusterserviceversions.operators.coreos.com || operator-sdk olm install
-kubectl wait --timeout=600s --for=condition=established customresourcedefinitions.apiextensions.k8s.io clusterserviceversions.operators.coreos.com
+olm_namespace=$(kubectl get clusterserviceversions.operators.coreos.com --all-namespaces | grep packageserver | awk '{print $1}')
+kubectl rollout status -w deployment/olm-operator --namespace="${olm_namespace}"
+kubectl rollout status -w deployment/catalog-operator --namespace="${olm_namespace}"
+kubectl wait --namespace "${olm_namespace}" --for='jsonpath={.status.phase}'=Succeeded clusterserviceversions.operators.coreos.com packageserver
 kubectl get customresourcedefinitions.apiextensions.k8s.io tackles.tackle.konveyor.io || install_operator
 
 
