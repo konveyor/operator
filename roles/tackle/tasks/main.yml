@@ -141,7 +141,7 @@
         kind: Pod
         namespace: "{{ app_namespace }}"
         label_selectors:
-          - app.kubernetes.io/name = {{ keycloak_database_service_name }}
+          - app.kubernetes.io/name = {{ keycloak_database_service_name }}-{{ keycloak_database_db_version }}
         wait: true
         wait_condition:
           type: "Ready"
@@ -263,11 +263,15 @@
           until: dst_ping.is_available and dst_ping.server_version.major == 15
           delay: 10
 
+        - name: Generate keycloak random string
+          set_fact:
+            keycloak_random: "{{ lookup('community.general.random_string', special=false) }}"
+
         - name: Dump database
           postgresql_db:
             state: dump
             name: "{{ keycloak_database_db_name }}"
-            target: /tmp/keycloak.sql
+            target: /tmp/keycloak_{{ keycloak_random }}.sql
             login_host: "{{ keycloak_database_service_k8s_resource_name }}"
             login_user: "{{ dbm_user }}"
             login_password: "{{ dbm_pass }}"
@@ -276,7 +280,7 @@
           postgresql_db:
             state: restore
             name: "{{ keycloak_database_db_name }}"
-            target: /tmp/keycloak.sql
+            target: /tmp/keycloak_{{ keycloak_random }}.sql
             login_host: "{{ keycloak_database_service_k8s_resource_name }}-migration"
             login_user: "{{ dbm_user }}"
             login_password: "{{ dbm_pass }}"
@@ -284,7 +288,7 @@
         - name: Clean up database dump file
           file:
             state: absent
-            path: /tmp/keycloak.sql
+            path: /tmp/keycloak_{{ keycloak_random }}.sql
 
         - name: "Remove the temporary migration service"
           k8s:
