@@ -6,3 +6,5 @@ collections:
     version: "2.4.0"
   - name: cloud.common
     version: "2.1.1"
+  - name: community.general
+    version: "4.8.11"
