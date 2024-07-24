@@ -1,0 +1,11 @@
+{{ if .Values.olm }}
+apiVersion: tackle.konveyor.io/v1alpha1
+kind: Task
+metadata:
+  name: mytask
+  namespace: konveyor-tackle
+spec:
+  dependencies:
+  - myaddon
+  priority: 10
+{{ end }}
