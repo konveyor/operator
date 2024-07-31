@@ -1,0 +1,42 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kai-db
+  namespace: "{{ app_namespace }}"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kai-db
+  template:
+    metadata:
+      labels:
+        app: kai-db
+    spec:
+      containers:
+        - name: kai-db
+          image: "{{ kai_database_image_fqin }}"
+          env:
+            - name: POSTGRESQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ kai_db_secret_name }}"
+                  key: POSTGRES_DB
+            - name: POSTGRESQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ kai_db_secret_name }}"
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRESQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ kai_db_secret_name }}"
+                  key: POSTGRES_USER
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: kai-db-data
+      volumes:
+        - name: kai-db-data
+          persistentVolumeClaim:
+            claimName: "{{ kai_database_volume_claim_name }}"

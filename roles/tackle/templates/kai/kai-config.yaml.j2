@@ -1,0 +1,37 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "kai-config"
+  namespace: "{{ app_namespace }}"
+data:
+  kai-config.toml: |
+    # TODO: Make all these configurable via ansible
+    log_level = "{{ kai_log_level }}"
+    file_log_level = "debug"
+    log_dir = "/podman_compose/logs"
+    demo_mode = {{ kai_enable_demo_mode }}
+    trace_enabled = {{ kai_enable_trace }}
+
+    solution_consumers = ["diff_only", "llm_summary"]
+
+    [incident_store]
+    solution_detectors = "naive"
+    solution_producers = "text_only"
+
+    [incident_store.args]
+    provider = "postgresql"
+    host = "kai-db"
+    database = "kai"
+    user = "kai"
+    # TODO: This may need to be envvar only
+    password = "{{ pg_password }}"
+
+    [models]
+    provider = "{{ kai_model_provider }}"
+
+    [models.args]
+    model_id = "{{ kai_model_id }}"
+
+    [embeddings]
+    todo = true

@@ -1,0 +1,124 @@
+---
+
+- name: Verify API key secret is defined
+  k8s_info:
+    api_version: v1
+    kind: Secret
+    name: "{{ kai_api_key_secret_name }}"
+    namespace: "{{ app_namespace }}"
+  register: kai_api_key_secret_status
+
+- when: (kai_api_key_secret_status.resources|length) > 0
+  block:
+    - name: Check if JWT token secret is defined
+      k8s_info:
+        api_version: v1
+        kind: Secret
+        name: "{{ kai_jwt_secret_name }}"
+        namespace: "{{ app_namespace }}"
+      register: kai_jwt_secret_status
+
+    - name: Check if DB secret is defined
+      k8s_info:
+        api_version: v1
+        kind: Secret
+        name: "{{ kai_database_secret_name }}"
+        namespace: "{{ app_namespace }}"
+      register: kai_db_secret_status
+
+    - name: Generate random password for Postgres
+      set_fact:
+        pg_password: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
+      when: (kai_db_secret_status.resources|length) == 0
+
+    - name: Create DB secret
+      k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: "{{ kai_database_secret_name }}"
+            namespace: "{{ app_namespace }}"
+          stringData:
+            POSTGRES_HOST: "{{ kai_database_address }}"
+            POSTGRES_DB: kai
+            POSTGRES_PASSWORD: "{{ pg_password }}"
+            POSTGRES_USER: kai
+      when: (kai_db_secret_status.resources|length) == 0
+
+    - name: Decode pg_password from secret
+      set_fact:
+        pg_password: "{{ kai_db_secret_status.resources.0.data.POSTGRES_PASSWORD | b64decode }}"
+      when: (kai_db_secret_status.resources|length) > 0
+
+    - name: Retrieve Hub Secret
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Secret
+        name: "{{ hub_secret_name }}"
+        namespace: "{{ app_namespace }}"
+      register: hub_secret
+
+    - name: Set Hub key
+      set_fact:
+        hub_key: "{{ hub_secret.resources[0].data.addon_token | b64decode }}"
+    - name: Generate JWT token for Kai
+      command: |
+        /usr/local/bin/jwt.sh {{ hub_key }}
+      register: kai_jwt
+      when: (kai_jwt_secret_status.resources|length) == 0
+      changed_when: (kai_jwt_secret_status.resources|length) == 0
+
+    - name: Create JWT token secret
+      k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: "{{ kai_jwt_secret_name }}"
+            namespace: "{{ app_namespace }}"
+          stringData:
+            jwt: "{{ kai_jwt.stdout }}"
+      when: (kai_jwt_secret_status.resources|length) == 0
+
+    - name: Create KAI ConfigMap
+      k8s:
+        state: present
+        template: kai/kai-config.yaml.j2
+
+    - name: Deploy KAI DB
+      k8s:
+        state: present
+        template: kai/kai-db-deployment.yaml.j2
+
+    - name: Create KAI DB Service
+      k8s:
+        state: present
+        template: kai/kai-db-service.yaml.j2
+
+    - name: Create KAI DB PersistentVolumeClaim
+      k8s:
+        state: present
+        template: kai/kai-db-pvc.yaml.j2
+
+    - name: Deploy KAI API service
+      k8s:
+        state: present
+        template: kai/kai-api-deployment.yaml.j2
+
+    - name: Create KAI API Service
+      k8s:
+        state: present
+        template: kai/kai-api-service.yaml.j2
+
+    - name: Deploy KAI Hub Importer
+      k8s:
+        state: present
+        template: kai/kai-importer-deployment.yaml.j2
+
+    - name: Create KAI Hub Importer Service
+      k8s:
+        state: present
+        template: kai/kai-importer-service.yaml.j2

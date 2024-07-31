@@ -732,3 +732,8 @@
   when:
     - (pathfinder_delete_db_volume|bool)
     - (pathfinder_pod.resources|length) == 0
+
+- name: Run kai tasks
+  when:
+    - (experimental_deploy_kai|bool)
+  include_tasks: kai.yml

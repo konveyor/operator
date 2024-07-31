@@ -1,4 +1,6 @@
 ---
+
+
 # App defaults
 app_name: "{{ lookup('env', 'APP_NAME') or 'tackle' }}"
 app_namespace: "{{ lookup('env', 'WATCH_NAMESPACE') or 'konveyor-tackle' }}"
@@ -219,3 +221,28 @@ rhsso_tls_enabled: true
 rhsso_port: "{{ '8443' if rhsso_tls_enabled | bool else '8080' }}"
 rhsso_proto: "{{ 'https' if rhsso_tls_enabled | bool else 'http' }}"
 rhsso_url: "{{ rhsso_proto }}://keycloak.{{ app_namespace }}.svc:{{ rhsso_port }}"
+
+
+# Kai-related variables
+experimental_deploy_kai: false
+
+kai_fqin: "{{ lookup('env', 'RELATED_IMAGE_KAI') }}"
+
+kai_api_key_secret_name: kai-api-keys
+kai_jwt_secret_name: kai-jwt-secret
+kai_bam_secret_key: genai_key
+kai_openai_secret_base_key: api_base
+kai_openai_secret_api_key: api_key
+kai_log_level: info
+kai_enable_demo_mode: "false"
+kai_enable_trace: "true"
+kai_model_provider: "ChatIBMGenAI"
+kai_model_id: "mistralai/mixtral-8x7b-instruct-v01"
+
+kai_hub_importer_args: "-k"
+
+kai_database_image_fqin: "{{ keycloak_database_image_fqin }}"
+kai_database_secret_name: kai-db-secret
+kai_database_volume_size: "10Gi"
+kai_database_volume_claim_name: "{{ hub_service_name }}-kai-database-volume-claim"
+kai_database_address: kai-db.{{ app_namespace }}.svc
