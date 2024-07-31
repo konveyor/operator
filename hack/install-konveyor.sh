@@ -20,19 +20,41 @@ if ! command -v operator-sdk >/dev/null 2>&1; then
 fi
 
 debug() {
+  set +e
   echo "Install Konveyor FAILED!!!"
   echo "What follows is some info that may be useful in debugging the failure"
 
-  kubectl get namespace "${NAMESPACE}" -o yaml || true
-  kubectl get --namespace "${NAMESPACE}" all || true
-  kubectl get --namespace "${NAMESPACE}" -o yaml \
-    subscriptions.operators.coreos.com,catalogsources.operators.coreos.com,installplans.operators.coreos.com,clusterserviceversions.operators.coreos.com \
-    || true
-  kubectl get --namespace "${NAMESPACE}" -o yaml tackles.tackle.konveyor.io/tackle || true
+  if [ "${CI}" == "true" ]; then
+    debug_output="/tmp/konveyor-debug"
+    mkdir -p "${debug_output}"
+    namespace="${debug_output}/namespace.yaml"
+    all="${debug_output}/all_resources.yaml"
+    operator="${debug_output}/operator_resources.yaml"
+    tackle="${debug_output}/tackle.yaml"
+    pods="${debug_output}/pod_descriptions.yaml"
 
-  for pod in $(kubectl get pods -n "${NAMESPACE}" -o jsonpath='{.items[*].metadata.name}'); do
-    kubectl --namespace "${NAMESPACE}" describe pod "${pod}" || true
-  done
+    kubectl get namespace "${NAMESPACE}" -o yaml | tee "${namespace}"
+    kubectl get --namespace "${NAMESPACE}" all | tee "${all}"
+    kubectl get --namespace "${NAMESPACE}" -o yaml \
+      subscriptions.operators.coreos.com,catalogsources.operators.coreos.com,installplans.operators.coreos.com,clusterserviceversions.operators.coreos.com | tee "${operator}"
+    kubectl get --namespace "${NAMESPACE}" -o yaml tackles.tackle.konveyor.io/tackle | tee "${tackle}"
+
+    for pod in $(kubectl get pods -n "${NAMESPACE}" -o jsonpath='{.items[*].metadata.name}'); do
+      kubectl --namespace "${NAMESPACE}" describe pod "${pod}" | tee -a "${pods}"
+      kubectl --namespace "${NAMESPACE}" logs "${pod}" | tee "${debug_output}/${pod}.log"
+    done
+  else
+    kubectl get namespace "${NAMESPACE}" -o yaml
+    kubectl get --namespace "${NAMESPACE}" all
+    kubectl get --namespace "${NAMESPACE}" -o yaml \
+      subscriptions.operators.coreos.com,catalogsources.operators.coreos.com,installplans.operators.coreos.com,clusterserviceversions.operators.coreos.com
+    kubectl get --namespace "${NAMESPACE}" -o yaml tackles.tackle.konveyor.io/tackle
+
+    for pod in $(kubectl get pods -n "${NAMESPACE}" -o jsonpath='{.items[*].metadata.name}'); do
+      kubectl --namespace "${NAMESPACE}" describe pod "${pod}"
+    done
+  fi
+
   exit 1
 }
 trap 'debug' ERR
