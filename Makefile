@@ -263,15 +263,15 @@ catalog-push: ## Push a catalog image.
 
 .PHONY: start-minikube
 start-minikube:
-	$(shell pwd)/hack/start-minikube.sh
+	bash hack/start-minikube.sh
 
 .PHONY: install-tackle
 install-tackle:
-	$(shell pwd)/hack/install-tackle.sh
+	bash hack/install-tackle.sh
 
 .PHONY: install-konveyor
 install-konveyor:
-	$(shell pwd)/hack/install-konveyor.sh
+	bash hack/install-konveyor.sh
 
 YQ = $(shell pwd)/bin/yq
 .PHONY: yq
