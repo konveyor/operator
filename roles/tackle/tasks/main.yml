@@ -1,7 +1,16 @@
 ---
+- name: "Get Cluster information"
+  kubernetes.core.k8s_cluster_info:
+  register: api_status
+
+- name: "Create cluster API group list"
+  set_fact:
+    api_groups: []
+
 - name: "Load cluster API groups"
   set_fact:
-    api_groups: "{{ lookup('k8s', cluster_info='api_groups') }}"
+    api_groups: "{{ (api_groups + [(item | regex_replace('/?v\\d.*'))]) | unique }}"
+  with_items: "{{ api_status.apis | list }}"
 
 - name: "Transfer rwx_storage_class setting if hub_bucket_storage_class is not defined"
   set_fact:
