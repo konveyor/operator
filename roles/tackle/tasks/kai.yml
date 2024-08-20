@@ -41,15 +41,15 @@
             name: "{{ kai_database_secret_name }}"
             namespace: "{{ app_namespace }}"
           stringData:
-            POSTGRES_HOST: "{{ kai_database_address }}"
-            POSTGRES_DB: kai
-            POSTGRES_PASSWORD: "{{ pg_password }}"
-            POSTGRES_USER: kai
+            POSTGRESQL_HOST: "{{ kai_database_address }}"
+            POSTGRESQL_DATABASE: kai
+            POSTGRESQL_PASSWORD: "{{ pg_password }}"
+            POSTGRESQL_USER: kai
       when: (kai_db_secret_status.resources|length) == 0
 
     - name: Decode pg_password from secret
       set_fact:
-        pg_password: "{{ kai_db_secret_status.resources.0.data.POSTGRES_PASSWORD | b64decode }}"
+        pg_password: "{{ kai_db_secret_status.resources.0.data.POSTGRESQL_PASSWORD | b64decode }}"
       when: (kai_db_secret_status.resources|length) > 0
 
     - name: Retrieve Hub Secret

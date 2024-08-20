@@ -18,26 +18,26 @@ spec:
         - name: kai-hub-importer
           image: "{{ kai_fqin }}"
           env:
-            - name: POSTGRES_HOST
+            - name: POSTGRESQL_HOST
               valueFrom:
                 secretKeyRef:
                   name: "{{ kai_database_secret_name }}"
-                  key: POSTGRES_HOST
-            - name: POSTGRES_DB
+                  key: POSTGRESQL_HOST
+            - name: POSTGRESQL_DATABASE
               valueFrom:
                 secretKeyRef:
                   name: "{{ kai_database_secret_name }}"
-                  key: POSTGRES_DB
-            - name: POSTGRES_PASSWORD
+                  key: POSTGRESQL_DB
+            - name: POSTGRESQL_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: "{{ kai_database_secret_name }}"
-                  key: POSTGRES_PASSWORD
-            - name: POSTGRES_USER
+                  key: POSTGRESQL_PASSWORD
+            - name: POSTGRESQL_USER
               valueFrom:
                 secretKeyRef:
                   name: "{{ kai_database_secret_name }}"
-                  key: POSTGRES_USER
+                  key: POSTGRESQL_USER
             - name: DEMO_MODE
               value: "{{ kai_enable_demo_mode }}"
             - name: HUB_URL

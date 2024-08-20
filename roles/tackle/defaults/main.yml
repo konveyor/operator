@@ -239,7 +239,7 @@ kai_enable_trace: "true"
 kai_model_provider: "ChatIBMGenAI"
 kai_model_id: "mistralai/mixtral-8x7b-instruct-v01"
 
-kai_hub_importer_args: "-k"
+kai_hub_importer_args: ""
 
 kai_database_image_fqin: "{{ keycloak_database_image_fqin }}"
 kai_database_secret_name: kai-db-secret
