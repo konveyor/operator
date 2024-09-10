@@ -29,7 +29,12 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: "{{ kai_db_secret_name }}"
-                  key: POSTGRESQL_DB
+                  key: POSTGRESQL_DATABASE
+            - name: POSTGRESQL_DB
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ kai_db_secret_name }}"
+                  key: POSTGRESQL_DATABASE
             - name: POSTGRESQL_PASSWORD
               valueFrom:
                 secretKeyRef:
