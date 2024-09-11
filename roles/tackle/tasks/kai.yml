@@ -8,6 +8,16 @@
     namespace: "{{ app_namespace }}"
   register: kai_api_key_secret_status
 
+- name: Verify kai-api-key-secret has been created
+  when: (kai_api_key_secret_status.resources|length) == 0
+  debug:
+    msg: >
+         Kai will not deploy until the credential secret exists.
+         kubectl create secret -n {{ app_namespace }} generic {{ kai_api_key_secret_name }}
+         --fromliteral=genai_key=[BAM_KEY]
+         --from-literal=api_base=[OPENAI_BASE]
+         --from-literal=api_key=[OPENAI_KEY]
+
 - when: (kai_api_key_secret_status.resources|length) > 0
   block:
     - name: Check if JWT token secret is defined
