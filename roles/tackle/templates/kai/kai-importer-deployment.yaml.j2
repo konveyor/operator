@@ -18,35 +18,37 @@ spec:
         - name: kai-hub-importer
           image: "{{ kai_fqin }}"
           env:
-            - name: POSTGRESQL_HOST
+            - name: CUSTOM_CONFIG_FLAG
+              value: "--config_filepath=/podman_compose/kai-config.toml"
+            - name: KAI__INCIDENT_STORE__ARGS__HOST
               valueFrom:
                 secretKeyRef:
-                  name: "{{ kai_database_secret_name }}"
+                  name: "{{ kai_db_secret_name }}"
                   key: POSTGRESQL_HOST
-            - name: POSTGRESQL_DATABASE
+            - name: KAI__INCIDENT_STORE__ARGS__DATABASE
               valueFrom:
                 secretKeyRef:
-                  name: "{{ kai_database_secret_name }}"
-                  key: POSTGRESQL_DB
-            - name: POSTGRESQL_PASSWORD
+                  name: "{{ kai_db_secret_name }}"
+                  key: POSTGRESQL_DATABASE
+            - name: KAI__INCIDENT_STORE__ARGS__PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: "{{ kai_database_secret_name }}"
+                  name: "{{ kai_db_secret_name }}"
                   key: POSTGRESQL_PASSWORD
-            - name: POSTGRESQL_USER
+            - name: KAI__INCIDENT_STORE__ARGS__USER
               valueFrom:
                 secretKeyRef:
-                  name: "{{ kai_database_secret_name }}"
+                  name: "{{ kai_db_secret_name }}"
                   key: POSTGRESQL_USER
-            - name: DEMO_MODE
-              value: "{{ kai_enable_demo_mode }}"
-            - name: HUB_URL
+            - name: KAI__DEMO_MODE
+              value: "False"
+            - name: KAI__HUB_URL
               value: "{{ hub_url }}"
-            - name: IMPORTER_ARGS
-              value: "{{ kai_hub_importer_args }}"
-            - name: LOGLEVEL
-              value: "{{ kai_log_level }}"
-            - name: NUM_WORKERS
+            - name: KAI__IMPORTER_ARGS
+              value: ""
+            - name: KAI__LOG_LEVEL
+              value: "info"
+            - name: KAI__GUNICORN_WORKERS
               value: "8"
             - name: USE_HUB_IMPORTER
               value: "True"
@@ -72,6 +74,13 @@ spec:
                   key: "{{ kai_openai_secret_base_key }}"
 {% endif %}
 {% if kai_api_key_secret_status.resources.0.data[kai_openai_secret_api_key]|default(false) %}
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ kai_api_key_secret_name }}"
+                  key: "{{ kai_openai_secret_api_key }}"
+{% endif %}
+{% if kai_api_key_secret_status.resources.0.data[kai_google_secret_key]|default(false) %}
             - name: OPENAI_API_KEY
               valueFrom:
                 secretKeyRef:
