@@ -23,22 +23,22 @@ spec:
             - name: KAI__INCIDENT_STORE__ARGS__HOST
               valueFrom:
                 secretKeyRef:
-                  name: "{{ kai_db_secret_name }}"
+                  name: "{{ kai_database_secret_name }}"
                   key: POSTGRESQL_HOST
             - name: KAI__INCIDENT_STORE__ARGS__DATABASE
               valueFrom:
                 secretKeyRef:
-                  name: "{{ kai_db_secret_name }}"
+                  name: "{{ kai_database_secret_name }}"
                   key: POSTGRESQL_DATABASE
             - name: KAI__INCIDENT_STORE__ARGS__PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: "{{ kai_db_secret_name }}"
+                  name: "{{ kai_database_secret_name }}"
                   key: POSTGRESQL_PASSWORD
             - name: KAI__INCIDENT_STORE__ARGS__USER
               valueFrom:
                 secretKeyRef:
-                  name: "{{ kai_db_secret_name }}"
+                  name: "{{ kai_database_secret_name }}"
                   key: POSTGRESQL_USER
             - name: KAI__DEMO_MODE
               value: "False"
