@@ -21,17 +21,17 @@ spec:
             - name: POSTGRESQL_DATABASE
               valueFrom:
                 secretKeyRef:
-                  name: "{{ kai_db_secret_name }}"
+                  name: "{{ kai_database_secret_name }}"
                   key: POSTGRESQL_DATABASE
             - name: POSTGRESQL_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: "{{ kai_db_secret_name }}"
+                  name: "{{ kai_database_secret_name }}"
                   key: POSTGRESQL_PASSWORD
             - name: POSTGRESQL_USER
               valueFrom:
                 secretKeyRef:
-                  name: "{{ kai_db_secret_name }}"
+                  name: "{{ kai_database_secret_name }}"
                   key: POSTGRESQL_USER
           volumeMounts:
             - mountPath: /var/lib/postgresql/data

@@ -6,7 +6,6 @@ metadata:
   namespace: "{{ app_namespace }}"
 data:
   kai-config.toml: |
-    # TODO: Make all these configurable via ansible
     log_level = "{{ kai_log_level }}"
     file_log_level = "debug"
     log_dir = "/podman_compose/logs"
@@ -24,14 +23,9 @@ data:
     host = "kai-db"
     database = "kai"
     user = "kai"
-    # TODO: This may need to be envvar only
-    password = "{{ pg_password }}"
 
     [models]
     provider = "{{ kai_model_provider }}"
 
     [models.args]
     model_id = "{{ kai_model_id }}"
-
-    [embeddings]
-    todo = true

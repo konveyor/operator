@@ -233,6 +233,7 @@ kai_jwt_secret_name: kai-jwt-secret
 kai_bam_secret_key: genai_key
 kai_openai_secret_base_key: api_base
 kai_openai_secret_api_key: api_key
+kai_google_secret_key: google_key
 kai_log_level: info
 kai_enable_demo_mode: "false"
 kai_enable_trace: "true"
