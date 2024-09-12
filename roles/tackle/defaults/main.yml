@@ -226,8 +226,10 @@ rhsso_url: "{{ rhsso_proto }}://keycloak.{{ app_namespace }}.svc:{{ rhsso_port }
 # Kai-related variables
 experimental_deploy_kai: false
 
+kai_component_name: "kai-api"
+kai_service_name: "{{ kai_component_name }}"
+kai_url: "http://{{ kai_service_name }}.{{ app_namespace }}.svc:8080"
 kai_fqin: "{{ lookup('env', 'RELATED_IMAGE_KAI') }}"
-
 kai_api_key_secret_name: kai-api-keys
 kai_jwt_secret_name: kai-jwt-secret
 kai_bam_secret_key: genai_key

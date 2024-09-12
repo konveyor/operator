@@ -192,6 +192,8 @@ spec:
             - name: DISCOVERY_ENABLED
               value: "false"
 {% endif %}
+            - name: KAI_URL
+              value: "{{ kai_url }}"
           ports:
             - containerPort: {{ hub_port }}
               protocol: TCP
