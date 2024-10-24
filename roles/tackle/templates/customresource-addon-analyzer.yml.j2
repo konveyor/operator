@@ -44,7 +44,7 @@ spec:
     env:
     - name: PORT
       value: ${seq:8000}
-    - name: M2HOME
+    - name: M2_HOME
       value: {{ cache_mount_path }}/m2
     resources:
       limits:
