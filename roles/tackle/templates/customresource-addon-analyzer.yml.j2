@@ -44,6 +44,8 @@ spec:
     env:
     - name: PORT
       value: ${seq:8000}
+    - name: M2HOME
+      value: {{ cache_mount_path }}/m2
     resources:
       limits:
         cpu: {{ provider_java_container_limits_cpu }}
