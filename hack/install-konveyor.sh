@@ -8,6 +8,7 @@ NAMESPACE="${NAMESPACE:-konveyor-tackle}"
 OPERATOR_BUNDLE_IMAGE="${OPERATOR_BUNDLE_IMAGE:-quay.io/konveyor/tackle2-operator-bundle:latest}"
 TACKLE_CR="${TACKLE_CR:-}"
 TIMEOUT="${TIMEOUT:-15m}"
+OLM_VERSION="${OLM_VERSION:-0.28.0}"
 
 if ! command -v kubectl >/dev/null 2>&1; then
   echo "Please install kubectl. See https://kubernetes.io/docs/tasks/tools/"
@@ -91,7 +92,7 @@ EOF
   kubectl get deployments.apps -n "${NAMESPACE}" -o yaml
 }
 
-kubectl get customresourcedefinitions.apiextensions.k8s.io clusterserviceversions.operators.coreos.com || operator-sdk olm install
+kubectl get customresourcedefinitions.apiextensions.k8s.io clusterserviceversions.operators.coreos.com || operator-sdk olm install --version ${OLM_VERSION}
 olm_namespace=$(kubectl get clusterserviceversions.operators.coreos.com --all-namespaces | grep packageserver | awk '{print $1}')
 kubectl rollout status -w deployment/olm-operator --namespace="${olm_namespace}"
 kubectl rollout status -w deployment/catalog-operator --namespace="${olm_namespace}"
