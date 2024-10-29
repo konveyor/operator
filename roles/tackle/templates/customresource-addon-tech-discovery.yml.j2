@@ -69,6 +69,7 @@ spec:
           depOpenSourceLabelsFile: /usr/local/etc/maven.default.index
           lspServerPath: /jdtls/bin/jdtls
           mavenSettingsFile: $(maven.settings.path)
+          mavenCacheDir: {{ cache_mount_path }}/m2
 ---
 kind: Extension
 apiVersion: tackle.konveyor.io/v1alpha1
