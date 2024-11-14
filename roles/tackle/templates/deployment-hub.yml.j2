@@ -204,6 +204,8 @@ spec:
             requests:
               cpu: {{ hub_container_requests_cpu }}
               memory: {{ hub_container_requests_memory }}
+          securityContext:
+            runAsUser: {{ hub_uid }}
 # TODO: Add liveness and readiness probes
           volumeMounts:
             - name: {{ hub_database_volume_name }}
@@ -218,6 +220,23 @@ spec:
             - name: {{ hub_tls_secret_name }}
               mountPath: /var/run/secrets/{{ hub_tls_secret_name }}/tls.crt
 {% endif %}
+      initContainers:
+        - command:
+            - chown
+            - -R
+            - {{ hub_uid }}:root
+            - {{ hub_database_volume_path }}
+            - {{ hub_bucket_volume_path }}
+          image: "{{ hub_image_fqin }}"
+          imagePullPolicy: "{{ image_pull_policy }}"
+          name: update-perms
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - mountPath: {{ hub_database_volume_path }}
+              name: {{ hub_database_volume_name }}
+            - mountPath: {{ hub_bucket_volume_path }}
+              name: {{ hub_bucket_volume_name }}
       volumes:
 {% if rwx_supported|bool %}
         - name: {{ cache_data_volume_name }}
