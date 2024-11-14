@@ -3,6 +3,15 @@
   set_fact:
     api_groups: "{{ lookup('k8s', cluster_info='api_groups') }}"
 
+- name: Gather Facts
+  ansible.builtin.gather_facts:
+    gather_subset:
+      - user_uid
+
+- name: "Retrieve UID"
+  set_fact:
+    hub_uid: "{{ ansible_facts['user_uid'] }}"
+
 - name: "Transfer rwx_storage_class setting if hub_bucket_storage_class is not defined"
   set_fact:
     hub_bucket_storage_class: "{{ rwx_storage_class }}"
@@ -561,6 +570,37 @@
     state: present
     definition: "{{ lookup('template', 'route-ui.yml.j2') }}"
   when: openshift_cluster|bool
+
+- name: "Check if Cache PersistentVolumeClaim exists"
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: PersistentVolumeClaim
+    namespace: "{{ app_namespace }}"
+    name: "{{ cache_data_volume_claim_name }}"
+  register: cache_pvc
+
+- name: "Delete cache PVC if non-root label is missing so it can be recreated"
+  when: cache_pvc.resources|length > 0 and cache_pvc.resources[0].metadata.labels['non-root'] is not defined
+  block:
+    - name: Scale down Hub
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'deployment-hub.yml.j2') }}"
+        merge_type: merge
+      vars:
+        hub_deployment_replicas: 0
+
+    - name: Delete cache PVC
+      k8s:
+        state: absent
+        definition: "{{ lookup('template', 'persistentvolumeclaim-cache.yml.j2') }}"
+        wait: true
+
+    - name: Scale up Hub
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'deployment-hub.yml.j2') }}"
+        merge_type: merge
 
 - name: "Setup Cache PersistentVolumeClaim"
   k8s:

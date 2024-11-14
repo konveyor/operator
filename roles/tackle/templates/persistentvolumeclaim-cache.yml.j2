@@ -8,6 +8,7 @@ metadata:
     app.kubernetes.io/name: {{ cache_name }}
     app.kubernetes.io/part-of: {{ app_name }}
     volume: {{ cache_data_volume_name }}
+    non-root: "true"
 spec:
   accessModes:
     - "{{ cache_data_volume_claim_mode }}"
