@@ -27,7 +27,7 @@ jobs:
       fail-fast: true
     steps:
       - name: rulesets
-        uses: konveyor/release-tools/create-release@main
+        uses: konveyor/release-tools/create-release@release-0.6
         with:
           version: ${{ inputs.version }}
           prev_version: ${{ inputs.previous_version }}
@@ -35,7 +35,7 @@ jobs:
           ref: ${{ inputs.branch }}
           github_token: ${{ secrets.GH_TOKEN }}
       - name: static-report
-        uses: konveyor/release-tools/create-release@main
+        uses: konveyor/release-tools/create-release@release-0.6
         with:
           version: ${{ inputs.version }}
           prev_version: ${{ inputs.previous_version }}
@@ -50,7 +50,7 @@ jobs:
           done
           docker image inspect quay.io/konveyor/static-report:${{ inputs.version }}
       - name: java-analyzer-bundle
-        uses: konveyor/release-tools/create-release@main
+        uses: konveyor/release-tools/create-release@release-0.6
         with:
           version: ${{ inputs.version }}
           prev_version: ${{ inputs.previous_version }}
@@ -65,7 +65,7 @@ jobs:
           done
           docker image inspect quay.io/konveyor/jdtls-server-base:${{ inputs.version }}
       - name: analyzer-lsp
-        uses: konveyor/release-tools/create-release@main
+        uses: konveyor/release-tools/create-release@release-0.6
         with:
           version: ${{ inputs.version }}
           prev_version: ${{ inputs.previous_version }}
@@ -80,7 +80,7 @@ jobs:
           done
           docker image inspect quay.io/konveyor/analyzer-lsp:${{ inputs.version }}
       - name: windup-shim
-        uses: konveyor/release-tools/create-release@main
+        uses: konveyor/release-tools/create-release@release-0.6
         with:
           version: ${{ inputs.version }}
           prev_version: ${{ inputs.previous_version }}
@@ -95,7 +95,7 @@ jobs:
           done
           docker image inspect quay.io/konveyor/windup-shim:${{ inputs.version }}
       - name: tackle2-addon-analyzer
-        uses: konveyor/release-tools/create-release@main
+        uses: konveyor/release-tools/create-release@release-0.6
         with:
           version: ${{ inputs.version }}
           prev_version: ${{ inputs.previous_version }}
@@ -110,7 +110,7 @@ jobs:
           done
           docker image inspect quay.io/konveyor/tackle2-addon-analyzer:${{ inputs.version }}
       - name: tackle2-addon-discovery
-        uses: konveyor/release-tools/create-release@main
+        uses: konveyor/release-tools/create-release@release-0.6
         with:
           version: ${{ inputs.version }}
           prev_version: ${{ inputs.previous_version }}
@@ -147,7 +147,7 @@ jobs:
             image: konveyor/tackle2-addon-discovery
       fail-fast: true
     steps:
-      - uses: konveyor/release-tools/create-release@main
+      - uses: konveyor/release-tools/create-release@release-0.6
         with:
           version: ${{ inputs.version }}
           prev_version: ${{ inputs.previous_version }}
