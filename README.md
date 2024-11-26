@@ -147,6 +147,7 @@ keycloak_database_data_volume_size | 1Gi | Size requested for Keycloak DB volume
 cache_data_volume_size | 100Gi | Size requested for Tackle Cache volume
 cache_storage_class | N/A | Storage class requested for Tackle Cache volume
 hub_bucket_storage_class | N/A | Storage class requested for Tackle Hub Bucket volume
+rwo_storage_class | N/A | Storage class requested for RWO database volumes
 
 ## Tackle CR Customize Settings
 
