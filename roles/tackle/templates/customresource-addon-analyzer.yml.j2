@@ -60,6 +60,10 @@ spec:
       - name: settings
         path: /shared/creds/maven/settings.xml
         key: maven.settings.path
+    - selector: setting:key=mvn.insecure.enabled
+      fields:
+      - name: value
+        key: maven.insecure
     provider:
       name: {{ provider_java_name }}
       address: localhost:$(PORT)
@@ -68,6 +72,7 @@ spec:
           bundles: /jdtls/java-analyzer-bundle/java-analyzer-bundle.core/target/java-analyzer-bundle.core-1.0.0-SNAPSHOT.jar
           depOpenSourceLabelsFile: /usr/local/etc/maven.default.index
           lspServerPath: /jdtls/bin/jdtls
+          mavenInsecure: $(maven.insecure)
           mavenSettingsFile: $(maven.settings.path)
           mavenCacheDir: {{ cache_mount_path }}/m2
 ---
