@@ -79,18 +79,18 @@ spec:
 kind: Extension
 apiVersion: tackle.konveyor.io/v1alpha1
 metadata:
-  name: {{ provider_generic_name }}
+  name: {{ provider_python_name }}
   namespace: {{ app_namespace }}
   labels:
-    app.kubernetes.io/name: {{ provider_generic_service_name }}
-    app.kubernetes.io/component: {{ provider_generic_component_name }}
+    app.kubernetes.io/name: {{ provider_python_service_name }}
+    app.kubernetes.io/component: {{ provider_python_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
 spec:
   addon: {{ analyzer_name }}
   selector: tag:Language=Golang || tag:Language=Python
   container:
-    name: {{ provider_generic_name }}
-    image: {{ provider_generic_image_fqin }}
+    name: {{ provider_python_name }}
+    image: {{ provider_python_image_fqin }}
     imagePullPolicy: {{ image_pull_policy }}
     args:
     - --port
@@ -100,16 +100,68 @@ spec:
       value: ${seq:8000}
     resources:
       limits:
-        cpu: {{ provider_generic_container_limits_cpu }}
-        memory: {{ provider_generic_container_limits_memory }}
+        cpu: {{ provider_python_container_limits_cpu }}
+        memory: {{ provider_python_container_limits_memory }}
       requests:
-        cpu: {{ provider_generic_container_requests_cpu }}
-        memory: {{ provider_generic_container_requests_memory }}
+        cpu: {{ provider_python_container_requests_cpu }}
+        memory: {{ provider_python_container_requests_memory }}
   metadata:
     provider:
-      name: {{ provider_generic_name }} 
       address: localhost:$(PORT)
       initConfig:
+      - providerSpecificConfig:
+          lspServerName: generic
+          lspServerPath: /usr/local/bin/pylsp
+          workspaceFolders:
+          - $(builtin.location)
+          dependencyFolders:
+          - examples/python/__pycache__
+          - examples/python/.venv
+      name: {{ provider_python_name }}
+  selector: tag:Language=Python
+---
+kind: Extension
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  name: {{ provider_nodejs_name }}
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/name: {{ provider_nodejs_service_name }}
+    app.kubernetes.io/component: {{ provider_nodejs_component_name }}
+    app.kubernetes.io/part-of: {{ app_name }}
+spec:
+  addon: {{ analyzer_name }}
+  selector: tag:Language=TypeScript
+  container:
+    name: {{ provider_nodejs_name }}
+    image: {{ provider_nodejs_image_fqin }}
+    imagePullPolicy: {{ image_pull_policy }}
+    args:
+    - --port
+    - $(PORT)
+    env:
+    - name: PORT
+      value: ${seq:8000}
+    resources:
+      limits:
+        cpu: {{ provider_nodejs_container_limits_cpu }}
+        memory: {{ provider_nodejs_container_limits_memory }}
+      requests:
+        cpu: {{ provider_nodejs_container_requests_cpu }}
+        memory: {{ provider_nodejs_container_requests_memory }}
+  metadata:
+    provider:
+      address: localhost:$(PORT)
+      initConfig:
+        providerSpecificConfig:
+          lspServerName: generic
+          lspServerPath: /usr/local/bin/typescript-language-server
+          lspServerArgs:
+          - "--stdio"
+          workspaceFolders:
+          - $(builtin.location)
+      name: nodejs
+  selector: tag:Language=TypeScript
 ---
 kind: Task
 apiVersion: tackle.konveyor.io/v1alpha1

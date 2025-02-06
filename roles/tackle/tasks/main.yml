@@ -512,10 +512,20 @@
     name: "{{ admin_name }}"
     namespace: "{{ app_namespace }}"
 
-- name: "Create Windup Addon CR"
+- name: "Create Analyzer Addon CR"
   k8s:
     state: present
     definition: "{{ lookup('template', 'customresource-addon-analyzer.yml.j2') }}"
+
+# Generic extension refactored into separate
+# extensions for each provider.
+- name: "Delete generic extension"
+  k8s:
+    state: absent
+    kind: Extension
+    api_version: tackle.konveyor.io/v1alpha1
+    name: "generic"
+    namespace: "{{ app_namespace }}"
 
 - name: "Create Language Discovery Addon CR"
   k8s:
