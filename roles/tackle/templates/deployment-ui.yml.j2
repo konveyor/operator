@@ -103,7 +103,7 @@ spec:
               value: {{ keycloak_sso_client_id }}
 {% if app_profile == 'mta' %}
             - name: KEYCLOAK_SERVER_URL
-              value: {{ rhsso_url }}
+              value: {{ rhbk_url }}
 {% else %}
             - name: KEYCLOAK_SERVER_URL
               value: {{ keycloak_sso_url }}

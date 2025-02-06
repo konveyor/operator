@@ -20,6 +20,7 @@ rules:
   - get
 - apiGroups:
   - keycloak.org
+  - k8s.keycloak.org
   resources:
   - keycloaks
   - keycloakrealms

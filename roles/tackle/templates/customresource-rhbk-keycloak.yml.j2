@@ -1,0 +1,30 @@
+apiVersion: {{ rhbk_api_version }}
+kind: Keycloak
+metadata:
+  name: {{ app_name }}-{{ rhbk_name }}
+  namespace: {{ app_namespace }}
+spec:
+  instances: 1
+  db:
+    vendor: postgres
+    database: {{ keycloak_database_db_name }}
+    host: {{ keycloak_database_service_k8s_resource_name }} 
+    usernameSecret:
+      name: keycloak-db-secret
+      key: POSTGRES_USERNAME
+    passwordSecret:
+      name: keycloak-db-secret
+      key: POSTGRES_PASSWORD
+  proxy:
+    headers: xforwarded
+  http:
+    tlsSecret: {{ rhbk_tls_secret_name }}
+  hostname:
+    strict: false
+  additionalOptions:
+    - name: http-relative-path
+      value: /auth
+  bootstrapAdmin:
+    user:
+      secret: {{ keycloak_sso_secret_name }}
+

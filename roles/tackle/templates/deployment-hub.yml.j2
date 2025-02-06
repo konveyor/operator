@@ -112,31 +112,21 @@ spec:
               value: "{{ keycloak_sso_client_id }}"
 {% if app_profile == 'mta' %}
             - name: KEYCLOAK_HOST
-              value: "{{ rhsso_url }}"
-            - name: KEYCLOAK_ADMIN_USER
-              valueFrom:
-                secretKeyRef:
-                  name: "{{ rhsso_secret_name }}"
-                  key: ADMIN_USERNAME
-            - name: KEYCLOAK_ADMIN_PASS
-              valueFrom:
-                secretKeyRef:
-                  name: "{{ rhsso_secret_name }}"
-                  key: ADMIN_PASSWORD
+              value: "{{ rhbk_url }}"
 {% else %}
             - name: KEYCLOAK_HOST
               value: "{{ keycloak_sso_url }}"
+{% endif %}
             - name: KEYCLOAK_ADMIN_USER
               valueFrom:
                 secretKeyRef:
                   name: "{{ keycloak_sso_secret_name }}"
-                  key: admin-username
+                  key: username
             - name: KEYCLOAK_ADMIN_PASS
               valueFrom:
                 secretKeyRef:
                   name: "{{ keycloak_sso_secret_name }}"
-                  key: admin-password
-{% endif %}
+                  key: password
             - name: KEYCLOAK_REQ_PASS_UPDATE
               value: "{{ keycloak_sso_req_passwd_update|lower }}"
 {% endif %}
