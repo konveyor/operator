@@ -1,0 +1,141 @@
+---
+kind: Extension
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  name: {{ provider_java_name }}
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/name: {{ provider_java_service_name }}
+    app.kubernetes.io/component: {{ provider_java_component_name }}
+    app.kubernetes.io/part-of: {{ app_name }}
+spec:
+  addon: ^({{ analyzer_name }}|{{ tech_discovery_name }})$
+  selector: tag:Language=Java || !tag:Language
+  container:
+    name: {{ provider_java_name }}
+    image: {{ provider_java_image_fqin }}
+    imagePullPolicy: {{ image_pull_policy }}
+    args:
+    - --port
+    - $(PORT)
+    env:
+    - name: PORT
+      value: ${seq:8000}
+    - name: MAVEN_OPTS
+      value: -Dmaven.repo.local={{ cache_mount_path }}/m2
+    resources:
+      limits:
+        cpu: {{ provider_java_container_limits_cpu }}
+        memory: {{ provider_java_container_limits_memory }}
+      requests:
+        cpu: {{ provider_java_container_requests_cpu }}
+        memory: {{ provider_java_container_requests_memory }}
+  metadata:
+    resources:
+    - selector: identity:kind=maven
+      fields:
+      - name: settings
+        path: /shared/creds/maven/settings.xml
+        key: maven.settings.path
+    - selector: setting:key=mvn.insecure.enabled
+      fields:
+      - name: value
+        key: maven.insecure
+    provider:
+      name: {{ provider_java_name }}
+      address: localhost:$(PORT)
+      initConfig:
+      - providerSpecificConfig:
+          bundles: /jdtls/java-analyzer-bundle/java-analyzer-bundle.core/target/java-analyzer-bundle.core-1.0.0-SNAPSHOT.jar
+          depOpenSourceLabelsFile: /usr/local/etc/maven.default.index
+          lspServerPath: /jdtls/bin/jdtls
+          mavenInsecure: $(maven.insecure)
+          mavenSettingsFile: $(maven.settings.path)
+          mavenCacheDir: {{ cache_mount_path }}/m2
+---
+kind: Extension
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  name: {{ provider_python_name }}
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/name: {{ provider_python_service_name }}
+    app.kubernetes.io/component: {{ provider_python_component_name }}
+    app.kubernetes.io/part-of: {{ app_name }}
+spec:
+  addon: ^({{ analyzer_name }}|{{ tech_discovery_name }})$
+  selector: tag:Language=Golang || tag:Language=Python
+  container:
+    name: {{ provider_python_name }}
+    image: {{ provider_python_image_fqin }}
+    imagePullPolicy: {{ image_pull_policy }}
+    args:
+    - --port
+    - $(PORT)
+    env:
+    - name: PORT
+      value: ${seq:8000}
+    resources:
+      limits:
+        cpu: {{ provider_python_container_limits_cpu }}
+        memory: {{ provider_python_container_limits_memory }}
+      requests:
+        cpu: {{ provider_python_container_requests_cpu }}
+        memory: {{ provider_python_container_requests_memory }}
+  metadata:
+    provider:
+      address: localhost:$(PORT)
+      initConfig:
+      - providerSpecificConfig:
+          lspServerName: generic
+          lspServerPath: /usr/local/bin/pylsp
+          workspaceFolders:
+          - $(builtin.location)
+          dependencyFolders:
+          - examples/python/__pycache__
+          - examples/python/.venv
+      name: {{ provider_python_name }}
+  selector: tag:Language=Python
+---
+kind: Extension
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  name: {{ provider_nodejs_name }}
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/name: {{ provider_nodejs_service_name }}
+    app.kubernetes.io/component: {{ provider_nodejs_component_name }}
+    app.kubernetes.io/part-of: {{ app_name }}
+spec:
+  addon: ^({{ analyzer_name }}|{{ tech_discovery_name }})$
+  selector: tag:Language=TypeScript
+  container:
+    name: {{ provider_nodejs_name }}
+    image: {{ provider_nodejs_image_fqin }}
+    imagePullPolicy: {{ image_pull_policy }}
+    args:
+    - --port
+    - $(PORT)
+    env:
+    - name: PORT
+      value: ${seq:8000}
+    resources:
+      limits:
+        cpu: {{ provider_nodejs_container_limits_cpu }}
+        memory: {{ provider_nodejs_container_limits_memory }}
+      requests:
+        cpu: {{ provider_nodejs_container_requests_cpu }}
+        memory: {{ provider_nodejs_container_requests_memory }}
+  metadata:
+    provider:
+      address: localhost:$(PORT)
+      initConfig:
+        providerSpecificConfig:
+          lspServerName: generic
+          lspServerPath: /usr/local/bin/typescript-language-server
+          lspServerArgs:
+          - "--stdio"
+          workspaceFolders:
+          - $(builtin.location)
+      name: nodejs
+  selector: tag:Language=TypeScript
