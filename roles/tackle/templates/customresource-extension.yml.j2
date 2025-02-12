@@ -130,7 +130,7 @@ spec:
     provider:
       address: localhost:$(PORT)
       initConfig:
-        providerSpecificConfig:
+      - providerSpecificConfig:
           lspServerName: generic
           lspServerPath: /usr/local/bin/typescript-language-server
           lspServerArgs:
