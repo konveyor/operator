@@ -512,10 +512,43 @@
     name: "{{ admin_name }}"
     namespace: "{{ app_namespace }}"
 
-- name: "Create Windup Addon CR"
+- name: "Create Analyzer Addon CR"
   k8s:
     state: present
     definition: "{{ lookup('template', 'customresource-addon-analyzer.yml.j2') }}"
+
+- name: "Create Extensions CR"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'customresource-extension.yml.j2') }}"
+
+# Generic extension refactored into separate
+# extensions for each provider.
+- name: "Delete generic extension"
+  k8s:
+    state: absent
+    kind: Extension
+    api_version: tackle.konveyor.io/v1alpha1
+    name: "generic"
+    namespace: "{{ app_namespace }}"
+
+# Extensions shared between analysis and tech-discovery addons.
+- name: "Delete discovery-java extension"
+  k8s:
+    state: absent
+    kind: Extension
+    api_version: tackle.konveyor.io/v1alpha1
+    name: "discovery-java"
+    namespace: "{{ app_namespace }}"
+
+# Extensions shared between analysis and tech-discovery addons.
+- name: "Delete discovery-java extension"
+  k8s:
+    state: absent
+    kind: Extension
+    api_version: tackle.konveyor.io/v1alpha1
+    name: "discovery-generic"
+    namespace: "{{ app_namespace }}"
 
 - name: "Create Language Discovery Addon CR"
   k8s:
