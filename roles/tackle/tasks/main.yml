@@ -1,4 +1,8 @@
 ---
+- name: Gather available apis
+  kubernetes.core.k8s_cluster_info:
+  register: cluster_info
+
 - name: "Load cluster API groups"
   set_fact:
     api_groups: "{{ lookup('k8s', cluster_info='api_groups') }}"
@@ -173,7 +177,10 @@
             definition: "{{ lookup('template', 'service-keycloak-postgresql-migration.yml.j2') }}"
 
         - name: Scale down RHSSO
-          when: app_name == "mta"
+          when:
+            - app_name == "mta"
+            - rhsso_api_version in cluster_info.apis
+            - '"Keycloak" in cluster_info.apis[rhsso_api_version]'
           k8s:
             state: present
             definition: "{{ lookup('template', 'customresource-rhsso-keycloak.yml.j2') }}"
@@ -322,6 +329,36 @@
         state: present
         definition: "{{ lookup('template', 'service-keycloak-postgresql.yml.j2') }}"
 
+    - name: "Check if Keycloak SSO Credential Secret exists"
+      k8s_info:
+        api_version: v1
+        kind: Secret
+        name: "{{ rhsso_secret_name }}"
+        namespace: "{{ app_namespace }}"
+      register: keycloak_sso_credential_secret_status
+
+    - name: "Check if Keycloak SSO Secret exists"
+      k8s_info:
+        api_version: v1
+        kind: Secret
+        name: "{{ keycloak_sso_secret_name }}"
+        namespace: "{{ app_namespace }}"
+      register: keycloak_sso_secret_status
+
+    - when:
+        - (keycloak_sso_secret_status.resources | length) == 0
+        - (keycloak_sso_credential_secret_status.resources | length) == 1
+      block:
+        - name: "Lookup RHSSO username and password"
+          set_fact:
+            keycloak_sso_admin_username_b64: "{{ keycloak_sso_credential_secret_status.resources[0].data.ADMIN_USERNAME }}"
+            keycloak_sso_admin_password_b64: "{{ keycloak_sso_credential_secret_status.resources[0].data.ADMIN_PASSWORD }}"
+
+        - name: Move RHSSO credentials to RHBK location
+          k8s:
+            state: present
+            definition: "{{ lookup('template', 'secret-keycloak-sso.yml.j2') }}"
+
     - name: "Check if Keycloak SSO Secret exists already so we don't update it"
       k8s_info:
         api_version: v1
@@ -329,6 +366,23 @@
         name: "{{ keycloak_sso_secret_name }}"
         namespace: "{{ app_namespace }}"
       register: keycloak_sso_secret_status
+
+    - when:
+        - keycloak_sso_secret_status.resources | length == 1
+        - keycloak_sso_secret_status.resources[0].data['admin-username'] is defined
+        - keycloak_sso_secret_status.resources[0].data['admin-password'] is defined
+        - keycloak_sso_secret_status.resources[0].data.username is not defined
+        - keycloak_sso_secret_status.resources[0].data.password is not defined
+      block:
+        - name: Get values from old key names
+          set_fact:
+            keycloak_sso_admin_username_b64: "{{ keycloak_sso_secret_status.resources[0].data['admin-username'] }}"
+            keycloak_sso_admin_password_b64: "{{ keycloak_sso_secret_status.resources[0].data['admin-password'] }}"
+
+        - name: Update values for new key mames
+          k8s:
+            state: present
+            definition: "{{ lookup('template', 'secret-keycloak-sso.yml.j2') }}"
 
     - when: (keycloak_sso_secret_status.resources | length) == 0
       block:
@@ -371,6 +425,9 @@
         label_selectors:
           - app = {{ rhsso_service_name }}
       register: rhsso_keycloak
+      when:
+        - rhsso_api_version in cluster_info.apis
+        - '"Keycloak" in cluster_info.apis[rhsso_api_version]'
 
     - name: "Delete old RHSSO Keycloak"
       k8s:
@@ -380,6 +437,8 @@
         name: "{{ rhsso_service_name }}"
         namespace: "{{ app_namespace }}"
       when:
+        - rhsso_api_version in cluster_info.apis
+        - '"Keycloak" in cluster_info.apis[rhsso_api_version]'
         - rhsso_keycloak.resources | length > 0
         - rhsso_keycloak.resources[0].status.secondaryResources.Deployment is defined
         - '"keycloak-postgresql" in rhsso_keycloak.resources[0].status.secondaryResources.Deployment'
@@ -424,20 +483,43 @@
         definition: "{{ lookup('template', 'secret-keycloak-db.yml.j2') }}"
         merge_type: merge
 
-    - name: "Create RHSSO Keycloak CR"
+    - name: "Delete RHSSO Keycloak CR"
+      k8s:
+        state: absent
+        definition: "{{ lookup('template', 'customresource-rhsso-keycloak.yml.j2') }}"
+      when:
+        - rhsso_api_version in cluster_info.apis
+        - '"Keycloak" in cluster_info.apis[rhsso_api_version]'
+
+    - name: "Create RHBK Keycloak CR"
       k8s:
         state: present
-        definition: "{{ lookup('template', 'customresource-rhsso-keycloak.yml.j2') }}"
+        definition: "{{ lookup('template', 'customresource-rhbk-keycloak.yml.j2') }}"
 
-    - name: "Check RHSSO for readiness"
+    - name: "Check RHBK for service"
       k8s_info:
-        api_version: "{{ rhsso_api_version }}"
-        kind: Keycloak
+        api_version: v1
+        kind: service
+        name: "{{ rhbk_service_name }}-service"
         namespace: "{{ app_namespace }}"
-        label_selectors:
-          - app = {{ rhsso_service_name }}
+      register: rhbk_service
+      until: rhbk_service.resources|length > 0
+      retries: 30
+      delay: 5
+
+    - name: "Annotate the service to create SSL cert"
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'service-keycloak-rhbk.yml.j2') }}"
+
+    - name: "Check RHBK for readiness"
+      k8s_info:
+        api_version: "{{ rhbk_api_version }}"
+        kind: Keycloak
+        name: "{{ app_name }}-{{ rhbk_name }}"
+        namespace: "{{ app_namespace }}"
       register: cr
-      until: true in (cr | json_query('resources[].status.ready'))
+      until: cr | json_query('resources[].status.conditions[?type==`Ready`].status') | first | first | bool
       retries: 30
       delay: 5
 
@@ -658,9 +740,6 @@
 - when:
     - not(feature_auth_required|bool) or not(feature_auth_type == "keycloak")
   block:
-    - name: Gather available apis
-      kubernetes.core.k8s_cluster_info:
-      register: cluster_info
 
     - name: "Deprovision RHSSO Keycloak CR"
       k8s:

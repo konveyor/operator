@@ -93,7 +93,7 @@ keycloak_database_db_version: "15"
 keycloak_sso_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_KEYCLOAK_SSO') }}"
 keycloak_init_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_KEYCLOAK_INIT') }}"
 keycloak_sso_name: "keycloak"
-keycloak_sso_component_name: "sso"
+keycloak_sso_component_name: "{{ 'rhbk' if app_profile == 'mta' else 'sso' }}"
 keycloak_sso_service_name: "{{ app_name }}-{{ keycloak_sso_name }}-{{ keycloak_sso_component_name }}"
 keycloak_sso_configmap_name: "{{ keycloak_sso_service_name }}"
 keycloak_sso_secret_name: "{{ keycloak_sso_service_name }}"
@@ -113,7 +113,7 @@ keycloak_sso_java_opts: "-Dcom.redhat.fips=false"
 keycloak_sso_realm: "{{ app_name }}"
 keycloak_sso_req_passwd_update: true
 keycloak_sso_client_id: "{{ app_name }}-ui"
-keycloak_sso_tls_enabled: false
+keycloak_sso_tls_enabled: "{{ true if openshift_cluster | bool else false }}"
 keycloak_sso_tls_secret_name: "{{ keycloak_sso_service_name }}-serving-cert"
 keycloak_sso_port: "{{ '8443' if keycloak_sso_tls_enabled | bool else '8080' }}"
 keycloak_sso_proto: "{{ 'https' if keycloak_sso_tls_enabled | bool else 'http' }}"
@@ -229,6 +229,15 @@ rhsso_port: "{{ '8443' if rhsso_tls_enabled | bool else '8080' }}"
 rhsso_proto: "{{ 'https' if rhsso_tls_enabled | bool else 'http' }}"
 rhsso_url: "{{ rhsso_proto }}://keycloak.{{ app_namespace }}.svc:{{ rhsso_port }}"
 
+# RHBK Specific
+rhbk_name: "rhbk"
+rhbk_service_name: "{{ app_name }}-{{ rhbk_name }}"
+rhbk_api_version: "k8s.keycloak.org/v2alpha1"
+rhbk_tls_enabled: "{{ true if openshift_cluster | bool else false }}"
+rhbk_tls_secret_name: "{{ rhbk_service_name }}-serving-cert"
+rhbk_port: "{{ '8443' if rhsso_tls_enabled | bool else '8080' }}"
+rhbk_proto: "{{ 'https' if rhsso_tls_enabled | bool else 'http' }}"
+rhbk_url: "{{ rhsso_proto }}://{{ rhbk_service_name }}-service.{{ app_namespace }}.svc:{{ rhsso_port }}"
 
 # Kai-related variables
 experimental_deploy_kai: false

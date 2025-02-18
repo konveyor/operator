@@ -42,41 +42,52 @@ spec:
       containers:
         - name: {{ keycloak_sso_container_name }}
           image: "{{ keycloak_sso_image_fqin }}"
+          args:
+          - -Djgroups.dns.query=mta-kc-discovery.openshift-mta
+          - --verbose
+          - start
           imagePullPolicy: "{{ image_pull_policy }}"
           env:
-            - name: KEYCLOAK_USER
+            - name: KC_BOOTSTRAP_ADMIN_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: {{ keycloak_sso_secret_name }}
-                  key: admin-username
-            - name: KEYCLOAK_PASSWORD
+                  key: username
+            - name: KC_BOOTSTRAP_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ keycloak_sso_secret_name }}
-                  key: admin-password
+                  key: password
             - name: JAVA_OPTS
               value: {{ keycloak_sso_java_opts }}
             - name: PROXY_ADDRESS_FORWARDING
               value: 'true'
-            - name: DB_VENDOR
+            - name: KC_DB
               value: postgres
-            - name: DB_ADDR
-              value: {{ keycloak_database_service_k8s_resource_name }}
-            - name: DB_DATABASE
-              valueFrom:
-                secretKeyRef:
-                  name: {{ keycloak_database_secret_name }}
-                  key: database-name
-            - name: DB_USER
+            - name: KC_DB_URL
+              value: jdbc:postgresql://{{ keycloak_database_service_k8s_resource_name }}:5432/{{ keycloak_database_db_name }}
+            - name: KC_DB_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: {{ keycloak_database_secret_name }}
                   key: database-user
-            - name: DB_PASSWORD
+            - name: KC_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ keycloak_database_secret_name }}
                   key: database-password
+            - name: KC_HTTP_RELATIVE_PATH
+              value: /auth
+            - name: KC_PROXY_HEADERS
+              value: xforwarded
+            - name: KC_HTTPS_CERTIFICATE_FILE
+              value: /service-crt/tls.crt
+            - name: KC_HTTPS_CERTIFICATE_KEY_FILE
+              value: /service-crt/tls.key
+            - name: KC_HOSTNAME_STRICT
+              value: "false"
+            - name: KC_HTTP_ENABLED
+              value: "true"
           ports:
             - name: http
               containerPort: 8080
@@ -114,6 +125,12 @@ spec:
           volumeMounts:
             - name: {{ keycloak_sso_service_name }}-theme
               mountPath: /opt/jboss/keycloak/standalone/deployments
+            - mountPath: "/service-crt"
+              name: service-crt
+              readOnly: true
       volumes:
         - name: {{ keycloak_sso_service_name }}-theme
           emptyDir: {}
+        - name: service-crt
+          secret:
+            secretName: {{ keycloak_sso_tls_secret_name }}
