@@ -80,10 +80,12 @@ spec:
               value: /auth
             - name: KC_PROXY_HEADERS
               value: xforwarded
+{% if keycloak_sso_tls_enabled|bool %}
             - name: KC_HTTPS_CERTIFICATE_FILE
               value: /service-crt/tls.crt
             - name: KC_HTTPS_CERTIFICATE_KEY_FILE
               value: /service-crt/tls.key
+{% endif %}
             - name: KC_HOSTNAME_STRICT
               value: "false"
             - name: KC_HTTP_ENABLED
@@ -125,12 +127,16 @@ spec:
           volumeMounts:
             - name: {{ keycloak_sso_service_name }}-theme
               mountPath: /opt/jboss/keycloak/standalone/deployments
+{% if keycloak_sso_tls_enabled|bool %}
             - mountPath: "/service-crt"
               name: service-crt
               readOnly: true
+{% endif %}
       volumes:
         - name: {{ keycloak_sso_service_name }}-theme
           emptyDir: {}
+{% if keycloak_sso_tls_enabled|bool %}
         - name: service-crt
           secret:
             secretName: {{ keycloak_sso_tls_secret_name }}
+{% endif %}
