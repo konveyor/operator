@@ -186,6 +186,9 @@ spec:
   cache_storage_class: "nfs"
 ```
 
+## Backing up Konveyor on OpenShift
+See [oadp-backups](docs/oadp-backups.md)
+
 ## Development
 
 See [development.md](docs/development.md) for details in how to contribute to Tackle operator.
