@@ -67,21 +67,6 @@ runs:
       if [[ "true" == "${{ inputs.enable-auth }}"]]; then
         export FEATURE_AUTH_REQUIRED=true
       fi
-      cat <<EOF | kubectl apply -f -
-      apiVersion: v1
-      kind: PersistentVolume
-      metadata:
-        name: cache-m2
-      spec:
-        accessModes:
-          - "ReadWriteMany"
-        capacity:
-          storage: "100Gi"
-        hostPath:
-          path: "/data/m2"
-          type: DirectoryOrCreate
-        storageClassName: manual
-      
       export CACHE_PV_NAME=cache-m2
       make install-tackle
     working-directory: ${{ github.action_path }}/../../..
