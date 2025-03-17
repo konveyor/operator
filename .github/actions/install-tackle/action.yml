@@ -64,7 +64,7 @@ runs:
       export IMAGE_PULL_POLICY="${{ inputs.image-pull-policy }}"
       export ANALYZER_CONTAINER_REQUESTS_MEMORY="${{ inputs.analyzer-container-memory }}"
       export ANALYZER_CONTAINER_REQUESTS_CPU="${{ inputs.analyzer-container-cpu }}"
-      if [[ "true" == "${{ inputs.enable_auth }}"]]; then
+      if [[ "true" == "${{ inputs.enable_auth }}" ]]; then
         export FEATURE_AUTH_REQUIRED=true
       fi
       make install-tackle
