@@ -62,7 +62,7 @@ runs:
           path: "/data/m2"
           type: DirectoryOrCreate
         storageClassName: manual
-        EOF
+      EOF
         kubectl get pv cache-m2 -o yaml
 
     working-directory: ${{ github.action_path }}/../../..
