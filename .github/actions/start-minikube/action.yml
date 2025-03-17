@@ -43,10 +43,11 @@ runs:
       cpus: ${{ inputs.cpus }}
       memory: 8000
       cni: ${{ inputs.cni }}
+      mount-path: '/root/.m2:/data/m2'
   # Don't pass minikube start ${ARGS} as they are handled in setup-minikube
   - name: Start minikube
     run: |
-      LOCAL_MAVEN_CACHE=${{ runner.home }}/.m2 MOUNTED_MAVEN_CACHE=/data/m2 make start-minikube
+      make start-minikube
       cat <<EOF | kubectl apply -f -
       apiVersion: v1
       kind: PersistentVolume
