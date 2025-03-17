@@ -1,4 +1,9 @@
 ---
+{% if cache_storage_class is defined %}
+{% if cache_storage_class|length %}
+  storageClassName: {{ cache_storage_class }}
+{% endif %}
+{% endif %}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -12,11 +17,19 @@ metadata:
 spec:
   accessModes:
     - "{{ cache_data_volume_claim_mode }}"
+{% if use_local_volume == true %}
+  volumeName: "{{ cache_data_volume_name }}"
+  resources:
+    requests:
+      storage: {{ cache_data_volume_size }}
+  storageClassName: manual
+{% else %}
   resources:
     requests:
       storage: {{ cache_data_volume_size }}
 {% if cache_storage_class is defined %}
 {% if cache_storage_class|length %}
   storageClassName: {{ cache_storage_class }}
+{% endif %}
 {% endif %}
 {% endif %}

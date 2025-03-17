@@ -28,6 +28,13 @@ IMAGE_PULL_POLICY="${IMAGE_PULL_POLICY:-Always}"
 ANALYZER_CONTAINER_REQUESTS_MEMORY="${ANALYZER_CONTAINER_REQUESTS_MEMORY:-0}"
 ANALYZER_CONTAINER_REQUESTS_CPU="${ANALYZER_CONTAINER_REQUESTS_CPU:-0}"
 FEATURE_AUTH_REQUIRED="${FEATURE_AUTH_REQUIRED:-false}"
+if [[ -n "$LOCAL_MAVEN_CACHE" ]]; then
+  USE_LOCAL_VOLUME=true
+  CACHE_DATA_VOLUME_NAME=${CACHE_PV_NAME:-}
+else
+  USE_LOCAL_VOLUME=false
+fi
+
 TIMEOUT="${TIMEOUT:-15m}"
 OLM_VERSION="${OLM_VERSION:-0.28.0}"
 
@@ -118,6 +125,9 @@ metadata:
   namespace: ${NAMESPACE}
 spec:
   feature_auth_required: ${FEATURE_AUTH_REQUIRED}
+  rwx_supported: true
+  use_local_volume: ${USE_LOCAL_VOLUME}
+  cache_data_volume_name: ${CACHE_DATA_VOLUME_NAME}
   hub_image_fqin: ${HUB_IMAGE}
   ui_image_fqin: ${UI_IMAGE}
   ui_ingress_class_name: ${UI_INGRESS_CLASS_NAME}

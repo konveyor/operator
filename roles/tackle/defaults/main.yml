@@ -216,6 +216,8 @@ cache_data_volume_name: "{{ app_name }}-{{ cache_name }}-data"
 cache_data_volume_claim_name: "{{ app_name }}-{{ cache_name }}-volume-claim"
 cache_data_volume_claim_mode: "ReadWriteMany"
 cache_mount_path: "/cache"
+mounted_maven_cache: "/data/m2"
+use_local_volume: false
 rwx_supported: false
 
 # RH-SSO specific

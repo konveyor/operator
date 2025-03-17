@@ -9,6 +9,8 @@ MINIKUBE_KUBERNETES_VERSION="${MINIKUBE_KUBERNETES_VERSION:-}"
 MINIKUBE_CPUS="${MINIKUBE_CPUS:-}"
 MINIKUBE_MEMORY="${MINIKUBE_MEMORY:-}"
 MINIKUBE_CNI="${MINIKUBE_CNI:-}"
+LOCAL_MAVEN_CACHE="${LOCAL_MAVEN_CACHE:-}"
+MOUNTED_MAVEN_CACHE="${MOUNTED_MAVEN_CACHE:"/data/m2"}"
 
 # Check pre-reqs
 # May want to leave this for the user to install
@@ -38,3 +40,6 @@ fi
 
 # Enable ingress
 minikube addons enable ingress
+if [[ -n "$LOCAL_MAVEN_CACHE" ]]; then
+  minikube mount ${LOCAL_MAVEN_CACHE}:${MOUNTED_MAVEN_CACHE}
+fi
