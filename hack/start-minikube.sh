@@ -41,5 +41,5 @@ fi
 # Enable ingress
 minikube addons enable ingress
 if [[ -n "$LOCAL_MAVEN_CACHE" ]]; then
-  minikube mount ${LOCAL_MAVEN_CACHE}:${MOUNTED_MAVEN_CACHE}
+  minikube mount ${LOCAL_MAVEN_CACHE}:${MOUNTED_MAVEN_CACHE} --uid 1001 --gid 1001
 fi
