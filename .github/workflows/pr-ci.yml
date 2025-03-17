@@ -50,6 +50,6 @@ jobs:
 
   run-ci:
     needs: build-operator-bundle
-    uses: konveyor/ci/.github/workflows/global-ci-bundle.yml@main
+    uses: shawn-hurley/ci/.github/workflows/global-ci-bundle.yml@feature/see-if-helps-memory
     with:
       operator_bundle: ttl.sh/konveyor-operator-bundle-${{ github.sha }}:2h
