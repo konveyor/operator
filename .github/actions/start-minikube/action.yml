@@ -5,7 +5,7 @@ inputs:
   driver:
     description: 'Choose a specific driver, one of: docker, none, podman, virtualbox, parallels, vmwarefusion, hyperkit, vmware, ssh'
     required: false
-    default: ''
+    default: "none"
   container-runtime:
     description: 'Choose a specific container-runtime, one of: docker, containerd, cri-o'
     required: false
