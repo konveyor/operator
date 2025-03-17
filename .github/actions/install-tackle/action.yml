@@ -69,6 +69,7 @@ runs:
       fi
       export CACHE_PV_NAME=cache-m2
       make install-tackle
+      kubectl get pvcs -n konveyor-tackle
     working-directory: ${{ github.action_path }}/../../..
     shell: bash
   - name: Upload logs on fail
