@@ -429,6 +429,14 @@
         state: present
         definition: "{{ lookup('template', 'customresource-rhsso-keycloak.yml.j2') }}"
 
+    - name: "Remove Keycloak ServiceMonitor"
+      k8s:
+        api_version: monitoring.coreos.com/v1
+        kind: ServiceMonitor
+        state: absent
+        name: keycloak-service-monitor
+        namespace: "{{ app_namespace }}"
+
     - name: "Check RHSSO for readiness"
       k8s_info:
         api_version: "{{ rhsso_api_version }}"
