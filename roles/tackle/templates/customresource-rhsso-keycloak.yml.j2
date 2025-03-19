@@ -7,6 +7,7 @@ metadata:
   labels:
     app: {{ rhsso_service_name }}
 spec:
+  DisableDefaultServiceMonitor: true
   instances: {{ rhsso_instances | default('1') }}
   externalDatabase:
     enabled: true
