@@ -152,7 +152,7 @@ oauth_provider: openshift
 oauth_default_openshift_sar: --openshift-sar={"namespace":"{{ app_namespace }}","resource":"services","resourceName":"{{ ui_service_name }}","verb":"get"}
 oauth_access_rule: "{{ oauth_default_openshift_sar if oauth_provider == 'openshift' }}"
 oauth_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_OAUTH_PROXY') }}"
-oauth_ssl_port: 9443
+oauth_ssl_port: 8443
 
 admin_name: "admin"
 
