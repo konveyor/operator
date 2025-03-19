@@ -103,7 +103,7 @@ metadata:
     categories: Modernization & Migration
     certified: "false"
     containerImage: quay.io/konveyor/tackle2-operator:latest
-    createdAt: "2025-02-11T17:50:14Z"
+    createdAt: "2025-03-19T15:41:58Z"
     description: Konveyor is an open-source application modernization platform that
       helps organizations safely and predictably modernize applications to Kubernetes
       at scale.
@@ -236,6 +236,16 @@ spec:
           - create
           - update
           - patch
+          - delete
+        - apiGroups:
+          - operators.coreos.com
+          resources:
+          - subscriptions
+          - clusterserviceversions
+          verbs:
+          - get
+          - list
+          - watch
           - delete
         serviceAccountName: tackle-operator
       deployments:

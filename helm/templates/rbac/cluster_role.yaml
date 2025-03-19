@@ -34,4 +34,14 @@ rules:
   - update
   - patch
   - delete
+- apiGroups:
+  - operators.coreos.com
+  resources:
+  - subscriptions
+  - clusterserviceversions
+  verbs:
+  - get
+  - list
+  - watch
+  - delete
 #+kubebuilder:scaffold:rules
