@@ -53,6 +53,10 @@ spec:
   podSelector:
     matchLabels:
       role: {{ hub_service_name }}
-    ingress:
-    - ports:
-      - port: {{ hub_metrics_port }}
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          network.openshift.io/policy-group: monitoring
+  - ports:
+    - port: {{ hub_metrics_port }}
