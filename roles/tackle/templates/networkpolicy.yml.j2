@@ -60,3 +60,23 @@ spec:
           network.openshift.io/policy-group: monitoring
   - ports:
     - port: {{ hub_metrics_port }}
+{% if app_profile == 'mta' %}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ app_name }}-rhsso-metrics
+  namespace: {{ app_namespace }}
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          network.openshift.io/policy-group: monitoring
+  - ports:
+    - port: 8383
+    - port: 8686
+  podSelector:
+    matchLabels:
+      name: rhsso-operator
+{% endif %}
