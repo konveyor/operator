@@ -885,6 +885,22 @@
     - (pathfinder_delete_db_volume|bool)
     - (pathfinder_pod.resources|length) == 0
 
+- name: "Remove RHSSO Subscription"
+  k8s:
+    state: absent
+    api_version: operators.coreos.com/v1alpha1
+    kind: Subscription
+    label_selectors:
+      - operators.coreos.com/rhsso-operator.openshift-mta =
+
+- name: "Remove RHSSO ClusterServiceVersion"
+  k8s:
+    state: absent
+    api_version: operators.coreos.com/v1alpha1
+    kind: ClusterServiceVersion
+    label_selectors:
+      - operators.coreos.com/rhsso-operator.openshift-mta =
+
 - name: Run kai tasks
   when: experimental_deploy_kai
   import_tasks: kai.yml
