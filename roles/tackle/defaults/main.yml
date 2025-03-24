@@ -176,9 +176,9 @@ provider_generic_service_name: "{{ app_name }}-{{ provider_generic_name }}-{{ an
 
 provider_java_component_name: "extension"
 provider_java_container_limits_cpu: "1"
-provider_java_container_limits_memory: "2Gi"
+provider_java_container_limits_memory: "2.5Gi"
 provider_java_container_requests_cpu: "1"
-provider_java_container_requests_memory: "2Gi"
+provider_java_container_requests_memory: "2.5Gi"
 provider_java_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_PROVIDER_JAVA') }}"
 provider_java_name: "java"
 provider_java_service_name: "{{ app_name }}-{{ provider_java_name }}-{{ analyzer_component_name }}"
