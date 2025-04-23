@@ -131,11 +131,11 @@ spec:
       address: localhost:$(PORT)
       initConfig:
       - providerSpecificConfig:
-          lspServerName: generic
+          lspServerName: nodejs
           lspServerPath: /usr/local/bin/typescript-language-server
           lspServerArgs:
           - "--stdio"
           workspaceFolders:
           - $(builtin.location)
       name: nodejs
-  selector: tag:Language=TypeScript
+  selector: tag:Language=TypeScript||tag:Language=JavaScript
