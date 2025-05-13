@@ -16,7 +16,7 @@ concurrency:
 jobs:
   push-quay:
     name: Build and Push Manifest
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
     steps:
