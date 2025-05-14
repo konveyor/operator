@@ -22,7 +22,7 @@ on:
 
 jobs:
   release-bases:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: true
     steps:
@@ -126,7 +126,7 @@ jobs:
           docker image inspect quay.io/konveyor/tackle2-addon-discovery:${{ inputs.version }}
 
   release-components:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: release-bases
     strategy:
       matrix:
