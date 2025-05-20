@@ -165,7 +165,7 @@ jobs:
   build-bundle:
     name: Build Bundle Manifest
     needs: release-components
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
     steps:
@@ -275,7 +275,7 @@ jobs:
   publish-bundle:
     name: Publish Bundle Manifest
     needs: test
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
     steps:
