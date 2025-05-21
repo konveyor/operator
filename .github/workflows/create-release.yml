@@ -190,6 +190,7 @@ jobs:
         IMAGE_ORG="quay.io/konveyor"
         VERSION="${{ inputs.version }}"
         CSV="./bundle/manifests/konveyor-operator.clusterserviceversion.yaml"
+        export PATH=$PATH:./bin
 
         for full_image in $(yq eval '.spec.relatedImages[] | .image' "${CSV}"); do
             image="${full_image%:*}"
