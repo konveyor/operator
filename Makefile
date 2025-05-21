@@ -141,6 +141,11 @@ uninstall: helm ## Uninstall CRDs from the K8s cluster specified in ~/.kube/conf
 
 OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
 ARCH := $(shell uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/')
+ifeq ($(OS),linux)
+DIST_SUFFIX := "-rhel9"
+else
+DIST_SUFFIX := ""
+endif
 
 .PHONY: helm
 HELM = $(shell pwd)/bin/helm
@@ -297,7 +302,7 @@ ifeq (,$(shell which oc 2>/dev/null))
 	@{ \
 	set -e ;\
 	mkdir -p $(dir $(OPENSHIFT_CLIENT)) ;\
-	curl -L https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/openshift-client-$(subst darwin,mac,$(OS))-$(ARCH).tar.gz -o $(dir $(OPENSHIFT_CLIENT))openshift-client.tar.gz ;\
+	curl -L https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/openshift-client-$(subst darwin,mac,$(OS))-$(ARCH)$(DIST_SUFFIX).tar.gz -o $(dir $(OPENSHIFT_CLIENT))openshift-client.tar.gz ;\
 	tar zxf $(dir $(OPENSHIFT_CLIENT))openshift-client.tar.gz -C $(dir $(OPENSHIFT_CLIENT)) ;\
 	rm $(dir $(OPENSHIFT_CLIENT))openshift-client.tar.gz ;\
 	}
