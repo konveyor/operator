@@ -583,6 +583,7 @@
       env: "{{ lookup('template', 'secret-keycloak-db.yml.j2') | from_yaml }}"
   when:
     - feature_auth_required|bool
+    - feature_auth_type == "keycloak"
     - app_profile == "mta"
 
 # Create all the neccessary CR's before the hub deployment is created
