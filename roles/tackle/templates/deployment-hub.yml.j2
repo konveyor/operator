@@ -220,6 +220,13 @@ spec:
           image: "{{ hub_image_fqin }}"
           imagePullPolicy: "{{ image_pull_policy }}"
           name: update-perms
+          resources:
+            limits:
+              cpu: {{ hub_init_container_limits_cpu }}
+              memory: {{ hub_init_container_limits_memory }}
+            requests:
+              cpu: {{ hub_init_container_requests_cpu }}
+              memory: {{ hub_init_container_requests_memory }}
           securityContext:
             runAsUser: 0
           volumeMounts:
