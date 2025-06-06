@@ -17,6 +17,13 @@ spec:
       key: POSTGRES_PASSWORD
   proxy:
     headers: xforwarded
+  resources:
+    limits:
+      cpu: {{ keycloak_sso_container_limits_cpu }}
+      memory: {{ keycloak_sso_container_limits_memory }}
+    requests:
+      cpu: {{ keycloak_sso_container_requests_cpu }}
+      memory: {{ keycloak_sso_container_requests_memory }}
   http:
     tlsSecret: {{ rhbk_tls_secret_name }}
   hostname:
