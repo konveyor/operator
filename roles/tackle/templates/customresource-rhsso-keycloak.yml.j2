@@ -9,6 +9,14 @@ metadata:
 spec:
   DisableDefaultServiceMonitor: true
   instances: {{ rhsso_instances | default('1') }}
+  keycloakDeploymentSpec:
+    resources:
+      limits:
+        cpu: {{ keycloak_sso_container_limits_cpu }}
+        memory: {{ keycloak_sso_container_limits_memory }}
+      requests:
+        cpu: {{ keycloak_sso_container_requests_cpu }}
+        memory: {{ keycloak_sso_container_requests_memory }}
   externalDatabase:
     enabled: true
   externalAccess:
