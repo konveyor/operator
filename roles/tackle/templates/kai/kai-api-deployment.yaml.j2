@@ -15,76 +15,19 @@ spec:
         app: kai-api
     spec:
       containers:
-        - name: kai-api
+        - name: kai-solution-server
           image: "{{ kai_fqin }}"
           ports:
-            - containerPort: 8080
+            - containerPort: 8000
           env:
-            - name: KAI__INCIDENT_STORE__ARGS__HOST
-              valueFrom:
-                secretKeyRef:
-                  name: "{{ kai_database_secret_name }}"
-                  key: POSTGRESQL_HOST
-            - name: KAI__INCIDENT_STORE__ARGS__DATABASE
-              valueFrom:
-                secretKeyRef:
-                  name: "{{ kai_database_secret_name }}"
-                  key: POSTGRESQL_DATABASE
-            - name: KAI__INCIDENT_STORE__ARGS__PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: "{{ kai_database_secret_name }}"
-                  key: POSTGRESQL_PASSWORD
-            - name: KAI__INCIDENT_STORE__ARGS__USER
-              valueFrom:
-                secretKeyRef:
-                  name: "{{ kai_database_secret_name }}"
-                  key: POSTGRESQL_USER
-            - name: KAI__DEMO_MODE
-              value: "False"
-            - name: KAI__HUB_URL
-              value: "{{ hub_url }}"
-            - name: KAI__IMPORTER_ARGS
-              value: ""
-            - name: KAI__LOG_LEVEL
-              value: "info"
-            - name: KAI__GUNICORN_WORKERS
-              value: "8"
-            - name: USE_HUB_IMPORTER
-              value: "True"
-{% if kai_api_key_secret_status.resources.0.data[kai_bam_secret_key]|default(false) %}
-            - name: GENAI_KEY
+            - name: KAI_LLM_PARAMS
+              value: '{{ kai_llm_params | to_json }}'
+            - name: KAI_DB_DSN
+              value: 'postgresql+asyncpg://kai:{{ pg_password }}@{{ kai_database_address }}:5432/kai'
+{% for (key, value) in kai_api_key_secret_status.resources.0.data.items() %}
+            - name: {{ key }}
               valueFrom:
                 secretKeyRef:
                   name: "{{ kai_api_key_secret_name }}"
-                  key: "{{ kai_bam_secret_key }}"
-{% endif %}
-{% if kai_api_key_secret_status.resources.0.data[kai_openai_secret_base_key]|default(false) %}
-            - name: OPENAI_API_BASE
-              valueFrom:
-                secretKeyRef:
-                  name: "{{ kai_api_key_secret_name }}"
-                  key: "{{ kai_openai_secret_base_key }}"
-{% endif %}
-{% if kai_api_key_secret_status.resources.0.data[kai_openai_secret_api_key]|default(false) %}
-            - name: OPENAI_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: "{{ kai_api_key_secret_name }}"
-                  key: "{{ kai_openai_secret_api_key }}"
-{% endif %}
-{% if kai_api_key_secret_status.resources.0.data[kai_google_secret_key]|default(false) %}
-            - name: OPENAI_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: "{{ kai_api_key_secret_name }}"
-                  key: "{{ kai_openai_secret_api_key }}"
-{% endif %}
-          volumeMounts:
-            - name: config-volume
-              mountPath: /podman_compose/kai-config.toml
-              subPath: kai-config.toml
-      volumes:
-        - name: config-volume
-          configMap:
-            name: "kai-config"
+                  key: {{ key }}
+{%- endfor %}

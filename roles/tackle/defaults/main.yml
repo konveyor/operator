@@ -242,23 +242,34 @@ rhbk_url: "{{ rhsso_proto }}://{{ rhbk_service_name }}-service.{{ app_namespace 
 # Kai-related variables
 experimental_deploy_kai: false
 
-kai_component_name: "kai-api"
+kai_component_name: "kai-solution-server"
 kai_service_name: "{{ kai_component_name }}"
-kai_url: "http://{{ kai_service_name }}.{{ app_namespace }}.svc:8080"
+kai_url: "http://{{ kai_service_name }}.{{ app_namespace }}.svc:8000"
 kai_fqin: "{{ lookup('env', 'RELATED_IMAGE_KAI') }}"
 kai_api_key_secret_name: kai-api-keys
-kai_jwt_secret_name: kai-jwt-secret
-kai_bam_secret_key: genai_key
-kai_openai_secret_base_key: api_base
-kai_openai_secret_api_key: api_key
-kai_google_secret_key: google_key
 kai_log_level: info
 kai_enable_demo_mode: "false"
 kai_enable_trace: "true"
-kai_model_provider: "ChatIBMGenAI"
-kai_model_id: "mistralai/mixtral-8x7b-instruct-v01"
 
-kai_hub_importer_args: ""
+kai_llm_model: null
+kai_llm_provider: null
+kai_llm_baseurl: null
+kai_llm_temperature: null
+kai_llm_max_tokens: null
+kai_llm_max_retries: null
+# arbitrary/model specific fields that will be passed through to model init
+kai_llm_model_specific_kwargs: {}
+
+kai_llm_params:
+  model: "{{ kai_llm_model }}"
+  model_provider: "{{ kai_llm_provider }}"
+  # these are additional named fields that will be passed to the model init
+  configurable_fields:
+    temperature: "{{ kai_llm_temperature }}"
+    max_tokens: "{{ kai_llm_max_tokens}}"
+    max_retries: "{{ kai_llm_max_retries }}"
+    base_url: "{{ kai_llm_baseurl }}"
+    kwargs: "{{ kai_llm_model_specific_kwargs }}"
 
 kai_database_image_fqin: "{{ keycloak_database_image_fqin }}"
 kai_database_secret_name: kai-db-secret
