@@ -266,7 +266,7 @@ kai_llm_params:
   # these are additional named fields that will be passed to the model init
   configurable_fields:
     temperature: "{{ kai_llm_temperature }}"
-    max_tokens: "{{ kai_llm_max_tokens}}"
+    max_tokens: "{{ kai_llm_max_tokens }}"
     max_retries: "{{ kai_llm_max_retries }}"
     base_url: "{{ kai_llm_baseurl }}"
     kwargs: "{{ kai_llm_model_specific_kwargs }}"

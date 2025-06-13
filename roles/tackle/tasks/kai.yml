@@ -19,61 +19,61 @@
 
 - when: (kai_api_key_secret_status.resources|length) > 0
   block:
-  - name: Check if DB secret is defined
-    k8s_info:
-      api_version: v1
-      kind: Secret
-      name: "{{ kai_database_secret_name }}"
-      namespace: "{{ app_namespace }}"
-    register: kai_db_secret_status
-
-  - name: Generate random password for Postgres
-    set_fact:
-      pg_password: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
-    when: (kai_db_secret_status.resources|length) == 0
-
-  - name: Create DB secret
-    k8s:
-      state: present
-      definition:
-        apiVersion: v1
+    - name: Check if DB secret is defined
+      k8s_info:
+        api_version: v1
         kind: Secret
-        metadata:
-          name: "{{ kai_database_secret_name }}"
-          namespace: "{{ app_namespace }}"
-        stringData:
-          POSTGRESQL_HOST: "{{ kai_database_address }}"
-          POSTGRESQL_DATABASE: kai
-          POSTGRESQL_PASSWORD: "{{ pg_password }}"
-          POSTGRESQL_USER: kai
-    when: (kai_db_secret_status.resources|length) == 0
+        name: "{{ kai_database_secret_name }}"
+        namespace: "{{ app_namespace }}"
+      register: kai_db_secret_status
 
-  - name: Decode pg_password from secret
-    set_fact:
-      pg_password: "{{ kai_db_secret_status.resources.0.data.POSTGRESQL_PASSWORD | b64decode }}"
-    when: (kai_db_secret_status.resources|length) > 0
+    - name: Generate random password for Postgres
+      set_fact:
+        pg_password: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
+      when: (kai_db_secret_status.resources|length) == 0
 
-  - name: Deploy KAI DB
-    k8s:
-      state: present
-      template: kai/kai-db-deployment.yaml.j2
+    - name: Create DB secret
+      k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: "{{ kai_database_secret_name }}"
+            namespace: "{{ app_namespace }}"
+          stringData:
+            POSTGRESQL_HOST: "{{ kai_database_address }}"
+            POSTGRESQL_DATABASE: kai
+            POSTGRESQL_PASSWORD: "{{ pg_password }}"
+            POSTGRESQL_USER: kai
+      when: (kai_db_secret_status.resources|length) == 0
 
-  - name: Create KAI DB Service
-    k8s:
-      state: present
-      template: kai/kai-db-service.yaml.j2
+    - name: Decode pg_password from secret
+      set_fact:
+        pg_password: "{{ kai_db_secret_status.resources.0.data.POSTGRESQL_PASSWORD | b64decode }}"
+      when: (kai_db_secret_status.resources|length) > 0
 
-  - name: Create KAI DB PersistentVolumeClaim
-    k8s:
-      state: present
-      template: kai/kai-db-pvc.yaml.j2
+    - name: Deploy KAI DB
+      k8s:
+        state: present
+        template: kai/kai-db-deployment.yaml.j2
 
-  - name: Create Kai API deployment
-    k8s:
-      state: present
-      template: kai/kai-api-deployment.yaml.j2
+    - name: Create KAI DB Service
+      k8s:
+        state: present
+        template: kai/kai-db-service.yaml.j2
 
-  - name: Create KAI API Service
-    k8s:
-      state: present
-      template: kai/kai-api-service.yaml.j2
+    - name: Create KAI DB PersistentVolumeClaim
+      k8s:
+        state: present
+        template: kai/kai-db-pvc.yaml.j2
+
+    - name: Create Kai API deployment
+      k8s:
+        state: present
+        template: kai/kai-api-deployment.yaml.j2
+
+    - name: Create KAI API Service
+      k8s:
+        state: present
+        template: kai/kai-api-service.yaml.j2
