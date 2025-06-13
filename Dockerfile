@@ -11,6 +11,7 @@ RUN echo -e "[almalinux9-appstream]" \
  "\nenabled = 1" \
  "\ngpgcheck = 0" > /etc/yum.repos.d/almalinux.repo
 RUN dnf -y module enable postgresql:15 && dnf -y install postgresql python3.12-psycopg2 && dnf clean all
+RUN pip install jmespath
 USER 1001
 
 COPY requirements.yml ${HOME}/requirements.yml
