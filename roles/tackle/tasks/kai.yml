@@ -12,22 +12,13 @@
   when: (kai_api_key_secret_status.resources|length) == 0
   debug:
     msg: >
-         Kai will not deploy until the credential secret exists.
-         kubectl create secret -n {{ app_namespace }} generic {{ kai_api_key_secret_name }}
-         --fromliteral=genai_key=[BAM_KEY]
-         --from-literal=api_base=[OPENAI_BASE]
-         --from-literal=api_key=[OPENAI_KEY]
+         The Kai Solution Server will be able to serve advanced insights until the credential secret exists.
+         kubectl create secret -n {{ app_namespace }} generic {{ kai_api_key_secret_name }} --from-literal=<your service's environment variable>=<your API key>
+         for example
+         kubectl create secret generic kai-api-key-secret --from-literal=OPENAI_API_KEY=sk-thisisafakekey
 
 - when: (kai_api_key_secret_status.resources|length) > 0
   block:
-    - name: Check if JWT token secret is defined
-      k8s_info:
-        api_version: v1
-        kind: Secret
-        name: "{{ kai_jwt_secret_name }}"
-        namespace: "{{ app_namespace }}"
-      register: kai_jwt_secret_status
-
     - name: Check if DB secret is defined
       k8s_info:
         api_version: v1
@@ -62,42 +53,6 @@
         pg_password: "{{ kai_db_secret_status.resources.0.data.POSTGRESQL_PASSWORD | b64decode }}"
       when: (kai_db_secret_status.resources|length) > 0
 
-    - name: Retrieve Hub Secret
-      kubernetes.core.k8s_info:
-        api_version: v1
-        kind: Secret
-        name: "{{ hub_secret_name }}"
-        namespace: "{{ app_namespace }}"
-      register: hub_secret
-
-    - name: Set Hub key
-      set_fact:
-        hub_key: "{{ hub_secret.resources[0].data.addon_token | b64decode }}"
-    - name: Generate JWT token for Kai
-      command: |
-        /usr/local/bin/jwt.sh {{ hub_key }}
-      register: kai_jwt
-      when: (kai_jwt_secret_status.resources|length) == 0
-      changed_when: (kai_jwt_secret_status.resources|length) == 0
-
-    - name: Create JWT token secret
-      k8s:
-        state: present
-        definition:
-          apiVersion: v1
-          kind: Secret
-          metadata:
-            name: "{{ kai_jwt_secret_name }}"
-            namespace: "{{ app_namespace }}"
-          stringData:
-            jwt: "{{ kai_jwt.stdout }}"
-      when: (kai_jwt_secret_status.resources|length) == 0
-
-    - name: Create KAI ConfigMap
-      k8s:
-        state: present
-        template: kai/kai-config.yaml.j2
-
     - name: Deploy KAI DB
       k8s:
         state: present
@@ -113,7 +68,7 @@
         state: present
         template: kai/kai-db-pvc.yaml.j2
 
-    - name: Deploy KAI API service
+    - name: Create Kai API deployment
       k8s:
         state: present
         template: kai/kai-api-deployment.yaml.j2
@@ -122,13 +77,3 @@
       k8s:
         state: present
         template: kai/kai-api-service.yaml.j2
-
-    - name: Deploy KAI Hub Importer
-      k8s:
-        state: present
-        template: kai/kai-importer-deployment.yaml.j2
-
-    - name: Create KAI Hub Importer Service
-      k8s:
-        state: present
-        template: kai/kai-importer-service.yaml.j2
