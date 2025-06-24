@@ -20,6 +20,8 @@ spec:
           ports:
             - containerPort: 8000
           env:
+            - name: MOUNT_PATH
+              value: /api
             - name: KAI_LLM_PARAMS
               value: '{{ kai_llm_params | to_json }}'
             - name: KAI_DB_DSN
@@ -30,4 +32,4 @@ spec:
                 secretKeyRef:
                   name: "{{ kai_api_key_secret_name }}"
                   key: {{ key }}
-{%- endfor %}
+{% endfor %}
