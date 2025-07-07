@@ -160,7 +160,7 @@ oauth_ssl_port: 8443
 
 admin_name: "admin"
 
-analyzeranalyzer_fqin: "{{ lookup('env', 'RELATED_IMAGE_ADDON_ANALYZER') }}"
+analyzer_fqin: "{{ lookup('env', 'RELATED_IMAGE_ADDON_ANALYZER') }}"
 analyzer_name: "analyzer"
 analyzer_component_name: "addon"
 analyzer_service_name: "{{ app_name }}-{{ analyzer_name }}-{{ analyzer_component_name }}"
