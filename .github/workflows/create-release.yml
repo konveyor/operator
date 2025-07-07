@@ -124,6 +124,21 @@ jobs:
               sleep 3m
           done
           docker image inspect quay.io/konveyor/tackle2-addon-discovery:${{ inputs.version }}
+      - name: tackle2-addon-platform
+        uses: konveyor/release-tools/create-release@release-0.6
+        with:
+          version: ${{ inputs.version }}
+          prev_version: ${{ inputs.previous_version }}
+          repository: konveyor/tackle2-addon-platform
+          ref: ${{ inputs.branch }}
+          github_token: ${{ secrets.GH_TOKEN }}
+      - name: wait for tackle2-addon-platform
+        run: |
+          #!/bin/bash
+          while ! docker pull quay.io/konveyor/tackle2-addon-platform:${{ inputs.version }} &> /dev/null; do
+              sleep 3m
+          done
+          docker image inspect quay.io/konveyor/tackle2-addon-platform:${{ inputs.version }}
 
   release-components:
     runs-on: ubuntu-latest
