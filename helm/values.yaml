@@ -19,6 +19,7 @@ images:
   keycloak_init: quay.io/konveyor/tackle-keycloak-init:latest
   tackle_ui: quay.io/konveyor/tackle2-ui:latest
   addon_analyzer: quay.io/konveyor/tackle2-addon-analyzer:latest
+  addon_platform: quay.io/konveyor/tackle2-addon-platform:latest
   addon_discovery: quay.io/konveyor/tackle2-addon-discovery:latest
   provider_generic: quay.io/konveyor/generic-external-provider:latest
   provider_java: quay.io/konveyor/java-external-provider:latest
