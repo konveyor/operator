@@ -1,0 +1,94 @@
+---
+kind: Addon
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  name: {{ platform_manifest }}
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/name: {{ platform_service_name }}
+    app.kubernetes.io/component: {{ platform_component_name }}
+    app.kubernetes.io/part-of: {{ app_name }}
+spec:
+  task: {{ platform_manifest }}
+  container:
+    name: {{ platform_component_name }}
+    image: {{ platform_fqin }}
+    imagePullPolicy: {{ image_pull_policy }}
+    resources:
+      limits:
+        cpu: {{ platform_container_limits_cpu }}
+        memory: {{ platform_container_limits_memory }}
+      requests:
+        cpu: {{ platform_container_requests_cpu }}
+        memory: {{ platform_container_requests_memory }}
+---
+kind: Addon
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  name: {{ platform_importer }}
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/name: {{ platform_service_name }}
+    app.kubernetes.io/component: {{ platform_component_name }}
+    app.kubernetes.io/part-of: {{ app_name }}
+spec:
+  task: {{ platform_importer }}
+  container:
+    name: {{ platform_component_name }}
+    image: {{ platform_fqin }}
+    imagePullPolicy: {{ image_pull_policy }}
+    resources:
+      limits:
+        cpu: {{ platform_container_limits_cpu }}
+        memory: {{ platform_container_limits_memory }}
+      requests:
+        cpu: {{ platform_container_requests_cpu }}
+        memory: {{ platform_container_requests_memory }}
+---
+kind: Addon
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  name: {{ platform_generator }}
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/name: {{ platform_service_name }}
+    app.kubernetes.io/component: {{ platform_component_name }}
+    app.kubernetes.io/part-of: {{ app_name }}
+spec:
+  task: {{ platform_generator }}
+  container:
+    name: {{ platform_component_name }}
+    image: {{ platform_fqin }}
+    imagePullPolicy: {{ image_pull_policy }}
+    resources:
+      limits:
+        cpu: {{ platform_container_limits_cpu }}
+        memory: {{ platform_container_limits_memory }}
+      requests:
+        cpu: {{ platform_container_requests_cpu }}
+        memory: {{ platform_container_requests_memory }}
+
+---
+kind: Task
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  namespace: {{ app_namespace }}
+  name: {{ platform_manifest }}
+spec:
+  action: fetch
+---
+kind: Task
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  namespace: {{ app_namespace }}
+  name: {{ platform_importer }}
+spec:
+  action: import
+---
+kind: Task
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  namespace: {{ app_namespace }}
+  name: {{ platform_generator }}
+spec:
+  action: generate

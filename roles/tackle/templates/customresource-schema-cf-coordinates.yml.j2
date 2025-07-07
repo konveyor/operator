@@ -1,0 +1,59 @@
+---
+kind: Schema
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  name: cloudfoundry-coordinates
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/part-of: {{ app_name }}
+spec:
+  domain: platform
+  variant: cloudfoundry
+  subject: coordinates
+  versions:
+  - definition:
+      '$schema': https://json-schema.org/draft/2020-12/schema
+      properties:
+        name:
+          description: Application name.
+          minimum: 1
+          type: string
+        space:
+          description: Space name.
+          minimum: 1
+          type: string
+      required:
+      - space
+      - name
+      title: Coordinates
+      type: object
+---
+kind: Schema
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  name: cloudfoundry-filter
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/part-of: {{ app_name }}
+spec:
+  domain: platform
+  variant: cloudfoundry
+  subject: filter
+  versions:
+  - definition:
+      '$schema': https://json-schema.org/draft/2020-12/schema
+      properties:
+        name:
+          description: Application name. May be glob expression.
+          minimum: 1
+          type: string
+        space:
+          description: Space name.
+          minimum: 1
+          type: string
+      required:
+      - space
+      - name
+      title: Coordinates
+      type: object
+

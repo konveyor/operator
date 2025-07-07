@@ -160,7 +160,7 @@ oauth_ssl_port: 8443
 
 admin_name: "admin"
 
-analyzer_fqin: "{{ lookup('env', 'RELATED_IMAGE_ADDON_ANALYZER') }}"
+analyzeranalyzer_fqin: "{{ lookup('env', 'RELATED_IMAGE_ADDON_ANALYZER') }}"
 analyzer_name: "analyzer"
 analyzer_component_name: "addon"
 analyzer_service_name: "{{ app_name }}-{{ analyzer_name }}-{{ analyzer_component_name }}"
@@ -213,6 +213,18 @@ tech_discovery_container_limits_cpu: "{{ analyzer_container_limits_cpu }}"
 tech_discovery_container_limits_memory: "{{ analyzer_container_limits_memory }}"
 tech_discovery_container_requests_cpu: "{{ analyzer_container_requests_cpu }}"
 tech_discovery_container_requests_memory: "{{ analyzer_container_requests_memory }}"
+
+platform_fqin: "{{ lookup('env', 'RELATED_IMAGE_ADDON_PLATFORM') }}"
+platform_name: "platform"
+platform_component_name: "addon"
+platform_service_name: "{{ app_name }}-{{ platform_name }}-{{ platform_component_name }}"
+platform_container_limits_cpu: "1"
+platform_container_limits_memory: "100Mi"
+platform_container_requests_cpu: "1"
+platform_container_requests_memory: "512Mi"
+platform-manifest: {{ platform_name }}-manifest
+platform-importer: {{ platform_name }}-importer
+platform-generator: {{ platform_name }}-asset-generator
 
 cache_name: "cache"
 cache_data_volume_size: "100Gi"
