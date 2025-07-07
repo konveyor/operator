@@ -222,9 +222,9 @@ platform_container_limits_cpu: "1"
 platform_container_limits_memory: "100Mi"
 platform_container_requests_cpu: "1"
 platform_container_requests_memory: "512Mi"
-platform-manifest: {{ platform_name }}-manifest
-platform-importer: {{ platform_name }}-importer
-platform-generator: {{ platform_name }}-generator
+platform-manifest: "{{ platform_name }}-manifest"
+platform-importer: "{{ platform_name }}-importer"
+platform-generator: "{{ platform_name }}-generator"
 
 cache_name: "cache"
 cache_data_volume_size: "100Gi"
