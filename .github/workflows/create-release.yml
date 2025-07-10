@@ -124,21 +124,6 @@ jobs:
               sleep 3m
           done
           docker image inspect quay.io/konveyor/tackle2-addon-discovery:${{ inputs.version }}
-      - name: kai-solution-server
-        uses: konveyor/release-tools/create-release@release-0.6
-        with:
-          version: ${{ inputs.version }}
-          prev_version: ${{ inputs.previous_version }}
-          repository: konveyor/kai
-          ref: ${{ inputs.branch }}
-          github_token: ${{ secrets.GH_TOKEN }}
-      - name: wait for kai-solution-server
-        run: |
-          #!/bin/bash
-          while ! docker pull quay.io/konveyor/kai-solution-server:${{ inputs.version }} &> /dev/null; do
-              sleep 3m
-          done
-          docker image inspect quay.io/konveyor/kai-solution-server:${{ inputs.version }}
 
   release-components:
     runs-on: ubuntu-latest
