@@ -145,6 +145,8 @@ jobs:
             image: konveyor/kantra
           - repo: konveyor/tackle2-addon-discovery
             image: konveyor/tackle2-addon-discovery
+          - repo: konveyor/kai
+            image: konveyor/kai-solution-server
       fail-fast: true
     steps:
       - uses: konveyor/release-tools/create-release@release-0.6
@@ -219,6 +221,7 @@ jobs:
         addon_discovery: quay.io/konveyor/tackle2-addon-discovery:${{ inputs.version }}
         provider_generic: quay.io/konveyor/generic-external-provider:${{ inputs.version }}
         provider_java: quay.io/konveyor/java-external-provider:${{ inputs.version }}
+        kai: quay.io/konveyor/kai-solution-server:${{ inputs.version }}
         # The ones we don't own
         oauth_proxy: quay.io/konveyor/origin-oauth-proxy:${{ inputs.version }}
         tackle_postgres: quay.io/konveyor/postgresql-15-c9s:${{ inputs.version }}
@@ -335,6 +338,7 @@ jobs:
           "konveyor/tackle2-addon-discovery"
           "konveyor/tackle2-addon"
           "konveyor/operator"
+          "konveyor/kai"
         )
 
         echo "Konveyor Operator ${{ inputs.version }}" > changelog.md
