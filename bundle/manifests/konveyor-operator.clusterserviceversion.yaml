@@ -103,7 +103,7 @@ metadata:
     categories: Modernization & Migration
     certified: "false"
     containerImage: quay.io/konveyor/tackle2-operator:latest
-    createdAt: "2025-07-18T17:23:44Z"
+    createdAt: "2025-07-18T18:39:20Z"
     description: Konveyor is an open-source application modernization platform that
       helps organizations safely and predictably modernize applications to Kubernetes
       at scale.
@@ -302,6 +302,8 @@ spec:
                   value: quay.io/konveyor/tackle2-addon-analyzer:latest
                 - name: RELATED_IMAGE_ADDON_DISCOVERY
                   value: quay.io/konveyor/tackle2-addon-discovery:latest
+                - name: RELATED_IMAGE_ADDON_PLATFORM
+                  value: quay.io/konveyor/tackle2-addon-platform:latest
                 - name: RELATED_IMAGE_PROVIDER_GENERIC
                   value: quay.io/konveyor/generic-external-provider:latest
                 - name: RELATED_IMAGE_PROVIDER_JAVA
@@ -499,6 +501,8 @@ spec:
     name: addon-analyzer
   - image: quay.io/konveyor/tackle2-addon-discovery:latest
     name: addon-discovery
+  - image: quay.io/konveyor/tackle2-addon-platform:latest
+    name: addon-platform
   - image: quay.io/konveyor/generic-external-provider:latest
     name: provider-generic
   - image: quay.io/konveyor/java-external-provider:latest
