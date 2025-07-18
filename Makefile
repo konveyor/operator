@@ -182,7 +182,7 @@ endif
 endif
 
 OPERATOR_SDK = $(shell pwd)/bin/operator-sdk
-OPERATOR_SDK_VERSION ?= v1.28.1
+OPERATOR_SDK_VERSION ?= v1.35.0
 .PHONY: operator-sdk
 operator-sdk:
 ifeq (,$(wildcard $(OPERATOR_SDK)))

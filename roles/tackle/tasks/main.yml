@@ -648,10 +648,10 @@
     state: present
     definition: "{{ lookup('template', 'customresource-addon-platform.yml.j2') }}"
 
-- name: "Create cloudfoundry schema CRs"
+- name: "Create schema CRs"
   k8s:
     state: present
-    definition: "{{ lookup('template', 'customresource-schema-cloudfoundry.yml.j2') }}"
+    definition: "{{ lookup('template', 'customresource-schema.yml.j2') }}"
 
 - name: "Setup Hub API Service"
   k8s:
