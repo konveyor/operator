@@ -103,7 +103,7 @@ metadata:
     categories: Modernization & Migration
     certified: "false"
     containerImage: quay.io/konveyor/tackle2-operator:latest
-    createdAt: "2025-06-12T17:38:17Z"
+    createdAt: "2025-07-18T18:39:20Z"
     description: Konveyor is an open-source application modernization platform that
       helps organizations safely and predictably modernize applications to Kubernetes
       at scale.
@@ -131,7 +131,7 @@ metadata:
         }
       }
     operatorframework.io/suggested-namespace: konveyor-tackle
-    operators.operatorframework.io/builder: operator-sdk-v1.28.1
+    operators.operatorframework.io/builder: operator-sdk-v1.35.0
     operators.operatorframework.io/project_layout: ansible.sdk.operatorframework.io/v1
     repository: https://github.com/konveyor/tackle2-operator
     support: https://github.com/konveyor/tackle2-operator/issues
@@ -155,6 +155,9 @@ spec:
       displayName: Extension
       kind: Extension
       name: extensions.tackle.konveyor.io
+      version: v1alpha1
+    - kind: Schema
+      name: schemas.tackle.konveyor.io
       version: v1alpha1
     - description: Tackle
       displayName: Tackle
@@ -299,6 +302,8 @@ spec:
                   value: quay.io/konveyor/tackle2-addon-analyzer:latest
                 - name: RELATED_IMAGE_ADDON_DISCOVERY
                   value: quay.io/konveyor/tackle2-addon-discovery:latest
+                - name: RELATED_IMAGE_ADDON_PLATFORM
+                  value: quay.io/konveyor/tackle2-addon-platform:latest
                 - name: RELATED_IMAGE_PROVIDER_GENERIC
                   value: quay.io/konveyor/generic-external-provider:latest
                 - name: RELATED_IMAGE_PROVIDER_JAVA
@@ -441,6 +446,7 @@ spec:
           - addons
           - extensions
           - tasks
+          - schemas
           verbs:
           - create
           - delete
@@ -495,6 +501,8 @@ spec:
     name: addon-analyzer
   - image: quay.io/konveyor/tackle2-addon-discovery:latest
     name: addon-discovery
+  - image: quay.io/konveyor/tackle2-addon-platform:latest
+    name: addon-platform
   - image: quay.io/konveyor/generic-external-provider:latest
     name: provider-generic
   - image: quay.io/konveyor/java-external-provider:latest

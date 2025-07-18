@@ -99,6 +99,7 @@ rules:
   - addons
   - extensions
   - tasks
+  - schemas
   verbs:
   - create
   - delete
