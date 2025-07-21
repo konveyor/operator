@@ -31,7 +31,7 @@ kind: Task
 apiVersion: tackle.konveyor.io/v1alpha1
 metadata:
   namespace: {{ app_namespace }}
-  name: {{ app_import }}
+  name: {{ application_import }}
 spec:
   description: |
     Inspect the source platform. Create applications based on selection criteria.
@@ -43,7 +43,7 @@ kind: Task
 apiVersion: tackle.konveyor.io/v1alpha1
 metadata:
   namespace: {{ app_namespace }}
-  name: {{ app_manifest }}
+  name: {{ fetch_manifest }}
 spec:
   description: Fetch the application manifest from the source platform.
   data:

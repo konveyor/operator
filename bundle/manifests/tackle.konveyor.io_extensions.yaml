@@ -1235,6 +1235,9 @@ spec:
                 required:
                 - name
                 type: object
+              description:
+                description: Description
+                type: string
               metadata:
                 description: Metadata details.
                 type: object

@@ -103,7 +103,7 @@ metadata:
     categories: Modernization & Migration
     certified: "false"
     containerImage: quay.io/konveyor/tackle2-operator:latest
-    createdAt: "2025-07-18T18:39:20Z"
+    createdAt: "2025-07-21T20:41:44Z"
     description: Konveyor is an open-source application modernization platform that
       helps organizations safely and predictably modernize applications to Kubernetes
       at scale.

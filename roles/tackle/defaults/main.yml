@@ -214,8 +214,10 @@ platform_container_requests_cpu: "1"
 platform_container_requests_memory: "100Mi"
 platform_container_limits_cpu: "1"
 platform_container_limits_memory: "512Mi"
-app_import: "app-import"
-app_manifest: "app-manifest"
+
+# platform tasks.
+application_import: "application-import"
+fetch_manifest: "fetch-manifest"
 asset_generation: "asset-generation"
 
 cache_name: "cache"
