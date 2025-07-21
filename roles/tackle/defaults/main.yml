@@ -217,7 +217,7 @@ platform_container_limits_memory: "512Mi"
 
 # platform tasks.
 application_import: "application-import"
-fetch_manifest: "fetch-manifest"
+application_manifest: "application-manifest"
 asset_generation: "asset-generation"
 
 cache_name: "cache"

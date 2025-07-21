@@ -11,8 +11,8 @@ metadata:
 spec:
   description: Perform platform related actions.
   task:
-  - {{ app_import }}
-  - {{ app_manifest }}
+  - {{ application_import }}
+  - {{ application_manifest }}
   - {{ asset_generation }}
   container:
     name: {{ platform_component_name }}
@@ -43,7 +43,7 @@ kind: Task
 apiVersion: tackle.konveyor.io/v1alpha1
 metadata:
   namespace: {{ app_namespace }}
-  name: {{ fetch_manifest }}
+  name: {{ application_manifest }}
 spec:
   description: Fetch the application manifest from the source platform.
   data:
