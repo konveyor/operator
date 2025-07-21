@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/part-of: {{ app_name }}
 spec:
   description: Perform platform related actions.
-  task:
+  tasks:
   - {{ application_import }}
   - {{ application_manifest }}
   - {{ asset_generation }}
