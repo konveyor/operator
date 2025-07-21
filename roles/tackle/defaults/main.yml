@@ -215,7 +215,7 @@ platform_container_requests_memory: "100Mi"
 platform_container_limits_cpu: "1"
 platform_container_limits_memory: "512Mi"
 
-# platform tasks.
+# platform related tasks.
 application_import: "application-import"
 application_manifest: "application-manifest"
 asset_generation: "asset-generation"
