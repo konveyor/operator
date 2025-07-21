@@ -9,7 +9,10 @@ metadata:
     app.kubernetes.io/component: {{ analyzer_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
 spec:
-  task: {{ analyzer_name }}
+  description: Provides LSP-based source code analysis.
+  tasks:
+  - {{ analyzer_name }}
+  - {{ tech_discovery_name }}
   container:
     name: {{ analyzer_component_name }}
     image: {{ analyzer_fqin }}
@@ -28,5 +31,6 @@ metadata:
   namespace: {{ app_namespace }}
   name: {{ analyzer_name }}
 spec:
+  description: Perform analysis of application source code.
   priority: 10
   dependencies: [ {{ language_discovery_name }} ]

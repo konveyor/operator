@@ -45,6 +45,9 @@ spec:
                 items:
                   type: string
                 type: array
+              description:
+                description: Description
+                type: string
               priority:
                 description: Priority defines the task priority (0-n).
                 type: integer

@@ -9,7 +9,11 @@ metadata:
     app.kubernetes.io/component: {{ platform_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
 spec:
-  task: {{ platform_name }}
+  description: Perform platform related actions.
+  task:
+  - {{ app_import }}
+  - {{ app_manifest }}
+  - {{ asset_generation }}
   container:
     name: {{ platform_component_name }}
     image: {{ platform_fqin }}
@@ -27,5 +31,32 @@ kind: Task
 apiVersion: tackle.konveyor.io/v1alpha1
 metadata:
   namespace: {{ app_namespace }}
-  name: {{ platform_name }}
-spec: {}
+  name: {{ app_import }}
+spec:
+  description: |
+    Inspect the source platform. Create applications based on selection criteria.
+  data:
+    action: import
+
+---
+kind: Task
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  namespace: {{ app_namespace }}
+  name: {{ app_manifest }}
+spec:
+  description: Fetch the application manifest from the source platform.
+  data:
+    action: fetch
+
+---
+kind: Task
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  namespace: {{ app_namespace }}
+  name: {{ asset_generation }}
+spec:
+  description: Generate application deployment assets.
+  data:
+    action: generate
+

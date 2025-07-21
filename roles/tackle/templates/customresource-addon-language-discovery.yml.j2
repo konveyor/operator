@@ -9,7 +9,12 @@ metadata:
     app.kubernetes.io/component: {{ language_discovery_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
 spec:
-  task: {{ language_discovery_name }}
+  description: |
+    Provides application source code analysis to
+    determine programming languages.  The application tags
+    are updated to reflect the detected languages.
+  tasks:
+  - {{ language_discovery_name }}
   container:
     name: {{ language_discovery_component_name }}
     image: {{ language_discovery_fqin }}
@@ -30,5 +35,8 @@ metadata:
   labels:
     konveyor.io/discovery: "language"
 spec:
+  description: |
+    Perform source code analysis to determine program languages.
+    The application tags are updated to reflect the detected languages.
   data:
     source: language-discovery

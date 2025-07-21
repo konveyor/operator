@@ -1,27 +1,4 @@
 ---
-kind: Addon
-apiVersion: tackle.konveyor.io/v1alpha1
-metadata:
-  name: {{ tech_discovery_name }}
-  namespace: {{ app_namespace }}
-  labels:
-    app.kubernetes.io/name: {{ tech_discovery_service_name }}
-    app.kubernetes.io/component: {{ tech_discovery_component_name }}
-    app.kubernetes.io/part-of: {{ app_name }}
-spec:
-  task: {{ tech_discovery_name }}
-  container:
-    name: {{ tech_discovery_component_name }}
-    image: {{ tech_discovery_fqin }}
-    imagePullPolicy: {{ image_pull_policy }}
-    resources:
-      limits:
-        cpu: {{ tech_discovery_container_limits_cpu }}
-        memory: {{ tech_discovery_container_limits_memory }}
-      requests:
-        cpu: {{ tech_discovery_container_requests_cpu }}
-        memory: {{ tech_discovery_container_requests_memory }}
----
 kind: Task
 apiVersion: tackle.konveyor.io/v1alpha1
 metadata:
@@ -30,6 +7,9 @@ metadata:
   labels:
     konveyor.io/discovery: "technology"
 spec:
+  description: |
+    Perform analysis of application source code to determine
+    referenced technologies.
   priority: 1
   dependencies: [ {{ language_discovery_name }} ]
   data:
