@@ -633,15 +633,19 @@
     name: "discovery-generic"
     namespace: "{{ app_namespace }}"
 
+# Analyzer addon used for both analysis and tech discovery tasks.
+- name: "Delete tech-discovery addon."
+  k8s:
+    state: absent
+    kind: Addon
+    api_version: tackle.konveyor.io/v1alpha1
+    name: "tech-discovery"
+    namespace: "{{ app_namespace }}"
+
 - name: "Create Language Discovery Addon CR"
   k8s:
     state: present
     definition: "{{ lookup('template', 'customresource-addon-language-discovery.yml.j2') }}"
-
-- name: "Create Tech Discovery Addon CR"
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'customresource-addon-tech-discovery.yml.j2') }}"
 
 - name: "Create Platform Addon CR"
   k8s:

@@ -34,3 +34,29 @@ spec:
   description: Perform analysis of application source code.
   priority: 10
   dependencies: [ {{ language_discovery_name }} ]
+
+---
+kind: Task
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  namespace: {{ app_namespace }}
+  name: {{ tech_discovery_name }}
+  labels:
+    konveyor.io/discovery: "technology"
+spec:
+  description: |
+    Perform analysis of application source code to determine
+    referenced technologies.
+  priority: 1
+  dependencies: [ {{ language_discovery_name }} ]
+  data:
+    mode:
+      discovery: true
+      withDeps: true
+    tagger:
+      enabled: true
+      source: tech-discovery
+    rules:
+      labels:
+        included: ["discovery"]
+
