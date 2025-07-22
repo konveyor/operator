@@ -1231,9 +1231,6 @@ spec:
                 required:
                 - name
                 type: object
-              description:
-                description: Description
-                type: string
               image:
                 description: 'Deprecated: Addon is deprecated.'
                 type: string

@@ -9,7 +9,6 @@ metadata:
     app.kubernetes.io/component: {{ platform_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
 spec:
-  description: Perform platform related actions.
   tasks:
   - {{ application_import }}
   - {{ application_manifest }}
@@ -33,8 +32,6 @@ metadata:
   namespace: {{ app_namespace }}
   name: {{ application_import }}
 spec:
-  description: |
-    Inspect the source platform. Create applications based on selection criteria.
   data:
     action: import
 
@@ -45,7 +42,6 @@ metadata:
   namespace: {{ app_namespace }}
   name: {{ application_manifest }}
 spec:
-  description: Fetch the application manifest from the source platform.
   data:
     action: fetch
 
@@ -56,7 +52,6 @@ metadata:
   namespace: {{ app_namespace }}
   name: {{ asset_generation }}
 spec:
-  description: Generate application deployment assets.
   data:
     action: generate
 

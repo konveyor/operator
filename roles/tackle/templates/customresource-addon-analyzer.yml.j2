@@ -9,7 +9,6 @@ metadata:
     app.kubernetes.io/component: {{ analyzer_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
 spec:
-  description: Provides LSP-based source code analysis.
   tasks:
   - {{ analyzer_name }}
   - {{ tech_discovery_name }}
@@ -31,7 +30,6 @@ metadata:
   namespace: {{ app_namespace }}
   name: {{ analyzer_name }}
 spec:
-  description: Perform analysis of application source code.
   priority: 10
   dependencies: [ {{ language_discovery_name }} ]
 
@@ -44,9 +42,6 @@ metadata:
   labels:
     konveyor.io/discovery: "technology"
 spec:
-  description: |
-    Perform analysis of application source code to determine
-    referenced technologies.
   priority: 1
   dependencies: [ {{ language_discovery_name }} ]
   data:
