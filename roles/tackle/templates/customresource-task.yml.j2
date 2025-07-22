@@ -1,0 +1,74 @@
+---
+kind: Task
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  namespace: {{ app_namespace }}
+  name: {{ analyzer_name }}
+spec:
+  priority: 10
+  dependencies: [ {{ language_discovery_name }} ]
+
+---
+kind: Task
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  namespace: {{ app_namespace }}
+  name: {{ tech_discovery_name }}
+  labels:
+    konveyor.io/discovery: "technology"
+spec:
+  priority: 1
+  dependencies: [ {{ language_discovery_name }} ]
+  data:
+    mode:
+      discovery: true
+      withDeps: true
+    tagger:
+      enabled: true
+      source: tech-discovery
+    rules:
+      labels:
+        included: ["discovery"]
+
+---
+kind: Task
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  namespace: {{ app_namespace }}
+  name: {{ language_discovery_name }}
+  labels:
+    konveyor.io/discovery: "language"
+spec:
+  data:
+    source: language-discovery
+
+---
+kind: Task
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  namespace: {{ app_namespace }}
+  name: {{ application_import }}
+spec:
+  data:
+    action: import
+
+---
+kind: Task
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  namespace: {{ app_namespace }}
+  name: {{ application_manifest }}
+spec:
+  data:
+    action: fetch
+
+---
+kind: Task
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  namespace: {{ app_namespace }}
+  name: {{ asset_generation }}
+spec:
+  data:
+    action: generate
+

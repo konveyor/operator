@@ -595,15 +595,20 @@
     name: "{{ admin_name }}"
     namespace: "{{ app_namespace }}"
 
-- name: "Create Analyzer Addon CR"
+- name: "Create Addon CRs"
   k8s:
     state: present
-    definition: "{{ lookup('template', 'customresource-addon-analyzer.yml.j2') }}"
+    definition: "{{ lookup('template', 'customresource-addon.yml.j2') }}"
 
-- name: "Create Extensions CR"
+- name: "Create Extension CRs"
   k8s:
     state: present
     definition: "{{ lookup('template', 'customresource-extension.yml.j2') }}"
+
+- name: "Create Task CRs" 
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'customresource-task.yml.j2') }}"
 
 # Generic extension refactored into separate
 # extensions for each provider.
@@ -641,21 +646,6 @@
     api_version: tackle.konveyor.io/v1alpha1
     name: "tech-discovery"
     namespace: "{{ app_namespace }}"
-
-- name: "Create Language Discovery Addon CR"
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'customresource-addon-language-discovery.yml.j2') }}"
-
-- name: "Create Platform Addon CR"
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'customresource-addon-platform.yml.j2') }}"
-
-- name: "Create schema CRs"
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'customresource-schema.yml.j2') }}"
 
 - name: "Setup Hub API Service"
   k8s:
