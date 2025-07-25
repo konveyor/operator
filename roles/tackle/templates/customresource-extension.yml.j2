@@ -23,6 +23,11 @@ spec:
       value: ${seq:8000}
     - name: MAVEN_OPTS
       value: -Dmaven.repo.local={{ cache_mount_path }}/m2
+    - name: JAVA_TOOL_OPTIONS
+      value: >
+        -Declipse.log.console=true
+        -Dorg.eclipse.jdt.ls.log=all
+        -Dorg.eclipse.jdt.ls.log.level=ALL
     resources:
       limits:
         cpu: {{ provider_java_container_limits_cpu }}
