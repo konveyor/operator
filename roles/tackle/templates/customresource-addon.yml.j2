@@ -9,9 +9,7 @@ metadata:
     app.kubernetes.io/component: {{ analyzer_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
 spec:
-  tasks:
-  - {{ analyzer_name }}
-  - {{ tech_discovery_name }}
+  task: ^({{ analyzer_name }}|{{ tech_discovery_name }})$
   container:
     name: {{ analyzer_component_name }}
     image: {{ analyzer_fqin }}
@@ -35,8 +33,7 @@ metadata:
     app.kubernetes.io/component: {{ language_discovery_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
 spec:
-  tasks:
-  - {{ language_discovery_name }}
+  task: {{ language_discovery_name }}
   container:
     name: {{ language_discovery_component_name }}
     image: {{ language_discovery_fqin }}
@@ -60,10 +57,7 @@ metadata:
     app.kubernetes.io/component: {{ platform_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
 spec:
-  tasks:
-  - {{ application_import }}
-  - {{ application_manifest }}
-  - {{ asset_generation }}
+  task: ^({{ application_import }}|{{ application_manifest }}|{{ asset_generation }})$
   container:
     name: {{ platform_component_name }}
     image: {{ platform_fqin }}
