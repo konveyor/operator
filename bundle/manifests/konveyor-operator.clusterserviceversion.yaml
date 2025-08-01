@@ -75,6 +75,51 @@ metadata:
         },
         {
           "apiVersion": "tackle.konveyor.io/v1alpha1",
+          "kind": "Schema",
+          "metadata": {
+            "name": "myschema",
+            "namespace": "konveyor-tackle"
+          },
+          "spec": {
+            "domain": "mydomain",
+            "subject": "mysubject",
+            "variant": "myvariant",
+            "versions": [
+              {
+                "definition": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "properties": {
+                    "names": {
+                      "description": "Application names. Each may be a glob expression.",
+                      "items": {
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "minItems": 0,
+                      "type": "array"
+                    },
+                    "spaces": {
+                      "description": "Space names.",
+                      "items": {
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "minItems": 1,
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "spaces"
+                  ],
+                  "title": "Coordinates",
+                  "type": "object"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "apiVersion": "tackle.konveyor.io/v1alpha1",
           "kind": "Tackle",
           "metadata": {
             "name": "tackle",
@@ -103,7 +148,7 @@ metadata:
     categories: Modernization & Migration
     certified: "false"
     containerImage: quay.io/konveyor/tackle2-operator:latest
-    createdAt: "2025-07-25T19:41:29Z"
+    createdAt: "2025-08-01T12:20:51Z"
     description: Konveyor is an open-source application modernization platform that
       helps organizations safely and predictably modernize applications to Kubernetes
       at scale.
