@@ -34,7 +34,7 @@ jobs:
       - name: Ansible Lint
         uses: ansible/ansible-lint@main
         with:
-          path: "roles/"
+          working_directory: "roles/"
 
   build-operator-bundle:
     needs: detect-changes
