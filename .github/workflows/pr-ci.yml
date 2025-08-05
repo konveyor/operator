@@ -32,7 +32,7 @@ jobs:
       - name: Checkout PR branch
         uses: actions/checkout@v4
       - name: Ansible Lint
-        uses: ansible/ansible-lint-action@main
+        uses: ansible/ansible-lint@main
         with:
           path: "roles/"
 
