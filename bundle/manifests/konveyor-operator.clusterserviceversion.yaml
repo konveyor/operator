@@ -353,6 +353,8 @@ spec:
                   value: quay.io/konveyor/generic-external-provider:latest
                 - name: RELATED_IMAGE_PROVIDER_JAVA
                   value: quay.io/konveyor/java-external-provider:latest
+                - name: RELATED_IMAGE_KANTRA
+                  value: quay.io/konveyor/kantra:latest
                 - name: RELATED_IMAGE_KAI
                   value: quay.io/konveyor/kai-solution-server:latest
                 image: quay.io/konveyor/tackle2-operator:latest
@@ -552,6 +554,8 @@ spec:
     name: provider-generic
   - image: quay.io/konveyor/java-external-provider:latest
     name: provider-java
+  - image: quay.io/konveyor/kantra:latest
+    name: kantra
   - image: quay.io/konveyor/kai-solution-server:latest
     name: kai
   version: 99.0.0
