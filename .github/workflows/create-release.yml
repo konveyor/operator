@@ -293,7 +293,6 @@ jobs:
       operator_bundle: quay.io/konveyor/tackle2-operator-bundle:${{ inputs.version }}
       api_tests_ref: ${{ inputs.branch }}
       ui_tests_ref: ${{ inputs.branch }}
-      cli_tests_ref: ${{ inputs.branch }}
 
   publish-bundle:
     name: Publish Bundle Manifest
