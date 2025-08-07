@@ -49,6 +49,10 @@ inputs:
     description: "image uri for generic provider (ie. quay.io/<namespace>/<image-name>:<tag>)"
     required: false
     default: ""
+  kantra:
+    description: "image uri for kantra (ie. quay.io/<namespace>/<image-name>:<tag>)"
+    required: false
+    default: ""
   version:
     description: "operator version"
     required: false
@@ -85,6 +89,7 @@ runs:
       [ -n "${{ inputs.addon_discovery }}" ] && OPTS+=" --set images.addon_discovery=${{ inputs.addon_discovery }}"
       [ -n "${{ inputs.provider_generic }}" ] && OPTS+=" --set images.provider_generic=${{ inputs.provider_generic }}"
       [ -n "${{ inputs.provider_java }}" ] && OPTS+=" --set images.provider_java=${{ inputs.provider_java }}"
+      [ -n "${{ inputs.kantra }}" ] && OPTS+=" --set images.kantra=${{ inputs.kantra }}"
       HELM_OPTS="${OPTS}" make bundle
       cat ./bundle/manifests/konveyor-operator.clusterserviceversion.yaml
       make bundle-build
