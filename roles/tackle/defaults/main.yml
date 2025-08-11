@@ -200,6 +200,9 @@ provider_java_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_PROVIDER_JAVA') }}"
 provider_java_name: "java"
 provider_java_service_name: "{{ app_name }}-{{ provider_java_name }}-{{ provider_java_component_name }}"
 
+kantra_fqin: "{{ lookup('env', 'RELATED_IMAGE_KANTRA') }}"
+kantra_name: "kantra"
+
 language_discovery_fqin: "{{ lookup('env', 'RELATED_IMAGE_ADDON_DISCOVERY') }}"
 language_discovery_name: "language-discovery"
 language_discovery_component_name: "addon"
