@@ -912,5 +912,5 @@
       - operators.coreos.com/rhsso-operator.openshift-mta =
 
 - name: Run kai tasks
-  when: experimental_deploy_kai
+  when: feature_kai_enabled
   import_tasks: kai.yml

@@ -257,6 +257,7 @@ rhbk_url: "{{ rhsso_proto }}://{{ rhbk_service_name }}-service.{{ app_namespace 
 
 # Kai-related variables
 experimental_deploy_kai: false
+feature_kai_enabled: '{{ experimental_deploy_kai | bool}}'
 
 kai_component_name: "kai-solution-server"
 kai_service_name: "{{ kai_component_name }}"
