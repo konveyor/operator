@@ -198,9 +198,9 @@ kubectl create secret generic kai-api-keys -n konveyor-tackle \
 
 3. Set the provider in the Tackle CR to match your secret
 
-- IBM GenAI: `spec.kai_model_provider: ChatIBMGenAI` (default)
-- OpenAI-compatible: `spec.kai_model_provider: openai`
-- Google: `spec.kai_model_provider: google`
+- IBM GenAI: `spec.kai_llm_provider: ChatIBMGenAI` (default)
+- OpenAI-compatible: `spec.kai_llm_provider: openai`
+- Google: `spec.kai_llm_provider: google`
 
 Example (OpenAI-compatible):
 ```
@@ -211,9 +211,9 @@ metadata:
   namespace: konveyor-tackle
 spec:
   experimental_deploy_kai: true
-  kai_model_provider: openai
+  kai_llm_provider: openai
   # optional, pick a suitable model for your provider
-  kai_model_id: gpt-4o-mini
+  kai_llm_model: gpt-4o-mini
 ```
 
 4. (Optional) Force a reconcile so the operator picks up the secret immediately
@@ -239,8 +239,8 @@ Advanced configuration: you can override defaults by setting fields on the `Tack
 spec:
   experimental_deploy_kai: true
   kai_api_key_secret_name: my-kai-secret
-  kai_model_provider: ChatIBMGenAI
-  kai_model_id: mistralai/mixtral-8x7b-instruct-v01
+  kai_llm_provider: ChatIBMGenAI
+  kai_llm_model: mistralai/mixtral-8x7b-instruct-v01
   kai_enable_demo_mode: "false"
   kai_enable_trace: "true"
 ```
