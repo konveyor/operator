@@ -18,7 +18,7 @@ inputs:
     required: false
     default: ""
   kai:
-    description: "image uri for kai (ie quay.io/<namespace>/<image-name>:<tag>"
+    description: "image uri for kai (ie quay.io/<namespace>/<image-name>:<tag>)"
     required: false
     default: ""
   tackle_postgres:
