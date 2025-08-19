@@ -9,6 +9,7 @@ MINIKUBE_KUBERNETES_VERSION="${MINIKUBE_KUBERNETES_VERSION:-}"
 MINIKUBE_CPUS="${MINIKUBE_CPUS:-}"
 MINIKUBE_MEMORY="${MINIKUBE_MEMORY:-}"
 MINIKUBE_CNI="${MINIKUBE_CNI:-}"
+MINIKUBE_NETWORK="${MINIKUBE_NETWORK:-}"
 
 # Check pre-reqs
 # May want to leave this for the user to install
@@ -32,6 +33,8 @@ if ! minikube status; then
     ARGS+=" --memory=${MINIKUBE_MEMORY}"
   [ -z "${MINIKUBE_CNI}" ] || \
     ARGS+=" --cni=${MINIKUBE_CNI}"
+  [ -z "${MINIKUBE_NETWORK}" ] || \
+    ARGS+=" --network=${MINIKUBE_NETWORK}"
   set -x
   minikube start ${ARGS}
 fi
