@@ -17,6 +17,8 @@ inputs:
     description: "image uri for tackle-hub (ie. quay.io/<namespace>/<image-name>:<tag>)"
     required: false
     default: ""
+  kai:
+    description: "image uri for kai (ie quay.io/<namespace>/<image-name>:<tag>"
   tackle_postgres:
     description: "image uri for tackle-postgres (ie. quay.io/<namespace>/<image-name>:<tag>)"
     required: false
@@ -81,6 +83,7 @@ runs:
       [ -n "${{ inputs.operator }}" ] && OPTS+=" --set images.operator=${{ inputs.operator }}"
       [ -n "${{ inputs.oauth_proxy }}" ] && OPTS+=" --set images.oauth_proxy=${{ inputs.oauth_proxy }}"
       [ -n "${{ inputs.tackle_hub }}" ] && OPTS+=" --set images.tackle_hub=${{ inputs.tackle_hub }}"
+      [ -n "${{ inputs.kai }}" ] && OPTS+=" --set images.operator=${{ inputs.kai }}"
       [ -n "${{ inputs.tackle_postgres }}" ] && OPTS+=" --set images.tackle_postgres=${{ inputs.tackle_postgres }}"
       [ -n "${{ inputs.keycloak_sso }}" ] && OPTS+=" --set images.keycloak_sso=${{ inputs.keycloak_sso }}"
       [ -n "${{ inputs.keycloak_init }}" ] && OPTS+=" --set images.keycloak_init=${{ inputs.keycloak_init }}"
