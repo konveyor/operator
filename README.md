@@ -247,7 +247,7 @@ spec:
 
 ## Konveyor Storage Requirements
 
-Konveyor requires a total of 5 persistent volumes (PVs) used by different components to successfully deploy, 3 RWO volumes and 2 RWX volumes will be requested via PVCs.
+Konveyor requires a total of 5 persistent volumes (PVs) used by different components to successfully deploy, 3 RWO volumes and 2 RWX volumes will be requested via PVCs. When `experimental_deploy_kai: true` is enabled, an additional RWO volume is required for the kai database.
 
 Name | Default Size | Access Mode | Description
 --- | --- | --- | ---
@@ -255,6 +255,7 @@ hub database | 5Gi | RWO | Hub DB
 hub bucket | 100Gi | RWX | Hub file storage
 keycloak postgresql | 1Gi | RWO | Keycloak backend DB
 cache | 100Gi | RWX | cache repository
+kai database | 5Gi | RWO | Kai DB (when experimental_deploy_kai: true)
 
 ### Konveyor Storage Custom Settings Example
 
