@@ -292,6 +292,6 @@ kai_llm_params:
 
 kai_database_image_fqin: "{{ keycloak_database_image_fqin }}"
 kai_database_secret_name: kai-db-secret
-kai_database_volume_size: "10Gi"
+kai_database_volume_size: "5Gi"
 kai_database_volume_claim_name: "{{ hub_service_name }}-kai-database-volume-claim"
 kai_database_address: kai-db.{{ app_namespace }}.svc
