@@ -247,7 +247,9 @@ spec:
 
 ## Konveyor Storage Requirements
 
-Konveyor requires a total of 5 persistent volumes (PVs) used by different components to successfully deploy, 3 RWO volumes and 2 RWX volumes will be requested via PVCs. When `experimental_deploy_kai: true` is enabled, an additional RWO volume is required for the kai database.
+Konveyor requires a total of 4 persistent volumes (PVs): 2 RWO and 2 RWX. When
+`experimental_deploy_kai: true` is enabled, an additional RWO volume is required
+for the Kai database.
 
 Name | Default Size | Access Mode | Description
 --- | --- | --- | ---
