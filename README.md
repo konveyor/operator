@@ -174,31 +174,25 @@ metadata:
   name: tackle
   namespace: konveyor-tackle
 spec:
-  experimental_deploy_kai: true
+  kai_solution_server_enabled: true
 ```
 
 2. Create a credentials secret named `kai-api-keys` in the same namespace. Choose the provider you will use:
 
-- IBM GenAI (default provider `ChatIBMGenAI`)
-```
-kubectl create secret generic kai-api-keys -n konveyor-tackle \
-  --from-literal=genai_key='<YOUR_IBM_GENAI_KEY>'
-```
 - OpenAI-compatible
 ```
 kubectl create secret generic kai-api-keys -n konveyor-tackle \
-  --from-literal=api_base='https://api.openai.com/v1' \
-  --from-literal=api_key='<YOUR_OPENAI_KEY>'
+  --from-literal=OPENAI_API_BASE='https://api.openai.com/v1' \
+  --from-literal=OPENAI_API_KEY='<YOUR_OPENAI_KEY>'
 ```
 - Google
 ```
 kubectl create secret generic kai-api-keys -n konveyor-tackle \
-  --from-literal=google_key='<YOUR_GOOGLE_API_KEY>'
+  --from-literal=GOOGLE_API_KEY='<YOUR_GOOGLE_API_KEY>'
 ```
 
 3. Set the provider in the Tackle CR to match your secret
 
-- IBM GenAI: `spec.kai_llm_provider: ChatIBMGenAI` (default)
 - OpenAI-compatible: `spec.kai_llm_provider: openai`
 - Google: `spec.kai_llm_provider: google`
 
@@ -210,7 +204,7 @@ metadata:
   name: tackle
   namespace: konveyor-tackle
 spec:
-  experimental_deploy_kai: true
+  kai_solution_server_enabled: true
   kai_llm_provider: openai
   # optional, pick a suitable model for your provider
   kai_llm_model: gpt-4o-mini
@@ -237,10 +231,10 @@ Advanced configuration: you can override defaults by setting fields on the `Tack
 
 ```
 spec:
-  experimental_deploy_kai: true
+  kai_solution_server_enabled: true
   kai_api_key_secret_name: my-kai-secret
-  kai_llm_provider: ChatIBMGenAI
-  kai_llm_model: mistralai/mixtral-8x7b-instruct-v01
+  kai_llm_provider: openai
+  kai_llm_model: gpt-4o-mini
   kai_enable_demo_mode: "false"
   kai_enable_trace: "true"
 ```
@@ -248,7 +242,7 @@ spec:
 ## Konveyor Storage Requirements
 
 Konveyor requires a total of 4 persistent volumes (PVs): 2 RWO and 2 RWX. When
-`experimental_deploy_kai: true` is enabled, an additional RWO volume is required
+`kai_solution_server_enabled: true` is enabled, an additional RWO volume is required
 for the Kai database.
 
 Name | Default Size | Access Mode | Description
@@ -257,7 +251,7 @@ hub database | 5Gi | RWO | Hub DB
 hub bucket | 100Gi | RWX | Hub file storage
 keycloak postgresql | 1Gi | RWO | Keycloak backend DB
 cache | 100Gi | RWX | cache repository
-kai database | 5Gi | RWO | Kai DB (when experimental_deploy_kai: true)
+kai database | 5Gi | RWO | Kai DB (when kai_solution_server_enabled: true)
 
 ### Konveyor Storage Custom Settings Example
 
