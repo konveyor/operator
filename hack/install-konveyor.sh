@@ -10,6 +10,7 @@ OPERATOR_BUNDLE_IMAGE="${OPERATOR_BUNDLE_IMAGE:-quay.io/konveyor/tackle2-operato
 TACKLE_CR="${TACKLE_CR:-}"
 TIMEOUT="${TIMEOUT:-15m}"
 OLM_VERSION="${OLM_VERSION:-0.28.0}"
+DISABLE_MAVEN_SEARCH="${DISABLE_MAVEN_SEARCH:-false}"
 
 if ! command -v kubectl >/dev/null 2>&1; then
   echo "Please install kubectl. See https://kubernetes.io/docs/tasks/tools/"
@@ -91,6 +92,7 @@ metadata:
   name: tackle
 spec:
   feature_auth_required: false
+  disable_maven_search: ${DISABLE_MAVEN_SEARCH}
 EOF
   fi
 

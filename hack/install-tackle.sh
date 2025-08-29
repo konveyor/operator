@@ -30,6 +30,7 @@ ANALYZER_CONTAINER_REQUESTS_CPU="${ANALYZER_CONTAINER_REQUESTS_CPU:-0}"
 FEATURE_AUTH_REQUIRED="${FEATURE_AUTH_REQUIRED:-false}"
 TIMEOUT="${TIMEOUT:-15m}"
 OLM_VERSION="${OLM_VERSION:-0.28.0}"
+DISABLE_MAVEN_SEARCH="${DISABLE_MAVEN_SEARCH:-false}"
 
 if ! command -v kubectl >/dev/null 2>&1; then
   kubectl_bin="${__bin_dir}/kubectl"
@@ -125,6 +126,7 @@ spec:
   image_pull_policy: ${IMAGE_PULL_POLICY}
   analyzer_container_requests_memory: ${ANALYZER_CONTAINER_REQUESTS_MEMORY}
   analyzer_container_requests_cpu: ${ANALYZER_CONTAINER_REQUESTS_CPU}
+  disable_maven_search: ${DISABLE_MAVEN_SEARCH}
 EOF
 # Wait for reconcile to finish
 kubectl wait \

@@ -34,6 +34,10 @@ inputs:
     description: "Enable tackle with auth"
     required: false
     default: "false"
+  disable_maven_search:
+    description: "Disable maven central search"
+    required: false
+    default: "true"
 runs:
   using: "composite"
   steps:
@@ -64,6 +68,7 @@ runs:
       export IMAGE_PULL_POLICY="${{ inputs.image-pull-policy }}"
       export ANALYZER_CONTAINER_REQUESTS_MEMORY="${{ inputs.analyzer-container-memory }}"
       export ANALYZER_CONTAINER_REQUESTS_CPU="${{ inputs.analyzer-container-cpu }}"
+      export DISABLE_MAVEN_SEARCH=${{ inputs.disable_maven_search }}
       if [[ "true" == "${{ inputs.enable_auth }}" ]]; then
         export FEATURE_AUTH_REQUIRED=true
       fi
