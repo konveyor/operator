@@ -5,6 +5,8 @@ metadata:
   namespace: {{ app_namespace }}
 spec:
   instances: 1
+  ingress:
+    enabled: false
   db:
     vendor: postgres
     database: {{ keycloak_database_db_name }}
