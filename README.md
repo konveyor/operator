@@ -244,6 +244,22 @@ spec:
   kai_enable_trace: "true"
 ```
 
+### Supported LLM Providers and Models
+
+The following table shows popular provider/model combinations (not exhaustive):
+
+| Provider | Model Examples | Notes |
+|----------|----------------|-------|
+| `openai` | `gpt-4`, `gpt-4o`, `gpt-4o-mini`, `gpt-3.5-turbo` | OpenAI models |
+| `azure_openai` | `gpt-4`, `gpt-35-turbo` | Azure OpenAI Service |
+| `bedrock` | `anthropic.claude-3-5-sonnet-20241022-v2:0`, `meta.llama3-1-70b-instruct-v1:0` | AWS Bedrock models |
+| `google` | `gemini-2.0-flash-exp`, `gemini-1.5-pro` | Google Gemini models |
+| `ollama` | `llama3.1`, `codellama`, `mistral` | Local Ollama deployment |
+| `groq` | `llama-3.1-70b-versatile`, `mixtral-8x7b-32768` | Groq fast inference |
+| `anthropic` | `claude-3-5-sonnet-20241022`, `claude-3-haiku-20240307` | Anthropic Claude models |
+
+For the complete list of supported providers, see the [KAI configuration](https://github.com/konveyor/kai/blob/main/kai/kai_config.py).
+
 ## Konveyor Storage Requirements
 
 Konveyor requires a total of 4 persistent volumes (PVs): 2 RWO and 2 RWX. When
