@@ -218,14 +218,19 @@ kubectl patch tackle tackle -n konveyor-tackle --type=merge -p \
 
 5. Verify KAI resources
 ```
-kubectl get deploy,svc -n konveyor-tackle | grep -E 'kai-(api|db|importer)'
+kubectl get deploy,svc -n konveyor-tackle | grep -E 'kai-(api|db)'
 ```
 
-6. Access KAI (port-forward)
+6. Access KAI
+
+**Option A: Port-forward**
 ```
 kubectl -n konveyor-tackle port-forward services/tackle-ui 8080:8080
 # Solution server should be accessible at localhost:8080/api
 ```
+
+**Option B: Ingress resource**
+An ingress resource is also created for external access to the solution server.
 
 Advanced configuration: you can override defaults by setting fields on the `Tackle` CR under `spec`, for example:
 
