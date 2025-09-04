@@ -95,18 +95,14 @@ apiVersion: tackle.konveyor.io/v1alpha1
 metadata:
   name: tackle
 spec:
-  feature_auth_required: false
   disable_maven_search: ${DISABLE_MAVEN_SEARCH}
   feature_auth_required: ${FEATURE_AUTH_REQUIRED}
+${KAI_SOLUTION_SERVER_ENABLED:+  kai_solution_server_enabled: ${KAI_SOLUTION_SERVER_ENABLED}}
+${KAI_LLM_MODEL:+  kai_llm_model: ${KAI_LLM_MODEL}}
+${KAI_LLM_PROVIDER:+  kai_llm_provider: ${KAI_LLM_PROVIDER}}
 EOF
-  )
-  [ -z "${KAI_SOLUTION_SERVER_ENABLED}" ] || TACKLE_CR+="
-  kai_solution_server_enabled: true"
-  [ -z "${KAI_LLM_MODEL}" ] || TACKLE_CR+="
-  kai_llm_model: \"${KAI_LLM_MODEL}\""
-  [ -z "${KAI_LLM_PROVIDER}" ] || TACKLE_CR+="
-  kai_llm_provider: \"${KAI_LLM_PROVIDER}\""
-  echo "${TACKLE_CR}" | kubectl apply --namespace "${NAMESPACE}" -f -
+    )
+    echo "${TACKLE_CR}" | kubectl apply --namespace "${NAMESPACE}" -f -
   fi
 
   # Want to see in github logs what we just created
