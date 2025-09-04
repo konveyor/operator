@@ -11,6 +11,10 @@ TACKLE_CR="${TACKLE_CR:-}"
 TIMEOUT="${TIMEOUT:-15m}"
 OLM_VERSION="${OLM_VERSION:-0.28.0}"
 DISABLE_MAVEN_SEARCH="${DISABLE_MAVEN_SEARCH:-false}"
+FEATURE_AUTH_REQUIRED="${FEATURE_AUTH_REQUIRED:-false}"
+KAI_SOLUTION_SERVER_ENABLED="${KAI_SOLUTION_SERVER_ENABLED:-}"
+KAI_LLM_MODEL="${KAI_LLM_MODEL:-}"
+KAI_LLM_PROVIDER="${KAI_LLM_PROVIDER:-}"
 
 if ! command -v kubectl >/dev/null 2>&1; then
   echo "Please install kubectl. See https://kubernetes.io/docs/tasks/tools/"
@@ -85,15 +89,20 @@ install_tackle() {
   if [ -n "${TACKLE_CR}" ]; then
     echo "${TACKLE_CR}" | kubectl apply --namespace "${NAMESPACE}" -f -
   else
-    cat <<EOF | kubectl apply --namespace "${NAMESPACE}" -f -
+    TACKLE_CR=$(cat <<EOF
 kind: Tackle
 apiVersion: tackle.konveyor.io/v1alpha1
 metadata:
   name: tackle
 spec:
-  feature_auth_required: false
   disable_maven_search: ${DISABLE_MAVEN_SEARCH}
+  feature_auth_required: ${FEATURE_AUTH_REQUIRED}
+${KAI_SOLUTION_SERVER_ENABLED:+  kai_solution_server_enabled: ${KAI_SOLUTION_SERVER_ENABLED}}
+${KAI_LLM_MODEL:+  kai_llm_model: ${KAI_LLM_MODEL}}
+${KAI_LLM_PROVIDER:+  kai_llm_provider: ${KAI_LLM_PROVIDER}}
 EOF
+    )
+    echo "${TACKLE_CR}" | kubectl apply --namespace "${NAMESPACE}" -f -
   fi
 
   # Want to see in github logs what we just created

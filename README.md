@@ -161,9 +161,108 @@ If `feature_auth_required` is enabled keycloak will be installed and a random pa
 To view these credentials:
 `oc -n konveyor-tackle extract secret/tackle-keycloak-sso --to=-`
 
+## Enable KAI (Solution Server)
+
+KAI is an optional, experimental “solution server” that integrates with the Hub. To enable it:
+
+1. Update the Tackle CR to enable KAI
+
+```
+kind: Tackle
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  name: tackle
+  namespace: konveyor-tackle
+spec:
+  kai_solution_server_enabled: true
+```
+
+2. Create a credentials secret named `kai-api-keys` in the same namespace. Choose the provider you will use:
+
+- OpenAI-compatible
+```
+kubectl create secret generic kai-api-keys -n konveyor-tackle \
+  --from-literal=OPENAI_API_BASE='https://api.openai.com/v1' \
+  --from-literal=OPENAI_API_KEY='<YOUR_OPENAI_KEY>'
+```
+- Google
+```
+kubectl create secret generic kai-api-keys -n konveyor-tackle \
+  --from-literal=GOOGLE_API_KEY='<YOUR_GOOGLE_API_KEY>'
+```
+
+3. Set the provider in the Tackle CR to match your secret
+
+- OpenAI-compatible: `spec.kai_llm_provider: openai`
+- Google: `spec.kai_llm_provider: google`
+
+Example (OpenAI-compatible):
+```
+kind: Tackle
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  name: tackle
+  namespace: konveyor-tackle
+spec:
+  kai_solution_server_enabled: true
+  kai_llm_provider: openai
+  # optional, pick a suitable model for your provider
+  kai_llm_model: gpt-4o-mini
+```
+
+4. (Optional) Force a reconcile so the operator picks up the secret immediately
+```
+kubectl patch tackle tackle -n konveyor-tackle --type=merge -p \
+'{"metadata":{"annotations":{"konveyor.io/force-reconcile":"'"$(date +%s)"'"}}}'
+```
+
+5. Verify KAI resources
+```
+kubectl get deploy,svc -n konveyor-tackle | grep -E 'kai-(api|db)'
+```
+
+6. Access KAI
+
+**Option A: Port-forward**
+```
+kubectl -n konveyor-tackle port-forward services/tackle-ui 8080:8080
+# Solution server should be accessible at localhost:8080/api
+```
+
+**Option B: Ingress resource**
+An ingress resource is also created for external access to the solution server.
+
+Advanced configuration: you can override defaults by setting fields on the `Tackle` CR under `spec`, for example:
+
+```
+spec:
+  kai_solution_server_enabled: true
+  kai_api_key_secret_name: my-kai-secret
+  kai_llm_provider: openai
+  kai_llm_model: gpt-4o-mini
+  kai_enable_demo_mode: "false"
+  kai_enable_trace: "true"
+```
+
+### Supported LLM Providers and Models
+
+The following table shows popular provider/model combinations (not exhaustive):
+
+| Provider (`kai_llm_provider`) | Model (`kai_llm_model`) |
+|----------|----------------|
+| `openai` | `gpt-4`, `gpt-4o`, `gpt-4o-mini`, `gpt-3.5-turbo` |
+| `azure_openai` | `gpt-4`, `gpt-35-turbo` |
+| `bedrock` | `anthropic.claude-3-5-sonnet-20241022-v2:0`, `meta.llama3-1-70b-instruct-v1:0` |
+| `google` | `gemini-2.0-flash-exp`, `gemini-1.5-pro` |
+| `ollama` | `llama3.1`, `codellama`, `mistral` |
+| `groq` | `llama-3.1-70b-versatile`, `mixtral-8x7b-32768` |
+| `anthropic` | `claude-3-5-sonnet-20241022`, `claude-3-haiku-20240307` |
+
 ## Konveyor Storage Requirements
 
-Konveyor requires a total of 5 persistent volumes (PVs) used by different components to successfully deploy, 3 RWO volumes and 2 RWX volumes will be requested via PVCs.
+Konveyor requires a total of 4 persistent volumes (PVs): 2 RWO and 2 RWX. When
+`kai_solution_server_enabled: true` is enabled, an additional RWO volume is required
+for the Kai database.
 
 Name | Default Size | Access Mode | Description
 --- | --- | --- | ---
@@ -171,6 +270,7 @@ hub database | 5Gi | RWO | Hub DB
 hub bucket | 100Gi | RWX | Hub file storage
 keycloak postgresql | 1Gi | RWO | Keycloak backend DB
 cache | 100Gi | RWX | cache repository
+kai database | 5Gi | RWO | Kai DB (when kai_solution_server_enabled: true)
 
 ### Konveyor Storage Custom Settings Example
 
