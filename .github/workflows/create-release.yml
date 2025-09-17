@@ -79,21 +79,6 @@ jobs:
               sleep 3m
           done
           docker image inspect quay.io/konveyor/analyzer-lsp:${{ inputs.version }}
-      - name: windup-shim
-        uses: konveyor/release-tools/create-release@release-0.6
-        with:
-          version: ${{ inputs.version }}
-          prev_version: ${{ inputs.previous_version }}
-          repository: konveyor/windup-shim
-          ref: ${{ inputs.branch }}
-          github_token: ${{ secrets.GH_TOKEN }}
-      - name: wait for windup-shim
-        run: |
-          #!/bin/bash
-          while ! docker pull quay.io/konveyor/windup-shim:${{ inputs.version }} &> /dev/null; do
-              sleep 3m
-          done
-          docker image inspect quay.io/konveyor/windup-shim:${{ inputs.version }}
       - name: tackle2-addon-analyzer
         uses: konveyor/release-tools/create-release@release-0.6
         with:
