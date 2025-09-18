@@ -145,8 +145,6 @@ jobs:
             image: konveyor/kantra
           - repo: konveyor/tackle2-addon-discovery
             image: konveyor/tackle2-addon-discovery
-          - repo: konveyor/kantra
-            image: konveyor/kantra
           - repo: konveyor/kai
             image: konveyor/kai-solution-server
       fail-fast: true
