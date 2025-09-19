@@ -12,10 +12,10 @@
   when: (kai_api_key_secret_status.resources|length) == 0
   debug:
     msg: >
-         The Kai Solution Server will be able to serve advanced insights until the credential secret exists.
+         The Kai Solution Server will not be able to serve advanced insights until the credential secret exists.
          kubectl create secret -n {{ app_namespace }} generic {{ kai_api_key_secret_name }} --from-literal=<your service's environment variable>=<your API key>
          for example
-         kubectl create secret generic kai-api-key-secret --from-literal=OPENAI_API_KEY=sk-thisisafakekey
+         kubectl create secret -n {{ app_namespace }} generic {{ kai_api_key_secret_name }} --from-literal=OPENAI_API_KEY=sk-thisisafakekey
 
 - when: (kai_api_key_secret_status.resources|length) > 0
   block:
