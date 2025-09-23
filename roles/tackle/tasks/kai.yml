@@ -72,6 +72,7 @@
       k8s:
         state: present
         template: kai/kai-api-deployment.yaml.j2
+        merge_type: merge
 
     - name: Create KAI API Service
       k8s:
