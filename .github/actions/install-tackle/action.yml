@@ -18,6 +18,10 @@ inputs:
     description: "image url for analyzer addon"
     required: false
     default: "quay.io/konveyor/tackle2-addon-analyzer:latest"
+  java-provider-image:
+    description: "image url for java provider"
+    required: false
+    default: "quay.io/konveyor/java-external-provider:latest"
   image-pull-policy:
     description: "Image Pull Policy"
     required: false
@@ -65,6 +69,7 @@ runs:
       export HUB_IMAGE="${{ inputs.hub-image }}"
       export UI_IMAGE="${{ inputs.ui-image }}"
       export ADDON_ANALYZER_IMAGE="${{ inputs.addon-analyzer-image }}"
+      export JAVA_PROVIDER_IMAGE="${{ inputs.java-provider-image }}"
       export IMAGE_PULL_POLICY="${{ inputs.image-pull-policy }}"
       export ANALYZER_CONTAINER_REQUESTS_MEMORY="${{ inputs.analyzer-container-memory }}"
       export ANALYZER_CONTAINER_REQUESTS_CPU="${{ inputs.analyzer-container-cpu }}"
