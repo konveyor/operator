@@ -35,6 +35,7 @@ jobs:
         uses: ansible/ansible-lint@main
         with:
           working_directory: "roles/"
+          setup_python: "false"
 
   build-operator-bundle:
     needs: detect-changes
