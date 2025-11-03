@@ -30,10 +30,6 @@ spec:
   - definition:
       '$schema': https://json-schema.org/draft/2020-12/schema
       properties:
-        name:
-          description: Application name.
-          minLength: 1
-          type: string
         organization:
           description: Organization name.
           minLength: 1
@@ -42,12 +38,17 @@ spec:
           description: Space name.
           minLength: 1
           type: string
+        name:
+          description: Application name.
+          minLength: 1
+          type: string
       required:
       - organization
       - space
       - name
       title: Coordinates
       type: object
+    migration: organization: ''
 ---
 kind: Schema
 apiVersion: tackle.konveyor.io/v1alpha1
