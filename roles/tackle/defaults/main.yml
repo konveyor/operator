@@ -19,7 +19,7 @@ disable_maven_search: false
 
 # Environment
 openshift_cluster: false
-image_pull_policy: "Always"
+image_pull_policy: "IfNotPresent"
 http_proxy: "{{ lookup('env', 'HTTP_PROXY') }}"
 https_proxy: "{{ lookup('env', 'HTTPS_PROXY') }}"
 no_proxy: "{{ lookup('env', 'NO_PROXY') }}"
