@@ -36,7 +36,6 @@ jobs:
         with:
           setup_python: "false"
           working_directory: "roles/"
-          setup_python: "false"
 
   build-operator-bundle:
     needs: detect-changes
