@@ -86,39 +86,24 @@ spec:
           - spaces
     - definition:
         $schema: https://json-schema.org/draft/2020-12/schema
-        title: Filter
+        title: Coordinates
         type: object
         properties:
           organizations:
-            description: A list of organizations, each containing spaces with application names.
+            description: Organization names.
             type: array
             items:
-              type: object
-              properties:
-                name:
-                  description: Organization name.
-                  type: string
-                  minLength: 1
-                spaces:
-                  description: Space definitions within this organization.
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      name:
-                        description: Space name.
-                        type: string
-                        minLength: 1
-                      applications:
-                        description: Application names in this space. Each may be a glob expression.
-                        type: array
-                        items:
-                          type: string
-                          minLength: 1
-                        minItems: 0
-                    required:
-                      - name
-              required:
-                - name
-        required:
-          - organizations
+              type: string
+              minLength: 1
+          spaces:
+            description: Space names.
+            type: array
+            items:
+              type: string
+              minLength: 1
+          names:
+            description: Application names. Each may be a glob expression.
+            type: array
+            items:
+              type: string
+              minLength: 1
