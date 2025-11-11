@@ -62,6 +62,12 @@ hub_url: "{{ hub_proto }}://{{ hub_service_name }}.{{ app_namespace }}.svc:{{ hu
 hub_log_level: 3
 hub_metrics_enabled: true
 hub_metrics_port: "2112"
+# Log Level (0-n)
+# hub_log_level_master: 0
+# hub_log_level_migration: 0
+# hub_log_level_web: 0
+# hub_log_level_reaper: 0
+# hub_log_level_task: 0
 
 pathfinder_delete_db_volume: false
 pathfinder_database_name: "pathfinder"
