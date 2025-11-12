@@ -27,6 +27,29 @@ spec:
       - name
       title: Coordinates
       type: object
+  - definition:
+      '$schema': https://json-schema.org/draft/2020-12/schema
+      properties:
+        organization:
+          description: Organization name.
+          minLength: 1
+          type: string
+        space:
+          description: Space name.
+          minLength: 1
+          type: string
+        name:
+          description: Application name.
+          minLength: 1
+          type: string
+      required:
+      - organization
+      - space
+      - name
+      title: Coordinates
+      type: object
+    migration: >
+      .organization = "unknown"
 ---
 kind: Schema
 apiVersion: tackle.konveyor.io/v1alpha1
@@ -61,4 +84,27 @@ spec:
             minItems: 1
         required:
           - spaces
-
+    - definition:
+        $schema: https://json-schema.org/draft/2020-12/schema
+        title: Coordinates
+        type: object
+        properties:
+          organizations:
+            description: Organization names.
+            type: array
+            items:
+              type: string
+              minLength: 1
+            minItems: 1
+          spaces:
+            description: Space names.
+            type: array
+            items:
+              type: string
+              minLength: 1
+          names:
+            description: Application names. Each may be a glob expression.
+            type: array
+            items:
+              type: string
+              minLength: 1
