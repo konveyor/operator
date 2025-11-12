@@ -124,6 +124,7 @@ spec:
   ui_image_fqin: ${UI_IMAGE}
   ui_ingress_class_name: ${UI_INGRESS_CLASS_NAME}
   analyzer_fqin: ${ADDON_ANALYZER_IMAGE}
+  provider_java_image_fqin: ${JAVA_PROVIDER_IMAGE}
   image_pull_policy: ${IMAGE_PULL_POLICY}
   analyzer_container_requests_memory: ${ANALYZER_CONTAINER_REQUESTS_MEMORY}
   provider_java_image_fqin: ${JAVA_PROVIDER_IMAGE}
