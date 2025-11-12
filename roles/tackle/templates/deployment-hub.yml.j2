@@ -98,26 +98,26 @@ spec:
               value: "{{ hub_metrics_enabled }}"
             - name: METRICS_PORT
               value: "{{ hub_metrics_port }}"
-            {% if hub_log_level_master is defined %}
+{% if hub_log_level_master is defined %}
             - name: LOG_MASTER
               value: "{{ hub_log_level_master }}"
-            {% endif %}
-            {% if hub_log_level_migration is defined %}
+{% endif %}
+{% if hub_log_level_migration is defined %}
             - name: LOG_MIGRATION
               value: "{{ hub_log_level_migration }}"
-            {% endif %}
-            {% if hub_log_level_web is defined %}
+{% endif %}
+{% if hub_log_level_web is defined %}
             - name: LOG_WEB
               value: "{{ hub_log_level_web }}"
-            {% endif %}
-            {% if hub_log_level_reaper is defined %}
+{% endif %}
+{% if hub_log_level_reaper is defined %}
             - name: LOG_REAPER
               value: "{{ hub_log_level_reaper }}"
-            {% endif %}
-            {% if hub_log_level_task is defined %}
+{% endif %}
+{% if hub_log_level_task is defined %}
             - name: LOG_TASK
               value: "{{ hub_log_level_task }}"
-            {% endif %}
+{% endif %}
 {% if feature_auth_required|bool and feature_auth_type == "keycloak" %}
             - name: AUTH_REQUIRED
               value: "true"
