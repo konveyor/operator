@@ -334,7 +334,6 @@ jobs:
           "konveyor/tackle2-hub"
           "konveyor/analyzer-lsp"
           "konveyor/java-analyzer-bundle"
-          "konveyor/windup-shim"
           "konveyor/tackle2-addon-analyzer"
           "konveyor/tackle2-addon-discovery"
           "konveyor/tackle2-addon"
