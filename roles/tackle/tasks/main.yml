@@ -911,6 +911,10 @@
     label_selectors:
       - operators.coreos.com/rhsso-operator.openshift-mta =
 
+- name: Debug kai_solution_server_enabled value
+  debug:
+    msg: "kai_solution_server_enabled = {{ kai_solution_server_enabled }}, will run kai tasks = {{ kai_solution_server_enabled | bool }}"
+
 - name: Run kai tasks
   when: kai_solution_server_enabled | bool
   import_tasks: kai.yml

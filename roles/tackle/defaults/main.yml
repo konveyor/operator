@@ -120,6 +120,7 @@ keycloak_sso_java_opts: "-Dcom.redhat.fips=false"
 keycloak_sso_realm: "{{ app_name }}"
 keycloak_sso_req_passwd_update: true
 keycloak_sso_client_id: "{{ app_name }}-ui"
+keycloak_api_audience: "konveyor-api"
 keycloak_sso_tls_enabled: "{{ true if openshift_cluster | bool else false }}"
 keycloak_sso_tls_secret_name: "{{ keycloak_sso_service_name }}-serving-cert"
 keycloak_sso_port: "{{ '8443' if keycloak_sso_tls_enabled | bool else '8080' }}"
@@ -290,8 +291,61 @@ kai_llm_params:
     base_url: "{{ kai_llm_baseurl }}"
     kwargs: "{{ kai_llm_model_specific_kwargs }}"
 
+# LLM params when using the proxy - points to the local llm-proxy service
+kai_llm_params_proxy:
+  model: "{{ llm_proxy_provider_id }}/{{ kai_llm_model }}"
+  model_provider: "openai_api"
+  configurable_fields:
+    temperature: "{{ kai_llm_temperature }}"
+    max_tokens: "{{ kai_llm_max_tokens }}"
+    max_retries: "{{ kai_llm_max_retries }}"
+    base_url: "http://llm-proxy.{{ app_namespace }}.svc.cluster.local:8321/v1"
+    kwargs: "{{ kai_llm_model_specific_kwargs }}"
+
 kai_database_image_fqin: "{{ keycloak_database_image_fqin }}"
 kai_database_secret_name: kai-db-secret
 kai_database_volume_size: "5Gi"
 kai_database_volume_claim_name: "{{ hub_service_name }}-kai-database-volume-claim"
 kai_database_address: kai-db.{{ app_namespace }}.svc
+
+# LLM Proxy configuration
+kai_llm_proxy_enabled: false
+llm_proxy_image_fqin: "llamastack/distribution-starter:latest"
+
+# TODO: Add llm_proxy_external_url configuration
+# This should be the publicly accessible URL for the LLM proxy that external clients can use
+# It needs to be determined based on the ingress/route configuration
+# e.g., llm_proxy_external_url: "https://llm-proxy.example.com"
+# This URL should be:
+#   - Exposed to users who want to connect to the proxy
+#   - Used in documentation or UI to show the proxy endpoint
+#   - Automatically determined from ingress/route if possible
+
+# Map kai_llm_provider values to llama-stack provider_type format
+# Users can override this for custom providers
+llm_proxy_provider_type_map:
+  openai: "remote::openai"
+  openai_api: "remote::openai"
+  azure: "remote::azure-openai"
+  azure_openai: "remote::azure-openai"
+  google: "remote::google"
+  gemini: "remote::google"
+  bedrock: "remote::bedrock"
+  anthropic: "remote::anthropic"
+
+# Computed provider type - uses map or falls back to remote::<provider_name>
+llm_proxy_provider_type: "{{ llm_proxy_provider_type_map[kai_llm_provider] | default('remote::' + kai_llm_provider) if kai_llm_provider else 'remote::openai' }}"
+llm_proxy_provider_id: "{{ kai_llm_provider | default('openai') }}"
+
+# API key environment variable name - map provider to expected env var
+llm_proxy_api_key_env_map:
+  openai: "OPENAI_API_KEY"
+  openai_api: "OPENAI_API_KEY"
+  azure: "AZURE_OPENAI_API_KEY"
+  azure_openai: "AZURE_OPENAI_API_KEY"
+  google: "GOOGLE_API_KEY"
+  gemini: "GOOGLE_API_KEY"
+  bedrock: "AWS_ACCESS_KEY_ID"
+  anthropic: "ANTHROPIC_API_KEY"
+
+llm_proxy_api_key_env: "{{ llm_proxy_api_key_env_map[kai_llm_provider] | default(kai_llm_provider | upper + '_API_KEY') if kai_llm_provider else 'OPENAI_API_KEY' }}"
