@@ -51,6 +51,7 @@ spec:
           lspServerPath: /jdtls/bin/jdtls
           disableMavenSearch: {{ disable_maven_search }}
           mavenInsecure: $(maven.insecure)
+          mavenIndexPath: /usr/local/etc
           mavenSettingsFile: $(maven.settings.path)
           mavenCacheDir: {{ cache_mount_path }}/m2
 ---
