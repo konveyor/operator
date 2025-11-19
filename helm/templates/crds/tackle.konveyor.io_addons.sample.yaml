@@ -6,7 +6,7 @@ metadata:
   namespace: konveyor-tackle
 spec:
   container:
-    image: quay.io/konveyor/tackle2-addon-analyzer:latest
+    image: quay.io/konveyor/tackle2-addon-analyzer:release-0.8
     imagePullPolicy: Always
     name: myaddon
     resources:
