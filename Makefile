@@ -66,7 +66,7 @@ ifeq ($(USE_IMAGE_DIGESTS), true)
 endif
 
 # Image URL to use all building/pushing image targets
-IMG ?= $(IMAGE_ORG)/tackle2-operator:latest
+IMG ?= $(IMAGE_ORG)/tackle2-operator:release-0.8
 
 .PHONY: all
 all: docker-build
