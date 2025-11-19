@@ -11,17 +11,17 @@ csv:
 #     - konveyor-operator.v0.3.0-beta.1.1
 
 images:
-  operator: quay.io/konveyor/tackle2-operator:latest
+  operator: quay.io/konveyor/tackle2-operator:release-0.8
   oauth_proxy: quay.io/openshift/origin-oauth-proxy:latest
-  tackle_hub: quay.io/konveyor/tackle2-hub:latest
+  tackle_hub: quay.io/konveyor/tackle2-hub:release-0.8
   tackle_postgres: quay.io/sclorg/postgresql-15-c9s:latest
   keycloak_sso: quay.io/keycloak/keycloak:26.1
-  keycloak_init: quay.io/konveyor/tackle-keycloak-init:latest
-  tackle_ui: quay.io/konveyor/tackle2-ui:latest
-  addon_analyzer: quay.io/konveyor/tackle2-addon-analyzer:latest
-  addon_platform: quay.io/konveyor/tackle2-addon-platform:latest
-  addon_discovery: quay.io/konveyor/tackle2-addon-discovery:latest
-  provider_generic: quay.io/konveyor/generic-external-provider:latest
-  provider_java: quay.io/konveyor/java-external-provider:latest
-  kantra: quay.io/konveyor/kantra:latest
-  kai: quay.io/konveyor/kai-solution-server:latest
+  keycloak_init: quay.io/konveyor/tackle-keycloak-init:release-0.8
+  tackle_ui: quay.io/konveyor/tackle2-ui:release-0.8
+  addon_analyzer: quay.io/konveyor/tackle2-addon-analyzer:release-0.8
+  addon_platform: quay.io/konveyor/tackle2-addon-platform:release-0.8
+  addon_discovery: quay.io/konveyor/tackle2-addon-discovery:release-0.8
+  provider_generic: quay.io/konveyor/generic-external-provider:release-0.8
+  provider_java: quay.io/konveyor/java-external-provider:release-0.8
+  kantra: quay.io/konveyor/kantra:release-0.8
+  kai: quay.io/konveyor/kai-solution-server:release-0.8

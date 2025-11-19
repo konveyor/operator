@@ -13,7 +13,7 @@ metadata:
           },
           "spec": {
             "container": {
-              "image": "quay.io/konveyor/tackle2-addon-analyzer:latest",
+              "image": "quay.io/konveyor/tackle2-addon-analyzer:release-0.8",
               "imagePullPolicy": "Always",
               "name": "myaddon",
               "resources": {
@@ -50,7 +50,7 @@ metadata:
                   "value": "${seq:8000}"
                 }
               ],
-              "image": "quay.io/konveyor/generic-external-provider:latest",
+              "image": "quay.io/konveyor/generic-external-provider:release-0.8",
               "imagePullPolicy": "Always",
               "name": "myextension",
               "resources": {
@@ -147,7 +147,7 @@ metadata:
     capabilities: Seamless Upgrades
     categories: Modernization & Migration
     certified: "false"
-    containerImage: quay.io/konveyor/tackle2-operator:latest
+    containerImage: quay.io/konveyor/tackle2-operator:release-0.8
     createdAt: "2025-08-04T19:33:15Z"
     description: Konveyor is an open-source application modernization platform that
       helps organizations safely and predictably modernize applications to Kubernetes
@@ -334,30 +334,30 @@ spec:
                 - name: RELATED_IMAGE_OAUTH_PROXY
                   value: quay.io/openshift/origin-oauth-proxy:latest
                 - name: RELATED_IMAGE_TACKLE_HUB
-                  value: quay.io/konveyor/tackle2-hub:latest
+                  value: quay.io/konveyor/tackle2-hub:release-0.8
                 - name: RELATED_IMAGE_TACKLE_POSTGRES
                   value: quay.io/sclorg/postgresql-15-c9s:latest
                 - name: RELATED_IMAGE_KEYCLOAK_SSO
                   value: quay.io/keycloak/keycloak:26.1
                 - name: RELATED_IMAGE_KEYCLOAK_INIT
-                  value: quay.io/konveyor/tackle-keycloak-init:latest
+                  value: quay.io/konveyor/tackle-keycloak-init:release-0.8
                 - name: RELATED_IMAGE_TACKLE_UI
-                  value: quay.io/konveyor/tackle2-ui:latest
+                  value: quay.io/konveyor/tackle2-ui:release-0.8
                 - name: RELATED_IMAGE_ADDON_ANALYZER
-                  value: quay.io/konveyor/tackle2-addon-analyzer:latest
+                  value: quay.io/konveyor/tackle2-addon-analyzer:release-0.8
                 - name: RELATED_IMAGE_ADDON_DISCOVERY
-                  value: quay.io/konveyor/tackle2-addon-discovery:latest
+                  value: quay.io/konveyor/tackle2-addon-discovery:release-0.8
                 - name: RELATED_IMAGE_ADDON_PLATFORM
-                  value: quay.io/konveyor/tackle2-addon-platform:latest
+                  value: quay.io/konveyor/tackle2-addon-platform:release-0.8
                 - name: RELATED_IMAGE_PROVIDER_GENERIC
-                  value: quay.io/konveyor/generic-external-provider:latest
+                  value: quay.io/konveyor/generic-external-provider:release-0.8
                 - name: RELATED_IMAGE_PROVIDER_JAVA
-                  value: quay.io/konveyor/java-external-provider:latest
+                  value: quay.io/konveyor/java-external-provider:release-0.8
                 - name: RELATED_IMAGE_KANTRA
-                  value: quay.io/konveyor/kantra:latest
+                  value: quay.io/konveyor/kantra:release-0.8
                 - name: RELATED_IMAGE_KAI
-                  value: quay.io/konveyor/kai-solution-server:latest
-                image: quay.io/konveyor/tackle2-operator:latest
+                  value: quay.io/konveyor/kai-solution-server:release-0.8
+                image: quay.io/konveyor/tackle2-operator:release-0.8
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
@@ -534,28 +534,28 @@ spec:
   relatedImages:
   - image: quay.io/openshift/origin-oauth-proxy:latest
     name: oauth-proxy
-  - image: quay.io/konveyor/tackle2-hub:latest
+  - image: quay.io/konveyor/tackle2-hub:release-0.8
     name: tackle-hub
   - image: quay.io/sclorg/postgresql-15-c9s:latest
     name: tackle-postgres
   - image: quay.io/keycloak/keycloak:26.1
     name: keycloak-sso
-  - image: quay.io/konveyor/tackle-keycloak-init:latest
+  - image: quay.io/konveyor/tackle-keycloak-init:release-0.8
     name: keycloak-init
-  - image: quay.io/konveyor/tackle2-ui:latest
+  - image: quay.io/konveyor/tackle2-ui:release-0.8
     name: tackle-ui
-  - image: quay.io/konveyor/tackle2-addon-analyzer:latest
+  - image: quay.io/konveyor/tackle2-addon-analyzer:release-0.8
     name: addon-analyzer
-  - image: quay.io/konveyor/tackle2-addon-discovery:latest
+  - image: quay.io/konveyor/tackle2-addon-discovery:release-0.8
     name: addon-discovery
-  - image: quay.io/konveyor/tackle2-addon-platform:latest
+  - image: quay.io/konveyor/tackle2-addon-platform:release-0.8
     name: addon-platform
-  - image: quay.io/konveyor/generic-external-provider:latest
+  - image: quay.io/konveyor/generic-external-provider:release-0.8
     name: provider-generic
-  - image: quay.io/konveyor/java-external-provider:latest
+  - image: quay.io/konveyor/java-external-provider:release-0.8
     name: provider-java
-  - image: quay.io/konveyor/kantra:latest
+  - image: quay.io/konveyor/kantra:release-0.8
     name: kantra
-  - image: quay.io/konveyor/kai-solution-server:latest
+  - image: quay.io/konveyor/kai-solution-server:release-0.8
     name: kai
   version: 99.0.0
