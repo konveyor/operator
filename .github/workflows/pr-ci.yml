@@ -56,3 +56,4 @@ jobs:
       operator_bundle: ttl.sh/konveyor-operator-bundle-${{ github.sha }}:2h
       tackle_cr: '{"kind":"Tackle","apiVersion":"tackle.konveyor.io/v1alpha1","metadata":{"name":"tackle"},"spec":{"image_pull_policy":"IfNotPresent","analyzer_container_memory":0,"analyzer_container_cpu":0,"feature_auth_required":false,"provider_java_image_fqin":"quay.io/konveyor/java-external-provider:v0.8.1-beta.1"}}'
       api_hub_tests_ref: release-0.8
+      api_tests_ref: release-0.8
