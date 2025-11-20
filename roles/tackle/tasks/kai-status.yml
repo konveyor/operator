@@ -9,7 +9,7 @@
     kind: Deployment
     name: llm-proxy
     namespace: "{{ app_namespace }}"
-  register: llm_proxy_deployment
+  register: kai_llm_proxy_deployment
 
 - name: Check Kai API deployment status
   k8s_info:
@@ -22,16 +22,16 @@
 # Determine proxy readiness - check that deployment is fully ready and updated
 - name: Set LLM proxy ready status
   set_fact:
-    llm_proxy_ready: "{{ kai_llm_proxy_enabled | bool and
-                         llm_proxy_deployment.resources | length > 0 and
-                         llm_proxy_deployment.resources[0].status.readyReplicas | default(0) > 0 and
-                         llm_proxy_deployment.resources[0].status.readyReplicas | default(0) == llm_proxy_deployment.resources[0].status.replicas | default(1) and
-                         llm_proxy_deployment.resources[0].status.updatedReplicas | default(0) == llm_proxy_deployment.resources[0].status.replicas | default(1) }}"
+    kai_llm_proxy_ready: "{{ kai_llm_proxy_enabled | bool and
+                         kai_llm_proxy_deployment.resources | length > 0 and
+                         kai_llm_proxy_deployment.resources[0].status.readyReplicas | default(0) > 0 and
+                         kai_llm_proxy_deployment.resources[0].status.readyReplicas | default(0) == kai_llm_proxy_deployment.resources[0].status.replicas | default(1) and
+                         kai_llm_proxy_deployment.resources[0].status.updatedReplicas | default(0) == kai_llm_proxy_deployment.resources[0].status.replicas | default(1) }}"
 
 # Determine if Kai is blocked by proxy
 - name: Set Kai blocked status
   set_fact:
-    kai_blocked_by_proxy: "{{ kai_llm_proxy_enabled | bool and not (llm_proxy_ready | default(false)) }}"
+    kai_blocked_by_proxy: "{{ kai_llm_proxy_enabled | bool and not (kai_llm_proxy_ready | default(false)) }}"
     kai_deployment_ready: "{{ kai_api_deployment.resources | length > 0 and
                               kai_api_deployment.resources[0].status.readyReplicas | default(0) > 0 and
                               kai_api_deployment.resources[0].status.readyReplicas | default(0) == kai_api_deployment.resources[0].status.replicas | default(1) and
@@ -46,9 +46,9 @@
     namespace: "{{ ansible_operator_meta.namespace }}"
     conditions:
       - type: LLMProxyReady
-        status: "{{ 'True' if llm_proxy_ready else 'False' }}"
-        reason: "{{ 'DeploymentReady' if llm_proxy_ready else 'DeploymentNotReady' }}"
-        message: "{{ 'LLM Proxy is running and ready' if llm_proxy_ready
+        status: "{{ 'True' if kai_llm_proxy_ready else 'False' }}"
+        reason: "{{ 'DeploymentReady' if kai_llm_proxy_ready else 'DeploymentNotReady' }}"
+        message: "{{ 'LLM Proxy is running and ready' if kai_llm_proxy_ready
                      else 'LLM Proxy deployment is not ready. Check pod logs for details.' }}"
         lastTransitionTime: "{{ now(fmt='%Y-%m-%dT%H:%M:%SZ') }}"
 

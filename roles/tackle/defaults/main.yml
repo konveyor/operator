@@ -293,7 +293,7 @@ kai_llm_params:
 
 # LLM params when using the proxy - points to the local llm-proxy service
 kai_llm_params_proxy:
-  model: "{{ llm_proxy_provider_id }}/{{ kai_llm_model }}"
+  model: "{{ kai_llm_proxy_provider_id }}/{{ kai_llm_model }}"
   model_provider: "openai_api"
   configurable_fields:
     temperature: "{{ kai_llm_temperature }}"
@@ -310,20 +310,17 @@ kai_database_address: kai-db.{{ app_namespace }}.svc
 
 # LLM Proxy configuration
 kai_llm_proxy_enabled: false
-llm_proxy_image_fqin: "llamastack/distribution-starter:latest"
+kai_llm_proxy_image_fqin: "llamastack/distribution-starter:latest"
 
-# TODO: Add llm_proxy_external_url configuration
-# This should be the publicly accessible URL for the LLM proxy that external clients can use
-# It needs to be determined based on the ingress/route configuration
-# e.g., llm_proxy_external_url: "https://llm-proxy.example.com"
-# This URL should be:
-#   - Exposed to users who want to connect to the proxy
-#   - Used in documentation or UI to show the proxy endpoint
-#   - Automatically determined from ingress/route if possible
+# Internal URL for the LLM proxy service (used by UI reverse proxy)
+kai_llm_proxy_url: "http://llm-proxy.{{ app_namespace }}.svc.cluster.local:8321"
+
+# Client configuration ConfigMap name
+kai_llm_proxy_client_config_name: "llm-proxy-client-config"
 
 # Map kai_llm_provider values to llama-stack provider_type format
 # Users can override this for custom providers
-llm_proxy_provider_type_map:
+kai_llm_proxy_provider_type_map:
   openai: "remote::openai"
   openai_api: "remote::openai"
   azure: "remote::azure-openai"
@@ -334,11 +331,11 @@ llm_proxy_provider_type_map:
   anthropic: "remote::anthropic"
 
 # Computed provider type - uses map or falls back to remote::<provider_name>
-llm_proxy_provider_type: "{{ llm_proxy_provider_type_map[kai_llm_provider] | default('remote::' + kai_llm_provider) if kai_llm_provider else 'remote::openai' }}"
-llm_proxy_provider_id: "{{ kai_llm_provider | default('openai') }}"
+kai_llm_proxy_provider_type: "{{ kai_llm_proxy_provider_type_map[kai_llm_provider] | default('remote::' + kai_llm_provider) if kai_llm_provider else 'remote::openai' }}"
+kai_llm_proxy_provider_id: "{{ kai_llm_provider | default('openai') }}"
 
 # API key environment variable name - map provider to expected env var
-llm_proxy_api_key_env_map:
+kai_llm_proxy_api_key_env_map:
   openai: "OPENAI_API_KEY"
   openai_api: "OPENAI_API_KEY"
   azure: "AZURE_OPENAI_API_KEY"
@@ -348,4 +345,4 @@ llm_proxy_api_key_env_map:
   bedrock: "AWS_ACCESS_KEY_ID"
   anthropic: "ANTHROPIC_API_KEY"
 
-llm_proxy_api_key_env: "{{ llm_proxy_api_key_env_map[kai_llm_provider] | default(kai_llm_provider | upper + '_API_KEY') if kai_llm_provider else 'OPENAI_API_KEY' }}"
+kai_llm_proxy_api_key_env: "{{ kai_llm_proxy_api_key_env_map[kai_llm_provider] | default(kai_llm_provider | upper + '_API_KEY') if kai_llm_provider else 'OPENAI_API_KEY' }}"

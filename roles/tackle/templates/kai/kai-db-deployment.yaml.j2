@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: kai-db
-  namespace: "{{ app_namespace }}"
+  namespace: {{ app_namespace }}
 spec:
   replicas: 1
   selector:

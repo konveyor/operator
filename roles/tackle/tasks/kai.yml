@@ -68,43 +68,6 @@
         state: present
         template: kai/kai-db-pvc.yaml.j2
 
-    - name: Get Keycloak external URL
-      when:
-        - kai_llm_proxy_enabled | bool
-        - feature_auth_required | bool
-        - keycloak_external_url is not defined
-      block:
-        - name: "Get Keycloak route on OpenShift"
-          when: openshift_cluster
-          k8s_info:
-            api_version: route.openshift.io/v1
-            kind: Route
-            name: "{{ keycloak_sso_name }}"
-            namespace: "{{ app_namespace }}"
-          register: keycloak_route
-
-        - name: "Set Keycloak external URL from route"
-          when:
-            - openshift_cluster
-            - keycloak_route.resources | length > 0
-          set_fact:
-            keycloak_external_url: "https://{{ keycloak_route.resources[0].spec.host }}"
-
-        - name: "Get Keycloak ingress on Kubernetes"
-          when: not openshift_cluster
-          k8s_info:
-            api_version: networking.k8s.io/v1
-            kind: Ingress
-            name: "{{ keycloak_sso_name }}"
-            namespace: "{{ app_namespace }}"
-          register: keycloak_ingress
-
-        - name: "Set Keycloak external URL from ingress"
-          when:
-            - not openshift_cluster
-            - keycloak_ingress.resources | length > 0
-          set_fact:
-            keycloak_external_url: "http://{{ keycloak_ingress.resources[0].spec.rules[0].host }}/auth"
 
     - name: Deploy LLM Proxy
       when: kai_llm_proxy_enabled | bool
@@ -124,18 +87,10 @@
             state: present
             template: kai/llm-proxy-service.yaml.j2
 
-        - name: Create LLM Proxy Ingress
+        - name: Create LLM Proxy Client Configuration
           k8s:
             state: present
-            template: kai/llm-proxy-ingress.yaml.j2
-          when: not openshift_cluster
-
-        # TODO: Determine LLM proxy external URL
-        # After creating the ingress/route, we should:
-        # 1. Query the ingress/route to get the actual external URL
-        # 2. Store it as llm_proxy_external_url
-        # 3. Make it available to users (perhaps in status or ConfigMap)
-        # This URL is needed for external clients to connect to the proxy
+            template: kai/llm-proxy-client-configmap.yaml.j2
 
     - name: Create Kai API deployment
       k8s:
