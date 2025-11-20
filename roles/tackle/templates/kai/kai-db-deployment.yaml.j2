@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: kai-db
-  namespace: "{{ app_namespace }}"
+  namespace: {{ app_namespace }}
 spec:
   replicas: 1
   selector:
@@ -28,6 +28,21 @@ spec:
                 secretKeyRef:
                   name: "{{ kai_database_secret_name }}"
                   key: POSTGRESQL_PASSWORD
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ kai_database_secret_name }}"
+                  key: POSTGRESQL_PASSWORD
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ kai_database_secret_name }}"
+                  key: POSTGRESQL_USER
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ kai_database_secret_name }}"
+                  key: POSTGRESQL_DATABASE
             - name: POSTGRESQL_USER
               valueFrom:
                 secretKeyRef:

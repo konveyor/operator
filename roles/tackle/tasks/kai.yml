@@ -68,6 +68,30 @@
         state: present
         template: kai/kai-db-pvc.yaml.j2
 
+
+    - name: Deploy LLM Proxy
+      when: kai_llm_proxy_enabled | bool
+      block:
+        - name: Create LLM Proxy ConfigMap
+          k8s:
+            state: present
+            template: kai/llm-proxy-configmap.yaml.j2
+
+        - name: Create LLM Proxy Deployment
+          k8s:
+            state: present
+            template: kai/llm-proxy-deployment.yaml.j2
+
+        - name: Create LLM Proxy Service
+          k8s:
+            state: present
+            template: kai/llm-proxy-service.yaml.j2
+
+        - name: Create LLM Proxy Client Configuration
+          k8s:
+            state: present
+            template: kai/llm-proxy-client-configmap.yaml.j2
+
     - name: Create Kai API deployment
       k8s:
         state: present
@@ -78,3 +102,7 @@
       k8s:
         state: present
         template: kai/kai-api-service.yaml.j2
+
+- name: Update Kai component status conditions
+  when: ansible_operator_meta is defined
+  import_tasks: kai-status.yml

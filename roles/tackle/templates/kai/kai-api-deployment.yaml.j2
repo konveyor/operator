@@ -26,6 +26,7 @@ spec:
               value: '{{ kai_llm_params | to_json }}'
             - name: KAI_DB_DSN
               value: 'postgresql+asyncpg://kai:{{ pg_password }}@{{ kai_database_address }}:5432/kai'
+{% if kai_api_key_secret_status.resources | length > 0 %}
 {% for (key, value) in kai_api_key_secret_status.resources.0.data.items() %}
             - name: {{ key }}
               valueFrom:
@@ -33,3 +34,4 @@ spec:
                   name: "{{ kai_api_key_secret_name }}"
                   key: {{ key }}
 {% endfor %}
+{% endif %}

@@ -1,0 +1,115 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llm-proxy
+  namespace: "{{ app_namespace }}"
+  labels:
+    app.kubernetes.io/name: llm-proxy
+    app.kubernetes.io/component: kai
+    app.kubernetes.io/part-of: tackle
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: llm-proxy
+      app.kubernetes.io/name: llm-proxy
+  template:
+    metadata:
+      labels:
+        app: llm-proxy
+        app.kubernetes.io/name: llm-proxy
+        app.kubernetes.io/component: kai
+        app.kubernetes.io/part-of: tackle
+      annotations:
+        # Force pod restart when ConfigMap changes
+        checksum/config: "{{ lookup('template', 'kai/llm-proxy-configmap.yaml.j2') | hash('sha256') }}"
+    spec:
+      containers:
+        - name: llm-proxy
+          image: "{{ kai_llm_proxy_image_fqin }}"
+          ports:
+            - containerPort: 8321
+              name: http
+              protocol: TCP
+          startupProbe:
+            httpGet:
+              path: /v1/health
+              port: 8321
+            failureThreshold: 30
+            periodSeconds: 10
+            initialDelaySeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /v1/health
+              port: 8321
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /v1/health
+              port: 8321
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          env:
+            - name: RUN_CONFIG_PATH
+              value: /app/run.yaml
+            - name: LLAMA_STACK_CONFIG_DIR
+              value: /tmp/.llama
+{% if feature_auth_required and keycloak_sso_proto == 'https' %}
+            # For self-signed certificates
+            - name: SSL_CERT_FILE
+              value: /etc/pki/ca-trust/source/anchors/ca.crt
+            - name: REQUESTS_CA_BUNDLE
+              value: /etc/pki/ca-trust/source/anchors/ca.crt
+{% endif %}
+            - name: POSTGRESQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ kai_database_secret_name }}"
+                  key: POSTGRESQL_PASSWORD
+{% if kai_api_key_secret_status.resources | length > 0 %}
+{% for (key, value) in kai_api_key_secret_status.resources.0.data.items() %}
+            - name: {{ key }}
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ kai_api_key_secret_name }}"
+                  key: {{ key }}
+{% endfor %}
+{% endif %}
+          volumeMounts:
+            - name: config
+              mountPath: /app
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+{% if feature_auth_required and keycloak_sso_proto == 'https' %}
+            - name: trusted-ca
+              mountPath: /etc/pki/ca-trust/source/anchors
+              readOnly: true
+{% endif %}
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      volumes:
+        - name: config
+          configMap:
+            name: llm-proxy
+        - name: tmp
+          emptyDir: {}
+{% if feature_auth_required and keycloak_sso_proto == 'https' %}
+        - name: trusted-ca
+          configMap:
+            name: trusted-ca
+            items:
+              - key: ca-bundle.crt
+                path: ca.crt
+            optional: true
+{% endif %}

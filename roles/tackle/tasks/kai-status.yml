@@ -1,0 +1,87 @@
+---
+# This file updates the CR status conditions for Kai components
+# It only runs when invoked through the operator (ansible_operator_meta is defined)
+
+- name: Check LLM Proxy deployment status
+  when: kai_llm_proxy_enabled | bool
+  k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    name: llm-proxy
+    namespace: "{{ app_namespace }}"
+  register: kai_llm_proxy_deployment
+
+- name: Check Kai API deployment status
+  k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    name: kai-api
+    namespace: "{{ app_namespace }}"
+  register: kai_api_deployment
+
+# Determine proxy readiness - check that deployment is fully ready and updated
+- name: Set LLM proxy ready status
+  set_fact:
+    kai_llm_proxy_ready: "{{ kai_llm_proxy_enabled | bool and
+                         kai_llm_proxy_deployment.resources | length > 0 and
+                         kai_llm_proxy_deployment.resources[0].status.readyReplicas | default(0) > 0 and
+                         kai_llm_proxy_deployment.resources[0].status.readyReplicas | default(0) == kai_llm_proxy_deployment.resources[0].status.replicas | default(1) and
+                         kai_llm_proxy_deployment.resources[0].status.updatedReplicas | default(0) == kai_llm_proxy_deployment.resources[0].status.replicas | default(1) }}"
+
+# Determine if Kai is blocked by proxy
+- name: Set Kai blocked status
+  set_fact:
+    kai_blocked_by_proxy: "{{ kai_llm_proxy_enabled | bool and not (kai_llm_proxy_ready | default(false)) }}"
+    kai_deployment_ready: "{{ kai_api_deployment.resources | length > 0 and
+                              kai_api_deployment.resources[0].status.readyReplicas | default(0) > 0 and
+                              kai_api_deployment.resources[0].status.readyReplicas | default(0) == kai_api_deployment.resources[0].status.replicas | default(1) and
+                              kai_api_deployment.resources[0].status.updatedReplicas | default(0) == kai_api_deployment.resources[0].status.replicas | default(1) }}"
+
+- name: Update LLM Proxy condition
+  when: kai_llm_proxy_enabled | bool
+  operator_sdk.util.k8s_status:
+    api_version: tackle.konveyor.io/v1alpha1
+    kind: Tackle
+    name: "{{ ansible_operator_meta.name }}"
+    namespace: "{{ ansible_operator_meta.namespace }}"
+    conditions:
+      - type: LLMProxyReady
+        status: "{{ 'True' if kai_llm_proxy_ready else 'False' }}"
+        reason: "{{ 'DeploymentReady' if kai_llm_proxy_ready else 'DeploymentNotReady' }}"
+        message: "{{ 'LLM Proxy is running and ready' if kai_llm_proxy_ready
+                     else 'LLM Proxy deployment is not ready. Check pod logs for details.' }}"
+        lastTransitionTime: "{{ now(fmt='%Y-%m-%dT%H:%M:%SZ') }}"
+
+- name: Update Kai Solution Server condition
+  operator_sdk.util.k8s_status:
+    api_version: tackle.konveyor.io/v1alpha1
+    kind: Tackle
+    name: "{{ ansible_operator_meta.name }}"
+    namespace: "{{ ansible_operator_meta.namespace }}"
+    conditions:
+      - type: KaiSolutionServerReady
+        status: >-
+          {{ 'False' if kai_blocked_by_proxy else
+             ('True' if kai_deployment_ready else 'False') }}
+        reason: >-
+          {{ 'WaitingForLLMProxy' if kai_blocked_by_proxy else
+             ('DeploymentReady' if kai_deployment_ready else 'DeploymentNotReady') }}
+        message: >-
+          {{ 'Waiting for LLM Proxy to become ready' if kai_blocked_by_proxy else
+             ('Kai Solution Server is running and ready' if kai_deployment_ready else
+              'Kai Solution Server deployment is not ready. Check pod logs for details.') }}
+        lastTransitionTime: "{{ now(fmt='%Y-%m-%dT%H:%M:%SZ') }}"
+
+- name: Update Kai API Keys condition
+  operator_sdk.util.k8s_status:
+    api_version: tackle.konveyor.io/v1alpha1
+    kind: Tackle
+    name: "{{ ansible_operator_meta.name }}"
+    namespace: "{{ ansible_operator_meta.namespace }}"
+    conditions:
+      - type: KaiAPIKeysConfigured
+        status: "{{ 'True' if (kai_api_key_secret_status.resources | length > 0) else 'False' }}"
+        reason: "{{ 'SecretFound' if (kai_api_key_secret_status.resources | length > 0) else 'SecretNotFound' }}"
+        message: "{{ 'API keys secret is configured' if (kai_api_key_secret_status.resources | length > 0)
+                     else 'No API keys secret found. Some LLM providers may not work without authentication.' }}"
+        lastTransitionTime: "{{ now(fmt='%Y-%m-%dT%H:%M:%SZ') }}"

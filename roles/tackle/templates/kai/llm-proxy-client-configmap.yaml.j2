@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ kai_llm_proxy_client_config_name }}
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/name: llm-proxy-client
+    app.kubernetes.io/component: kai
+    app.kubernetes.io/part-of: tackle
+    konveyor.io/configuration: llm-proxy-client
+data:
+  config.json: |
+    {
+      "model": "{{ kai_llm_proxy_provider_id }}/{{ kai_llm_model }}"
+    }

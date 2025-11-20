@@ -94,6 +94,10 @@ spec:
               value: '{{ui_ingress_proxy_body_size}}'
             - name: TACKLE_HUB_URL
               value: "{{ hub_url }}"
+{% if kai_llm_proxy_enabled|bool %}
+            - name: KAI_LLM_PROXY_URL 
+              value: "{{ kai_llm_proxy_url }}"
+{% endif %}
 {% if feature_auth_required|bool and feature_auth_type == "keycloak" %}
             - name: AUTH_REQUIRED
               value: "true"
