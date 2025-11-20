@@ -101,7 +101,7 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: llm-proxy-config
+            name: llm-proxy
         - name: tmp
           emptyDir: {}
 {% if feature_auth_required and keycloak_sso_proto == 'https' %}

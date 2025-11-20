@@ -316,7 +316,7 @@ kai_llm_proxy_image_fqin: "llamastack/distribution-starter:latest"
 kai_llm_proxy_url: "http://llm-proxy.{{ app_namespace }}.svc.cluster.local:8321"
 
 # Client configuration ConfigMap name
-kai_llm_proxy_client_config_name: "llm-proxy-client-config"
+kai_llm_proxy_client_config_name: "llm-proxy-client"
 
 # Map kai_llm_provider values to llama-stack provider_type format
 # Users can override this for custom providers
