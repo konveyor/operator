@@ -1,0 +1,118 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: llm-proxy
+  namespace: "{{ app_namespace }}"
+  labels:
+    app.kubernetes.io/name: llm-proxy
+    app.kubernetes.io/component: kai
+    app.kubernetes.io/part-of: tackle
+data:
+  run.yaml: |
+    version: 2
+    image_name: starter
+    external_providers_dir: /tmp/.llama/providers.d
+    apis:
+    - inference
+    providers:
+      inference:
+      - provider_id: {{ kai_llm_proxy_provider_id }}
+        provider_type: {{ kai_llm_proxy_provider_type }}
+        config:
+          # All config values use environment variable substitution
+          # The deployment injects these from the kai-api-keys secret
+{% if kai_llm_proxy_provider_type == 'remote::openai' %}
+          api_key: ${env.OPENAI_API_KEY}
+{% if kai_llm_baseurl %}
+          base_url: {{ kai_llm_baseurl }}
+{% endif %}
+{% elif kai_llm_proxy_provider_type == 'remote::azure-openai' %}
+          api_key: ${env.AZURE_OPENAI_API_KEY}
+{% if kai_llm_baseurl %}
+          base_url: {{ kai_llm_baseurl }}
+{% else %}
+          base_url: ${env.AZURE_OPENAI_ENDPOINT}
+{% endif %}
+          api_version: ${env.AZURE_OPENAI_API_VERSION:2024-02-15-preview}
+{% elif kai_llm_proxy_provider_type == 'remote::google' %}
+          api_key: ${env.GOOGLE_API_KEY}
+{% if kai_llm_baseurl %}
+          base_url: {{ kai_llm_baseurl }}
+{% endif %}
+{% elif kai_llm_proxy_provider_type == 'remote::anthropic' %}
+          api_key: ${env.ANTHROPIC_API_KEY}
+{% if kai_llm_baseurl %}
+          base_url: {{ kai_llm_baseurl }}
+{% endif %}
+{% elif kai_llm_proxy_provider_type == 'remote::bedrock' %}
+          aws_access_key_id: ${env.AWS_ACCESS_KEY_ID}
+          aws_secret_access_key: ${env.AWS_SECRET_ACCESS_KEY}
+          aws_session_token: ${env.AWS_SESSION_TOKEN}
+          region: ${env.AWS_DEFAULT_REGION:us-east-1}
+{% else %}
+          # Generic provider - expects API_KEY and optionally BASE_URL in the secret
+          api_key: ${env.API_KEY}
+{% if kai_llm_baseurl %}
+          base_url: {{ kai_llm_baseurl }}
+{% endif %}
+{% endif %}
+    storage:
+      backends:
+        kv_default:
+          type: kv_postgres
+          user: kai
+          password: ${env.POSTGRESQL_PASSWORD}
+          host: {{ kai_database_address }}
+          port: 5432
+          db: kai
+          table_prefix: llm_proxy_kv_
+        sql_default:
+          type: sql_postgres
+          user: kai
+          password: ${env.POSTGRESQL_PASSWORD}
+          host: {{ kai_database_address }}
+          port: 5432
+          db: kai
+          table_prefix: llm_proxy_
+      stores:
+        metadata:
+          namespace: registry
+          backend: kv_default
+        inference:
+          table_name: llm_proxy_inference_store
+          backend: sql_default
+          max_write_queue_size: 10000
+          num_writers: 4
+        conversations:
+          table_name: llm_proxy_conversations
+          backend: sql_default
+    registered_resources:
+      models:
+{% if kai_llm_model %}
+      - model_id: proxied-model
+        provider_id: {{ kai_llm_proxy_provider_id }}
+        model_type: llm
+        provider_model_id: {{ kai_llm_model }}
+{% else %}
+      []
+{% endif %}
+      shields: []
+      vector_dbs: []
+      datasets: []
+      scoring_fns: []
+      benchmarks: []
+      tool_groups: []
+    server:
+      port: 8321
+{% if feature_auth_required %}
+      auth:
+        provider_config:
+          type: "oauth2_token"
+          jwks:
+            uri: "http://{{ keycloak_sso_service_name }}:{{ keycloak_sso_port }}/auth/realms/{{ keycloak_sso_realm }}/protocol/openid-connect/certs"
+          issuer: "http://{{ keycloak_sso_service_name }}.{{ app_namespace }}.svc:{{ keycloak_sso_port }}/auth/realms/{{ keycloak_sso_realm }}"
+          audience: "{{ keycloak_api_audience }}"
+{% endif %}
+    telemetry:
+      enabled: false

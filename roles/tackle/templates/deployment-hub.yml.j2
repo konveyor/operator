@@ -149,6 +149,8 @@ spec:
                   key: password
             - name: KEYCLOAK_REQ_PASS_UPDATE
               value: "{{ keycloak_sso_req_passwd_update|lower }}"
+            - name: KEYCLOAK_AUDIENCE
+              value: "{{ keycloak_api_audience }}"
 {% endif %}
             - name: TASK_SA
               value: "{{ hub_task_sa }}"
