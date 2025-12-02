@@ -23,5 +23,6 @@ images:
   addon_discovery: quay.io/konveyor/tackle2-addon-discovery:latest
   provider_generic: quay.io/konveyor/generic-external-provider:latest
   provider_java: quay.io/konveyor/java-external-provider:latest
+  provider_c_sharp: quay.io/konveyor/c-sharp-provider:latest
   kantra: quay.io/konveyor/kantra:latest
   kai: quay.io/konveyor/kai-solution-server:latest

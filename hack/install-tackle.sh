@@ -25,6 +25,7 @@ UI_IMAGE="${UI_IMAGE:-quay.io/konveyor/tackle2-ui:latest}"
 UI_INGRESS_CLASS_NAME="${UI_INGRESS_CLASS_NAME:-nginx}"
 ADDON_ANALYZER_IMAGE="${ADDON_ANALYZER_IMAGE:-quay.io/konveyor/tackle2-addon-analyzer:latest}"
 JAVA_PROVIDER_IMAGE="${JAVA_PROVIDER_IMAGE:-quay.io/konveyor/java-external-provider:latest}"
+C_SHARP_PROVIDER_IMAGE="${C_SHARP_PROVIDER_IMAGE:-quay.io/konveyor/c-sharp-provider:latest}"
 IMAGE_PULL_POLICY="${IMAGE_PULL_POLICY:-Always}"
 ANALYZER_CONTAINER_REQUESTS_MEMORY="${ANALYZER_CONTAINER_REQUESTS_MEMORY:-0}"
 ANALYZER_CONTAINER_REQUESTS_CPU="${ANALYZER_CONTAINER_REQUESTS_CPU:-0}"
@@ -127,6 +128,7 @@ spec:
   image_pull_policy: ${IMAGE_PULL_POLICY}
   analyzer_container_requests_memory: ${ANALYZER_CONTAINER_REQUESTS_MEMORY}
   provider_java_image_fqin: ${JAVA_PROVIDER_IMAGE}
+  provider_c_sharp_image_fqin: ${C_SHARP_PROVIDER_IMAGE}
   analyzer_container_requests_cpu: ${ANALYZER_CONTAINER_REQUESTS_CPU}
   disable_maven_search: ${DISABLE_MAVEN_SEARCH}
 EOF

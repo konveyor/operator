@@ -57,6 +57,8 @@ spec:
           value: {{ .Values.images.provider_generic }}
         - name: RELATED_IMAGE_PROVIDER_JAVA
           value: {{ .Values.images.provider_java }}
+        - name: RELATED_IMAGE_PROVIDER_C_SHARP
+          value: {{ .Values.images.provider_c_sharp }}
         - name: RELATED_IMAGE_KANTRA
           value: {{ .Values.images.kantra }}
         - name: RELATED_IMAGE_KAI
