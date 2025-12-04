@@ -166,8 +166,6 @@ spec:
     args:
     - --port
     - $(PORT)
-    - --name
-    - c-sharp
     env:
     - name: PORT
       value: ${seq:8000}
@@ -184,7 +182,6 @@ spec:
       address: localhost:$(PORT)
       initConfig:
       - providerSpecificConfig:
-          ilspy_cmd: "/root/.dotnet/tools/ilspy_cmd"
-          paket_cmd: "/root/.dotnet/tools/ilspy_cmd"
-      name: c-sharp
+          ilspy_cmd: "/root/.dotnet/tools/ilspycmd"
+          paket_cmd: "/root/.dotnet/tools/paket"
   selector: tag:Language=C#
