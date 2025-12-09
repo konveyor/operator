@@ -277,6 +277,7 @@ kai_log_level: info
 kai_enable_demo_mode: "false"
 kai_enable_trace: "true"
 
+
 kai_llm_model: null
 kai_llm_provider: null
 kai_llm_baseurl: null
@@ -297,7 +298,9 @@ kai_llm_params:
     base_url: "{{ kai_llm_baseurl }}"
     kwargs: "{{ kai_llm_model_specific_kwargs }}"
 
+
 # LLM params when using the proxy - points to the local llm-proxy service
+kai_llm_proxy_provider_id: "{{ kai_llm_provider }}"
 kai_llm_params_proxy:
   model: "{{ kai_llm_proxy_provider_id }}/{{ kai_llm_model }}"
   model_provider: "openai_api"
@@ -338,7 +341,6 @@ kai_llm_proxy_provider_type_map:
 
 # Computed provider type - uses map or falls back to remote::<provider_name>
 kai_llm_proxy_provider_type: "{{ kai_llm_proxy_provider_type_map[kai_llm_provider] | default('remote::' + kai_llm_provider) if kai_llm_provider else 'remote::openai' }}"
-kai_llm_proxy_provider_id: "{{ kai_llm_provider | default('openai') }}"
 
 # API key environment variable name - map provider to expected env var
 kai_llm_proxy_api_key_env_map:

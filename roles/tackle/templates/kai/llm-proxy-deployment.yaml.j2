@@ -59,7 +59,7 @@ spec:
               value: /app/run.yaml
             - name: LLAMA_STACK_CONFIG_DIR
               value: /tmp/.llama
-{% if feature_auth_required and keycloak_sso_proto == 'https' %}
+{% if trusted_ca_enabled | default(false) | bool %}
             # For self-signed certificates
             - name: SSL_CERT_FILE
               value: /etc/pki/ca-trust/source/anchors/ca.crt
@@ -86,7 +86,7 @@ spec:
               readOnly: true
             - name: tmp
               mountPath: /tmp
-{% if feature_auth_required and keycloak_sso_proto == 'https' %}
+{% if trusted_ca_enabled | default(false) | bool %}
             - name: trusted-ca
               mountPath: /etc/pki/ca-trust/source/anchors
               readOnly: true
@@ -104,7 +104,7 @@ spec:
             name: llm-proxy
         - name: tmp
           emptyDir: {}
-{% if feature_auth_required and keycloak_sso_proto == 'https' %}
+{% if trusted_ca_enabled | default(false) | bool %}
         - name: trusted-ca
           configMap:
             name: trusted-ca

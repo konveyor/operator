@@ -1,6 +1,6 @@
 ---
 
-- name: Verify API key secret is defined
+- name: Get API key secret
   k8s_info:
     api_version: v1
     kind: Secret
@@ -8,17 +8,9 @@
     namespace: "{{ app_namespace }}"
   register: kai_api_key_secret_status
 
-- name: Verify kai-api-key-secret has been created
-  when: (kai_api_key_secret_status.resources|length) == 0
-  debug:
-    msg: >
-         The Kai Solution Server will not be able to serve advanced insights until the credential secret exists.
-         kubectl create secret -n {{ app_namespace }} generic {{ kai_api_key_secret_name }} --from-literal=<your service's environment variable>=<your API key>
-         for example
-         kubectl create secret -n {{ app_namespace }} generic {{ kai_api_key_secret_name }} --from-literal=OPENAI_API_KEY=sk-thisisafakekey
-
-- when: (kai_api_key_secret_status.resources|length) > 0
+- when: kai_llm_proxy_enabled|bool or kai_solution_server_enabled|bool
   block:
+
     - name: Check if DB secret is defined
       k8s_info:
         api_version: v1
@@ -92,16 +84,19 @@
             state: present
             template: kai/llm-proxy-client-configmap.yaml.j2
 
-    - name: Create Kai API deployment
-      k8s:
-        state: present
-        template: kai/kai-api-deployment.yaml.j2
-        merge_type: merge
+    - name: Deploy Solution server
+      when: kai_solution_server_enabled | bool
+      block:
+        - name: Create Kai API deployment
+          k8s:
+            state: present
+            template: kai/kai-api-deployment.yaml.j2
+            merge_type: merge
 
-    - name: Create KAI API Service
-      k8s:
-        state: present
-        template: kai/kai-api-service.yaml.j2
+        - name: Create KAI API Service
+          k8s:
+            state: present
+            template: kai/kai-api-service.yaml.j2
 
 - name: Update Kai component status conditions
   when: ansible_operator_meta is defined
