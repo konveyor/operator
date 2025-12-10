@@ -110,8 +110,10 @@ data:
         provider_config:
           type: "oauth2_token"
           jwks:
-            uri: "http://{{ keycloak_sso_service_name }}:{{ keycloak_sso_port }}/auth/realms/{{ keycloak_sso_realm }}/protocol/openid-connect/certs"
-          issuer: "http://{{ keycloak_sso_service_name }}.{{ app_namespace }}.svc:{{ keycloak_sso_port }}/auth/realms/{{ keycloak_sso_realm }}"
+            # Use the same protocol and base URL that the hub uses for Keycloak
+            uri: "{{ keycloak_sso_url }}/auth/realms/{{ keycloak_sso_realm }}/protocol/openid-connect/certs"
+          # The issuer must match exactly what's in the JWT token from hub auth
+          issuer: "{{ keycloak_sso_url }}/auth/realms/{{ keycloak_sso_realm }}"
           audience: "{{ keycloak_api_audience }}"
 {% endif %}
     telemetry:
