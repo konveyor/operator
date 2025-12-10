@@ -148,7 +148,7 @@ metadata:
     categories: Modernization & Migration
     certified: "false"
     containerImage: quay.io/konveyor/tackle2-operator:latest
-    createdAt: "2025-08-04T19:33:15Z"
+    createdAt: "2025-12-02T19:19:31Z"
     description: Konveyor is an open-source application modernization platform that
       helps organizations safely and predictably modernize applications to Kubernetes
       at scale.
@@ -353,6 +353,8 @@ spec:
                   value: quay.io/konveyor/generic-external-provider:latest
                 - name: RELATED_IMAGE_PROVIDER_JAVA
                   value: quay.io/konveyor/java-external-provider:latest
+                - name: RELATED_IMAGE_PROVIDER_C_SHARP
+                  value: quay.io/konveyor/c-sharp-provider:latest
                 - name: RELATED_IMAGE_KANTRA
                   value: quay.io/konveyor/kantra:latest
                 - name: RELATED_IMAGE_KAI
@@ -554,6 +556,8 @@ spec:
     name: provider-generic
   - image: quay.io/konveyor/java-external-provider:latest
     name: provider-java
+  - image: quay.io/konveyor/c-sharp-provider:latest
+    name: provider-c-sharp
   - image: quay.io/konveyor/kantra:latest
     name: kantra
   - image: quay.io/konveyor/kai-solution-server:latest

@@ -180,6 +180,16 @@ analyzer_container_requests_cpu: "1"
 analyzer_container_requests_memory: "512Mi"
 tech_discovery_name: "tech-discovery"
 
+provider_c_sharp_component_name: "extension"
+provider_c_sharp_container_limits_cpu: "1"
+provider_c_sharp_container_limits_memory: "1Gi"
+provider_c_sharp_container_requests_cpu: "1"
+provider_c_sharp_container_requests_memory: "1Gi"
+provider_c_sharp_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_PROVIDER_C_SHARP') }}"
+provider_c_sharp_name: "csharp"
+provider_c_sharp_service_name: "{{ app_name }}-{{ provider_c_sharp_name }}-{{ provider_c_sharp_component_name }}"
+
+
 provider_python_component_name: "extension"
 provider_python_container_limits_cpu: "1"
 provider_python_container_limits_memory: "1Gi"

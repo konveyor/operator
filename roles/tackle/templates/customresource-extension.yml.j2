@@ -146,3 +146,42 @@ spec:
           - $(builtin.location)
       name: nodejs
   selector: tag:Language=TypeScript||tag:Language=JavaScript
+---
+kind: Extension
+apiVersion: tackle.konveyor.io/v1alpha1
+metadata:
+  name: {{ provider_c_sharp_name }}
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/name: {{ provider_c_sharp_service_name }}
+    app.kubernetes.io/component: {{ provider_c_sharp_component_name }}
+    app.kubernetes.io/part-of: {{ app_name }}
+spec:
+  addon: ^({{ analyzer_name }}|{{ tech_discovery_name }})$
+  selector: tag:Language=C#
+  container:
+    name: {{ provider_c_sharp_name }}
+    image: {{ provider_c_sharp_image_fqin }}
+    imagePullPolicy: {{ image_pull_policy }}
+    args:
+    - --port
+    - $(PORT)
+    env:
+    - name: PORT
+      value: ${seq:8000}
+    resources:
+      limits:
+        cpu: {{ provider_c_sharp_container_limits_cpu }}
+        memory: {{ provider_c_sharp_container_limits_memory }}
+      requests:
+        cpu: {{ provider_c_sharp_container_requests_cpu }}
+        memory: {{ provider_c_sharp_container_requests_memory }}
+  metadata:
+    provider:
+      name: {{ provider_c_sharp_name }}
+      address: localhost:$(PORT)
+      initConfig:
+      - providerSpecificConfig:
+          ilspy_cmd: "/usr/local/bin/ilspycmd"
+          paket_cmd: "/usr/local/bin/paket"
+  selector: tag:Language=C#
