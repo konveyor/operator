@@ -26,3 +26,4 @@ images:
   provider_c_sharp: quay.io/konveyor/c-sharp-provider:latest
   kantra: quay.io/konveyor/kantra:latest
   kai: quay.io/konveyor/kai-solution-server:latest
+  llama_stack: docker.io/llamastack/distribution-starter:latest
