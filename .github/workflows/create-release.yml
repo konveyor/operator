@@ -147,6 +147,8 @@ jobs:
             image: konveyor/tackle2-addon-discovery
           - repo: konveyor/kai
             image: konveyor/kai-solution-server
+          - repo: konveyor/c-sharp-analyzer-provider
+            image: konveyor/c-sharp-provider
       fail-fast: true
     steps:
       - uses: konveyor/release-tools/create-release@release-0.6
