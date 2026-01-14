@@ -15,6 +15,7 @@ FEATURE_AUTH_REQUIRED="${FEATURE_AUTH_REQUIRED:-false}"
 KAI_SOLUTION_SERVER_ENABLED="${KAI_SOLUTION_SERVER_ENABLED:-}"
 KAI_LLM_MODEL="${KAI_LLM_MODEL:-}"
 KAI_LLM_PROVIDER="${KAI_LLM_PROVIDER:-}"
+KAI_LLM_BASEURL="${KAI_LLM_BASEURL:-}"
 
 if ! command -v kubectl >/dev/null 2>&1; then
   echo "Please install kubectl. See https://kubernetes.io/docs/tasks/tools/"
@@ -100,6 +101,7 @@ spec:
 ${KAI_SOLUTION_SERVER_ENABLED:+  kai_solution_server_enabled: ${KAI_SOLUTION_SERVER_ENABLED}}
 ${KAI_LLM_MODEL:+  kai_llm_model: ${KAI_LLM_MODEL}}
 ${KAI_LLM_PROVIDER:+  kai_llm_provider: ${KAI_LLM_PROVIDER}}
+${KAI_LLM_BASEURL:+  kai_llm_baseurl: ${KAI_LLM_BASEURL}}
 EOF
     )
     echo "${TACKLE_CR}" | kubectl apply --namespace "${NAMESPACE}" -f -
