@@ -264,11 +264,18 @@ wait_for_deployments_with_progress() {
 start_olm() {
   echo "=== Starting OLM Installation ==="
   echo "Installing OLM version ${OLM_VERSION}..."
-  if operator-sdk olm install --version ${OLM_VERSION}; then
+  
+  # Add timeout flag for operator-sdk (supported in newer versions)
+  # Default is 2m which is too short for resource-constrained environments
+  if operator-sdk olm install --version ${OLM_VERSION} --timeout 5m; then
     echo "OLM installation successful"
     return 0
   else
     echo "OLM installation failed"
+    # Try to get more debug info about why it failed
+    echo "Checking OLM pod status..."
+    kubectl get pods -n olm --no-headers 2>/dev/null || true
+    kubectl get events -n olm --sort-by='.lastTimestamp' | tail -10 2>/dev/null || true
     return 1
   fi
 }
