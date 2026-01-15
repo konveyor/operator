@@ -16,9 +16,7 @@ KAI_LLM_MODEL="${KAI_LLM_MODEL:-}"
 KAI_LLM_PROVIDER="${KAI_LLM_PROVIDER:-}"
 KAI_LLM_BASEURL="${KAI_LLM_BASEURL:-}"
 
-# Configuration for retry and wait behavior
-MAX_RETRIES="${MAX_RETRIES:-3}"
-RETRY_DELAY="${RETRY_DELAY:-10}"
+# Configuration for wait behavior
 DEPLOYMENT_TIMEOUT="${DEPLOYMENT_TIMEOUT:-600}"
 
 if ! command -v kubectl >/dev/null 2>&1; then
@@ -261,29 +259,17 @@ wait_for_deployments_with_progress() {
   return 1
 }
 
-# Function to install OLM with retry logic
+# Function to install OLM
 start_olm() {
-  local attempt=1
-  
   echo "=== Starting OLM Installation ==="
-  while [ $attempt -le $MAX_RETRIES ]; do
-    echo "Attempt $attempt of $MAX_RETRIES: Installing OLM version ${OLM_VERSION}..."
-    if operator-sdk olm install --version ${OLM_VERSION}; then
-      echo "OLM installation successful"
-      return 0
-    fi
-    
-    if [ $attempt -lt $MAX_RETRIES ]; then
-      echo "OLM installation failed, cleaning up before retry..."
-      # Uninstall OLM to clean up partial installation
-      operator-sdk olm uninstall || true
-      echo "Retrying..."
-    fi
-    attempt=$((attempt + 1))
-  done
-  
-  echo "Failed to install OLM after $MAX_RETRIES attempts"
-  return 1
+  echo "Installing OLM version ${OLM_VERSION}..."
+  if operator-sdk olm install --version ${OLM_VERSION}; then
+    echo "OLM installation successful"
+    return 0
+  else
+    echo "OLM installation failed"
+    return 1
+  fi
 }
 
 # Function to validate entire stack is ready
