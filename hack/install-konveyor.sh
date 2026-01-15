@@ -320,6 +320,7 @@ validate_full_stack() {
 
 # Function to pre-pull a single image using kubectl
 prepull_image() {
+  echo "Pre-pulling $1 in background..."
   local image="$1"
   local pod_name="prepull-$(echo "$image" | md5sum | cut -c1-8)"
   
@@ -341,7 +342,6 @@ prepull_image() {
 start_image_prepulls() {
   # Only prepull if we're in a local environment (minikube/kind)
   if kubectl get nodes -o json | grep -q "minikube\|kind" 2>/dev/null; then
-    echo "Pre-pulling images in background (best effort)..."
     
     # Core images that are almost always used
     prepull_image "${OPERATOR_BUNDLE_IMAGE}" &
@@ -372,7 +372,7 @@ kubectl create namespace "${NAMESPACE}" 2>/dev/null || true
 start_image_prepulls
 
 # Start OLM if not already present
-kubectl get customresourcedefinitions.apiextensions.k8s.io clusterserviceversions.operators.coreos.com || start_olm
+kubectl get customresourcedefinitions.apiextensions.k8s.io clusterserviceversions.operators.coreos.com || (start_olm &)
 
 # Start bundle deployment (will wait for OLM CRDs)
 start_bundle &
