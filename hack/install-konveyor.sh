@@ -2,13 +2,12 @@
 
 set -E
 set -e
-set -x
 set -o pipefail
 
 NAMESPACE="${NAMESPACE:-konveyor-tackle}"
 OPERATOR_BUNDLE_IMAGE="${OPERATOR_BUNDLE_IMAGE:-quay.io/konveyor/tackle2-operator-bundle:latest}"
 TACKLE_CR="${TACKLE_CR:-}"
-TIMEOUT="${TIMEOUT:-15m}"
+TIMEOUT="${TIMEOUT:-10m}"  # Reduced from 15m since typical install is <4min
 OLM_VERSION="${OLM_VERSION:-0.28.0}"
 DISABLE_MAVEN_SEARCH="${DISABLE_MAVEN_SEARCH:-false}"
 FEATURE_AUTH_REQUIRED="${FEATURE_AUTH_REQUIRED:-false}"
@@ -140,17 +139,13 @@ start_bundle() {
   echo "Bundle deployment completed"
 }
 
-# Function to apply Tackle CR - waits for Tackle CRD and operator as precondition
+# Function to apply Tackle CR - waits for Tackle CRD as precondition
 start_tackle() {
   echo "=== Starting Tackle CR Application ==="
   
-  # Precondition: Wait for Tackle CRD to be established
+  # Precondition: Only wait for CRD - operator can reconcile when ready
   echo "Waiting for Tackle CRD to be available..."
   kubectl wait --for=condition=established customresourcedefinitions.apiextensions.k8s.io/tackles.tackle.konveyor.io --timeout=300s
-
-  # Precondition: Wait for Tackle operator to be available
-  echo "Waiting for Tackle operator to be available..."
-  kubectl wait --namespace "${NAMESPACE}" --for=condition=Available deployment/tackle-operator --timeout=300s
 
   # Apply the Tackle CR
   echo "Applying Tackle custom resource..."
@@ -270,15 +265,21 @@ validate_full_stack() {
   olm_namespace=$(kubectl get clusterserviceversions.operators.coreos.com --all-namespaces | grep packageserver | awk '{print $1}')
   echo "OLM namespace: ${olm_namespace}"
   
-  # Validate OLM components
+  # Validate OLM components in parallel
   echo "Validating OLM components..."
-  kubectl wait --namespace "${olm_namespace}" --for=condition=Available deployment/olm-operator deployment/catalog-operator --timeout=60s
-  kubectl wait --namespace "${olm_namespace}" --for='jsonpath={.status.phase}'=Succeeded clusterserviceversions.operators.coreos.com packageserver --timeout=60s
+  kubectl wait --namespace "${olm_namespace}" --for=condition=Available deployment/olm-operator deployment/catalog-operator --timeout=60s &
+  OLM_PID=$!
+  kubectl wait --namespace "${olm_namespace}" --for='jsonpath={.status.phase}'=Succeeded clusterserviceversions.operators.coreos.com packageserver --timeout=60s &
+  PKG_PID=$!
+  wait $OLM_PID $PKG_PID
   
-  # Validate Tackle components
+  # Validate Tackle components - operator and CR in parallel
   echo "Validating Tackle components..."
-  kubectl wait --namespace "${NAMESPACE}" --for=condition=Available deployment/tackle-operator --timeout=60s
-  kubectl wait --namespace "${NAMESPACE}" --for=condition=Successful tackles.tackle.konveyor.io/tackle --timeout=60s
+  kubectl wait --namespace "${NAMESPACE}" --for=condition=Available deployment/tackle-operator --timeout=60s &
+  OP_PID=$!
+  kubectl wait --namespace "${NAMESPACE}" --for=condition=Successful tackles.tackle.konveyor.io/tackle --timeout=120s &
+  CR_PID=$!
+  wait $OP_PID $CR_PID
   
   # Validate all deployments
   echo "Validating all Tackle deployments..."
@@ -289,6 +290,9 @@ validate_full_stack() {
 
 # Main execution flow
 echo "=== PHASE 1: Starting All Components ==="
+
+# Create namespace early if it doesn't exist
+kubectl create namespace "${NAMESPACE}" 2>/dev/null || true
 
 # Start OLM if not already present
 kubectl get customresourcedefinitions.apiextensions.k8s.io clusterserviceversions.operators.coreos.com || start_olm
