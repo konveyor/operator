@@ -1,0 +1,77 @@
+name: LLM Proxy Integration Test
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  llm-proxy-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.22'
+
+    - name: Start minikube
+      uses: konveyor/tackle2-operator/.github/actions/start-minikube@main
+
+    - name: Build operator images
+      run: |
+        eval $(minikube docker-env)
+        IMG=ttl.sh/konveyor-tackle-operator-${{ github.run_id }}:2h make docker-build docker-push
+        BUNDLE_IMG=ttl.sh/konveyor-tackle-operator-bundle-${{ github.run_id }}:2h make bundle bundle-build bundle-push
+
+    - name: Setup test environment
+      run: |
+        # Create namespace
+        kubectl create namespace konveyor-tackle || true
+        
+        # Create API key secret for LLM proxy
+        kubectl create secret generic kai-api-keys \
+          --from-literal=OPENAI_API_KEY=dummy-key-for-llemulator \
+          -n konveyor-tackle \
+          --dry-run=client -o yaml | kubectl apply -f -
+        
+        # Deploy llemulator BEFORE Konveyor so llm-proxy can connect to it
+        ./test/e2e/llm-proxy/setup-llemulator.sh
+
+    - name: Install Konveyor
+      uses: konveyor/tackle2-operator/.github/actions/install-konveyor@main
+      with:
+        bundle_image: ttl.sh/konveyor-tackle-operator-bundle-${{ github.run_id }}:2h
+        namespace: konveyor-tackle
+        tackle_cr: |
+          kind: Tackle
+          apiVersion: tackle.konveyor.io/v1alpha1
+          metadata:
+            name: tackle
+          spec:
+            feature_auth_required: true
+            kai_solution_server_enabled: false
+            kai_llm_proxy_enabled: true
+            kai_llm_model: gpt-4o
+            kai_llm_provider: openai
+            kai_llm_baseurl: http://llemulator.konveyor-tackle.svc.cluster.local/v1
+
+    - name: Run LLM proxy integration tests
+      run: ./test/e2e/llm-proxy/run-test.sh
+
+    - name: Debug on failure
+      if: failure()
+      run: |
+        echo "=== Pod Status ==="
+        kubectl get pods -n konveyor-tackle
+        echo ""
+        echo "=== Recent Events ==="
+        kubectl get events -n konveyor-tackle --sort-by='.lastTimestamp' | tail -20
+        echo ""
+        echo "=== LLM Proxy Logs ==="
+        kubectl logs -n konveyor-tackle deployment/llm-proxy --tail=50 || true
+        echo ""
+        echo "=== Llemulator Logs ==="
+        kubectl logs -n konveyor-tackle deployment/llemulator --tail=50 || true

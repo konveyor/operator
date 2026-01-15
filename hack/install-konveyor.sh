@@ -15,6 +15,7 @@ FEATURE_AUTH_REQUIRED="${FEATURE_AUTH_REQUIRED:-false}"
 KAI_SOLUTION_SERVER_ENABLED="${KAI_SOLUTION_SERVER_ENABLED:-}"
 KAI_LLM_MODEL="${KAI_LLM_MODEL:-}"
 KAI_LLM_PROVIDER="${KAI_LLM_PROVIDER:-}"
+KAI_LLM_BASEURL="${KAI_LLM_BASEURL:-}"
 
 if ! command -v kubectl >/dev/null 2>&1; then
   echo "Please install kubectl. See https://kubernetes.io/docs/tasks/tools/"
@@ -100,6 +101,7 @@ spec:
 ${KAI_SOLUTION_SERVER_ENABLED:+  kai_solution_server_enabled: ${KAI_SOLUTION_SERVER_ENABLED}}
 ${KAI_LLM_MODEL:+  kai_llm_model: ${KAI_LLM_MODEL}}
 ${KAI_LLM_PROVIDER:+  kai_llm_provider: ${KAI_LLM_PROVIDER}}
+${KAI_LLM_BASEURL:+  kai_llm_baseurl: ${KAI_LLM_BASEURL}}
 EOF
     )
     echo "${TACKLE_CR}" | kubectl apply --namespace "${NAMESPACE}" -f -
@@ -126,7 +128,29 @@ EOF
   kubectl get deployments.apps -n "${NAMESPACE}" -o yaml
 }
 
-kubectl get customresourcedefinitions.apiextensions.k8s.io clusterserviceversions.operators.coreos.com || operator-sdk olm install --version ${OLM_VERSION}
+install_olm() {
+  local max_attempts=3
+  local attempt=1
+  
+  while [ $attempt -le $max_attempts ]; do
+    echo "Attempt $attempt of $max_attempts: Installing OLM version ${OLM_VERSION}..."
+    if operator-sdk olm install --version ${OLM_VERSION}; then
+      echo "OLM installation successful"
+      return 0
+    fi
+    
+    if [ $attempt -lt $max_attempts ]; then
+      echo "OLM installation failed (possibly due to network issues), retrying in 10 seconds..."
+      sleep 10
+    fi
+    attempt=$((attempt + 1))
+  done
+  
+  echo "Failed to install OLM after $max_attempts attempts"
+  return 1
+}
+
+kubectl get customresourcedefinitions.apiextensions.k8s.io clusterserviceversions.operators.coreos.com || install_olm
 olm_namespace=$(kubectl get clusterserviceversions.operators.coreos.com --all-namespaces | grep packageserver | awk '{print $1}')
 kubectl rollout status -w deployment/olm-operator --namespace="${olm_namespace}"
 kubectl rollout status -w deployment/catalog-operator --namespace="${olm_namespace}"
