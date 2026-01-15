@@ -26,34 +26,23 @@ jobs:
         IMG=ttl.sh/konveyor-tackle-operator-${{ github.run_id }}:2h make docker-build docker-push
         BUNDLE_IMG=ttl.sh/konveyor-tackle-operator-bundle-${{ github.run_id }}:2h make bundle bundle-build bundle-push
 
-    - name: Install operator-sdk
-      run: |
-        curl -LO https://github.com/operator-framework/operator-sdk/releases/download/v1.35.0/operator-sdk_linux_amd64
-        chmod +x operator-sdk_linux_amd64
-        sudo mv operator-sdk_linux_amd64 /usr/local/bin/operator-sdk
-
-    - name: Install OLM
-      run: |
-        # Check if OLM is already installed
-        if kubectl get crd clusterserviceversions.operators.coreos.com &>/dev/null; then
-          echo "OLM already installed, checking status..."
-          kubectl get csv -A
-        else
-          echo "Installing OLM..."
-          operator-sdk olm install --version 0.28.0
-        fi
-        # Wait for packageserver deployment instead of CSV
-        kubectl wait --for=condition=available deployment/packageserver -n olm --timeout=300s || true
-
-    - name: Deploy operator
-      run: |
-        kubectl create namespace konveyor-tackle || true
-        operator-sdk run bundle ttl.sh/konveyor-tackle-operator-bundle-${{ github.run_id }}:2h \
-          --namespace konveyor-tackle \
-          --timeout 15m
-        kubectl wait --for=condition=available deployment/tackle-operator \
-          -n konveyor-tackle \
-          --timeout=600s
+    - name: Install Konveyor
+      uses: konveyor/tackle2-operator/.github/actions/install-konveyor@main
+      with:
+        bundle_image: ttl.sh/konveyor-tackle-operator-bundle-${{ github.run_id }}:2h
+        namespace: konveyor-tackle
+        tackle_cr: |
+          kind: Tackle
+          apiVersion: tackle.konveyor.io/v1alpha1
+          metadata:
+            name: tackle
+          spec:
+            feature_auth_required: true
+            kai_solution_server_enabled: true
+            kai_llm_proxy_enabled: true
+            kai_llm_model: gpt-4o
+            kai_llm_provider: openai
+            kai_llm_baseurl: http://llemulator.konveyor-tackle.svc.cluster.local/v1
 
     - name: Run LLM proxy integration tests
       run: ./test/e2e/llm-proxy/run-test.sh
