@@ -123,26 +123,37 @@ debug() {
 }
 trap 'debug' ERR
 
-run_bundle() {
+# Function to deploy bundle - waits for OLM CRDs as precondition
+start_bundle() {
+  echo "=== Starting Bundle Deployment ==="
+  
+  # Precondition: Wait for OLM CRDs to exist
+  echo "Waiting for OLM CRDs to be available..."
+  kubectl wait --for=condition=established customresourcedefinitions.apiextensions.k8s.io/clusterserviceversions.operators.coreos.com --timeout=300s
+  
   kubectl auth can-i create namespace --all-namespaces
   kubectl create namespace "${NAMESPACE}" || true
+  
+  echo "Starting operator bundle deployment..."
   operator-sdk run bundle "${OPERATOR_BUNDLE_IMAGE}" --namespace "${NAMESPACE}" --timeout "${TIMEOUT}"
-
-  # If on MacOS, need to install `brew install coreutils` to get `timeout`
-  timeout 600s bash -c 'until kubectl get customresourcedefinitions.apiextensions.k8s.io tackles.tackle.konveyor.io; do sleep 30; done'
-  kubectl get clusterserviceversions.operators.coreos.com -n "${NAMESPACE}" -o yaml
+  
+  echo "Bundle deployment completed"
 }
 
-install_tackle() {
-  echo "Waiting for the Tackle CRD to become available"
-  kubectl wait --namespace "${NAMESPACE}" --for=condition=established customresourcedefinitions.apiextensions.k8s.io/tackles.tackle.konveyor.io
+# Function to apply Tackle CR - waits for Tackle CRD and operator as precondition
+start_tackle() {
+  echo "=== Starting Tackle CR Application ==="
+  
+  # Precondition: Wait for Tackle CRD to be established
+  echo "Waiting for Tackle CRD to be available..."
+  kubectl wait --for=condition=established customresourcedefinitions.apiextensions.k8s.io/tackles.tackle.konveyor.io --timeout=300s
 
-  echo "Waiting for the Tackle Operator to exist"
-  timeout 2m bash -c "until kubectl --namespace ${NAMESPACE} get deployment/tackle-operator; do sleep 10; done"
+  # Precondition: Wait for Tackle operator to be available
+  echo "Waiting for Tackle operator to be available..."
+  kubectl wait --namespace "${NAMESPACE}" --for=condition=Available deployment/tackle-operator --timeout=300s
 
-  echo "Waiting for the Tackle Operator to become available"
-  kubectl rollout status --namespace "${NAMESPACE}" -w deployment/tackle-operator --timeout=600s
-
+  # Apply the Tackle CR
+  echo "Applying Tackle custom resource..."
   if [ -n "${TACKLE_CR}" ]; then
     echo "${TACKLE_CR}" | kubectl apply --namespace "${NAMESPACE}" -f -
   else
@@ -163,19 +174,9 @@ EOF
     echo "${TACKLE_CR}" | kubectl apply --namespace "${NAMESPACE}" -f -
   fi
 
-  # Want to see in github logs what we just created
+  # Show what we created
   kubectl get --namespace "${NAMESPACE}" -o yaml tackles.tackle.konveyor.io/tackle
-
-  # Wait for reconcile to finish
-  kubectl wait \
-    --namespace "${NAMESPACE}" \
-    --for=condition=Successful \
-    --timeout=600s \
-    tackles.tackle.konveyor.io/tackle
-
-  # Wait for deployments with progress updates
-  echo "=== Waiting for deployments ==="
-  wait_for_deployments_with_progress
+  echo "Tackle CR applied successfully"
 }
 
 # Function to wait for deployments with progress reporting
@@ -238,10 +239,10 @@ wait_for_deployments_with_progress() {
 }
 
 # Function to install OLM with retry logic
-install_olm() {
+start_olm() {
   local attempt=1
   
-  echo "=== Installing OLM ==="
+  echo "=== Starting OLM Installation ==="
   while [ $attempt -le $MAX_RETRIES ]; do
     echo "Attempt $attempt of $MAX_RETRIES: Installing OLM version ${OLM_VERSION}..."
     if operator-sdk olm install --version ${OLM_VERSION}; then
@@ -260,10 +261,49 @@ install_olm() {
   return 1
 }
 
-kubectl get customresourcedefinitions.apiextensions.k8s.io clusterserviceversions.operators.coreos.com || install_olm
-olm_namespace=$(kubectl get clusterserviceversions.operators.coreos.com --all-namespaces | grep packageserver | awk '{print $1}')
-kubectl rollout status -w deployment/olm-operator --namespace="${olm_namespace}"
-kubectl rollout status -w deployment/catalog-operator --namespace="${olm_namespace}"
-kubectl wait --namespace "${olm_namespace}" --for='jsonpath={.status.phase}'=Succeeded clusterserviceversions.operators.coreos.com packageserver
-kubectl get customresourcedefinitions.apiextensions.k8s.io tackles.tackle.konveyor.io || run_bundle
-install_tackle
+# Function to validate entire stack is ready
+validate_full_stack() {
+  echo "=== Validating Full Stack Readiness ==="
+  
+  # Get OLM namespace
+  local olm_namespace
+  olm_namespace=$(kubectl get clusterserviceversions.operators.coreos.com --all-namespaces | grep packageserver | awk '{print $1}')
+  echo "OLM namespace: ${olm_namespace}"
+  
+  # Validate OLM components
+  echo "Validating OLM components..."
+  kubectl wait --namespace "${olm_namespace}" --for=condition=Available deployment/olm-operator deployment/catalog-operator --timeout=60s
+  kubectl wait --namespace "${olm_namespace}" --for='jsonpath={.status.phase}'=Succeeded clusterserviceversions.operators.coreos.com packageserver --timeout=60s
+  
+  # Validate Tackle components
+  echo "Validating Tackle components..."
+  kubectl wait --namespace "${NAMESPACE}" --for=condition=Available deployment/tackle-operator --timeout=60s
+  kubectl wait --namespace "${NAMESPACE}" --for=condition=Successful tackles.tackle.konveyor.io/tackle --timeout=60s
+  
+  # Validate all deployments
+  echo "Validating all Tackle deployments..."
+  wait_for_deployments_with_progress
+  
+  echo "Full stack validation completed successfully!"
+}
+
+# Main execution flow
+echo "=== PHASE 1: Starting All Components ==="
+
+# Start OLM if not already present
+kubectl get customresourcedefinitions.apiextensions.k8s.io clusterserviceversions.operators.coreos.com || start_olm
+
+# Start bundle deployment (will wait for OLM CRDs)
+start_bundle &
+BUNDLE_PID=$!
+
+# Start Tackle CR application (will wait for Tackle CRD and operator)
+start_tackle &
+TACKLE_PID=$!
+
+echo "=== PHASE 2: Waiting for Background Processes ==="
+wait $BUNDLE_PID
+wait $TACKLE_PID
+
+echo "=== PHASE 3: Final Validation ==="
+validate_full_stack
