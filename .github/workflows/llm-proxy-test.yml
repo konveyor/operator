@@ -18,7 +18,7 @@ jobs:
         go-version: '1.22'
 
     - name: Start minikube
-      uses: konveyor/tackle2-operator/.github/actions/start-minikube@main
+      uses: ./.github/actions/start-minikube
 
     - name: Build operator images
       run: |
@@ -41,7 +41,7 @@ jobs:
         ./test/e2e/llm-proxy/setup-llemulator.sh
 
     - name: Install Konveyor
-      uses: konveyor/tackle2-operator/.github/actions/install-konveyor@main
+      uses: ./.github/actions/install-konveyor
       with:
         bundle_image: ttl.sh/konveyor-tackle-operator-bundle-${{ github.run_id }}:2h
         namespace: konveyor-tackle
