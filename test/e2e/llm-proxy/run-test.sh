@@ -11,17 +11,17 @@ echo "=== Running LLM Proxy Integration Test ==="
 echo "Namespace: $NAMESPACE"
 echo ""
 
-# Step 1: Setup llemulator
-echo "Step 1: Setting up llemulator..."
-"${SCRIPT_DIR}/setup-llemulator.sh"
-
-# Step 2: Ensure API key secret exists
-echo ""
-echo "Step 2: Ensuring API key secret exists..."
+# Step 1: Ensure API key secret exists
+echo "Step 1: Ensuring API key secret exists..."
 kubectl create secret generic kai-api-keys \
   --from-literal=OPENAI_API_KEY=dummy-key-for-llemulator \
   -n $NAMESPACE \
   --dry-run=client -o yaml | kubectl apply -f -
+
+# Step 2: Setup llemulator
+echo ""
+echo "Step 2: Setting up llemulator..."
+"${SCRIPT_DIR}/setup-llemulator.sh"
 
 # Step 3: Check if Tackle CR exists and update if needed for standalone runs
 echo ""

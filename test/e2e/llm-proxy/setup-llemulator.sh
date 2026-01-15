@@ -70,7 +70,7 @@ PF_PID=$!
 sleep 3
 
 # Configure with the correct token
-curl -s -X POST http://localhost:8089/_emulator/script \
+RESPONSE=$(curl -s -X POST http://localhost:8089/_emulator/script \
   -H "Authorization: Bearer ${API_KEY}" \
   -H "Content-Type: application/json" \
   -d '{
@@ -81,7 +81,13 @@ curl -s -X POST http://localhost:8089/_emulator/script \
       "The integration between llm-proxy and llemulator is working correctly.",
       "Test successful: llm-proxy can communicate with the mock OpenAI endpoint."
     ]
-  }' > /dev/null
+  }')
+
+if echo "$RESPONSE" | grep -q "error"; then
+  echo "Warning: Failed to configure llemulator: $RESPONSE"
+else
+  echo "llemulator configured with API key: ${API_KEY:0:10}..."
+fi
 
 # Kill port-forward
 kill $PF_PID 2>/dev/null || true
