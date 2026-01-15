@@ -274,8 +274,10 @@ start_olm() {
     fi
     
     if [ $attempt -lt $MAX_RETRIES ]; then
-      echo "OLM installation failed (possibly due to network issues), retrying in ${RETRY_DELAY} seconds..."
-      sleep $RETRY_DELAY
+      echo "OLM installation failed, cleaning up before retry..."
+      # Uninstall OLM to clean up partial installation
+      operator-sdk olm uninstall || true
+      echo "Retrying..."
     fi
     attempt=$((attempt + 1))
   done
