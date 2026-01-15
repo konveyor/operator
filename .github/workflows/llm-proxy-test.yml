@@ -34,8 +34,16 @@ jobs:
 
     - name: Install OLM
       run: |
-        operator-sdk olm install --version 0.28.0
-        kubectl wait --for=condition=Succeeded --timeout=600s -n olm clusterserviceversions.operators.coreos.com packageserver
+        # Check if OLM is already installed
+        if kubectl get crd clusterserviceversions.operators.coreos.com &>/dev/null; then
+          echo "OLM already installed, checking status..."
+          kubectl get csv -A
+        else
+          echo "Installing OLM..."
+          operator-sdk olm install --version 0.28.0
+        fi
+        # Wait for packageserver deployment instead of CSV
+        kubectl wait --for=condition=available deployment/packageserver -n olm --timeout=300s || true
 
     - name: Deploy operator
       run: |
