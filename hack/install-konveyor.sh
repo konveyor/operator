@@ -234,7 +234,8 @@ wait_for_deployments_with_progress() {
     
     # Show status of what we're still waiting for
     echo "Still waiting for some deployments after ${elapsed}s..."
-    local pending_deployments=$(kubectl get deployments -n "${NAMESPACE}" -l "app.kubernetes.io/part-of=tackle" \
+    local pending_deployments
+    pending_deployments=$(kubectl get deployments -n "${NAMESPACE}" -l "app.kubernetes.io/part-of=tackle" \
       --no-headers -o custom-columns="NAME:.metadata.name,READY:.status.readyReplicas,DESIRED:.spec.replicas" \
       | awk '$2!=$3 {print $1 "(" $2 "/" $3 ")"}' || echo "unknown")
     
@@ -279,6 +280,13 @@ validate_full_stack() {
   # Get OLM namespace
   local olm_namespace
   olm_namespace=$(kubectl get clusterserviceversions.operators.coreos.com --all-namespaces | grep packageserver | awk '{print $1}')
+  
+  # Check if namespace was found
+  if [ -z "${olm_namespace}" ]; then
+    echo "Error: Could not determine OLM namespace"
+    return 1
+  fi
+  
   echo "OLM namespace: ${olm_namespace}"
   
   # Validate OLM components in parallel
@@ -308,7 +316,8 @@ validate_full_stack() {
 prepull_image() {
   echo "Pre-pulling $1 in background..."
   local image="$1"
-  local pod_name="prepull-$(echo "$image" | md5sum | cut -c1-8)"
+  local pod_name
+  pod_name="prepull-$(echo "$image" | md5sum | cut -c1-8)"
   
   # Create pod to trigger image pull
   kubectl run "$pod_name" \
@@ -318,7 +327,9 @@ prepull_image() {
     >/dev/null 2>&1
   
   # Wait for pod to complete (image pulled) or timeout
-  kubectl wait --for=condition=Ready pod/"$pod_name" --timeout=60s >/dev/null 2>&1 || true
+  # Use jsonpath to wait for Succeeded or Failed status since pod exits immediately
+  kubectl wait --for=jsonpath='{.status.phase}'=Succeeded pod/"$pod_name" --timeout=60s >/dev/null 2>&1 || \
+  kubectl wait --for=jsonpath='{.status.phase}'=Failed pod/"$pod_name" --timeout=5s >/dev/null 2>&1 || true
   
   # Clean up the pod
   kubectl delete pod "$pod_name" --ignore-not-found=true >/dev/null 2>&1
@@ -330,21 +341,21 @@ start_image_prepulls() {
   if kubectl get nodes -o json | grep -q "minikube\|kind" 2>/dev/null; then
     
     # Core images that are almost always used
-    prepull_image "${OPERATOR_BUNDLE_IMAGE}" &
-    prepull_image "quay.io/konveyor/tackle2-operator:latest" &
-    prepull_image "quay.io/konveyor/tackle2-hub:latest" &
-    prepull_image "quay.io/sclorg/postgresql-15-c9s:latest" &
-    prepull_image "quay.io/konveyor/tackle2-ui:latest" &
-    prepull_image "quay.io/konveyor/tackle2-addon-analyzer:latest" &
+    ( set +E; prepull_image "${OPERATOR_BUNDLE_IMAGE}" ) &
+    ( set +E; prepull_image "quay.io/konveyor/tackle2-operator:latest" ) &
+    ( set +E; prepull_image "quay.io/konveyor/tackle2-hub:latest" ) &
+    ( set +E; prepull_image "quay.io/sclorg/postgresql-15-c9s:latest" ) &
+    ( set +E; prepull_image "quay.io/konveyor/tackle2-ui:latest" ) &
+    ( set +E; prepull_image "quay.io/konveyor/tackle2-addon-analyzer:latest" ) &
     
     # Auth-related images
-    prepull_image "quay.io/keycloak/keycloak:26.1" &
-    prepull_image "quay.io/konveyor/tackle-keycloak-init:latest" &
-    prepull_image "quay.io/openshift/origin-oauth-proxy:latest" &
+    ( set +E; prepull_image "quay.io/keycloak/keycloak:26.1" ) &
+    ( set +E; prepull_image "quay.io/konveyor/tackle-keycloak-init:latest" ) &
+    ( set +E; prepull_image "quay.io/openshift/origin-oauth-proxy:latest" ) &
     
     # KAI/LLM-related images
-    prepull_image "quay.io/konveyor/kai-solution-server:latest" &
-    prepull_image "docker.io/llamastack/distribution-starter:latest" &
+    ( set +E; prepull_image "quay.io/konveyor/kai-solution-server:latest" ) &
+    ( set +E; prepull_image "docker.io/llamastack/distribution-starter:latest" ) &
   fi
 }
 
@@ -358,14 +369,14 @@ kubectl create namespace "${NAMESPACE}" 2>/dev/null || true
 start_image_prepulls
 
 # Start OLM if not already present
-kubectl get customresourcedefinitions.apiextensions.k8s.io clusterserviceversions.operators.coreos.com || (start_olm &)
+kubectl get customresourcedefinitions.apiextensions.k8s.io clusterserviceversions.operators.coreos.com || ( set +E; start_olm ) &
 
 # Start bundle deployment (will wait for OLM CRDs)
-start_bundle &
+( set +E; start_bundle ) &
 BUNDLE_PID=$!
 
 # Start Tackle CR application (will wait for Tackle CRD and operator)
-start_tackle &
+( set +E; start_tackle ) &
 TACKLE_PID=$!
 
 echo "=== PHASE 2: Waiting for Background Processes ==="
