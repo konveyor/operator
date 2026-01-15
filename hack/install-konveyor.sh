@@ -46,40 +46,40 @@ debug() {
     mkdir -p "${debug_output}"
     
     echo "=== CLUSTER STATE ==="
-    kubectl cluster-info | tee "${debug_output}/cluster-info.txt"
+    kubectl cluster-info > "${debug_output}/cluster-info.txt" 2>&1
     
     echo ""
     echo "=== NAMESPACE STATE ==="
-    kubectl get namespace "${NAMESPACE}" -o yaml | tee "${debug_output}/namespace.yaml"
+    kubectl get namespace "${NAMESPACE}" -o yaml > "${debug_output}/namespace.yaml" 2>&1
     
     echo ""
     echo "=== RESOURCES OVERVIEW ==="
-    kubectl get --namespace "${NAMESPACE}" all | tee "${debug_output}/all_resources.txt"
+    kubectl get --namespace "${NAMESPACE}" all > "${debug_output}/all_resources.txt" 2>&1
     
     echo ""
     echo "=== OPERATOR RESOURCES ==="
     kubectl get --namespace "${NAMESPACE}" -o yaml \
       subscriptions.operators.coreos.com,catalogsources.operators.coreos.com,installplans.operators.coreos.com,clusterserviceversions.operators.coreos.com \
-      | tee "${debug_output}/operator_resources.yaml"
+      > "${debug_output}/operator_resources.yaml" 2>&1
     
     echo ""
     echo "=== TACKLE CUSTOM RESOURCE ==="
-    kubectl get --namespace "${NAMESPACE}" -o yaml tackles.tackle.konveyor.io/tackle | tee "${debug_output}/tackle.yaml"
+    kubectl get --namespace "${NAMESPACE}" -o yaml tackles.tackle.konveyor.io/tackle > "${debug_output}/tackle.yaml" 2>&1
     
     echo ""
     echo "=== POD DETAILS ==="
     local pods_output="${debug_output}/pod_details.txt"
     for pod in $(kubectl get pods -n "${NAMESPACE}" -o jsonpath='{.items[*].metadata.name}' 2>/dev/null || echo ""); do
-      echo "--- Pod: $pod ---" | tee -a "${pods_output}"
-      kubectl --namespace "${NAMESPACE}" describe pod "${pod}" | tee -a "${pods_output}"
+      echo "--- Pod: $pod ---" >> "${pods_output}"
+      kubectl --namespace "${NAMESPACE}" describe pod "${pod}" >> "${pods_output}" 2>&1
       
-      echo "--- Logs for $pod ---" | tee "${debug_output}/${pod}.log"
-      kubectl --namespace "${NAMESPACE}" logs "${pod}" --tail=100 | tee -a "${debug_output}/${pod}.log"
+      echo "--- Logs for $pod ---" > "${debug_output}/${pod}.log"
+      kubectl --namespace "${NAMESPACE}" logs "${pod}" --tail=100 >> "${debug_output}/${pod}.log" 2>&1
     done
     
     echo ""
     echo "=== EVENTS ==="
-    kubectl get events --namespace="${NAMESPACE}" --sort-by='.lastTimestamp' | tail -20 | tee "${debug_output}/events.txt"
+    kubectl get events --namespace="${NAMESPACE}" --sort-by='.lastTimestamp' | tail -20 > "${debug_output}/events.txt" 2>&1
     
     echo ""
     echo "Debug files saved to: ${debug_output}/"
@@ -126,9 +126,23 @@ trap 'debug' ERR
 start_bundle() {
   echo "=== Starting Bundle Deployment ==="
   
-  # Precondition: Wait for OLM CRDs to exist
+  # Precondition: Wait for OLM CRDs to exist and be established
   echo "Waiting for OLM CRDs to be available..."
-  kubectl wait --for=condition=established customresourcedefinitions.apiextensions.k8s.io/clusterserviceversions.operators.coreos.com --timeout=300s
+  local elapsed=0
+  local timeout=300
+  while [ $elapsed -lt $timeout ]; do
+    if kubectl get customresourcedefinitions.apiextensions.k8s.io/clusterserviceversions.operators.coreos.com >/dev/null 2>&1; then
+      # CRD exists, now wait for it to be established
+      kubectl wait --for=condition=established customresourcedefinitions.apiextensions.k8s.io/clusterserviceversions.operators.coreos.com --timeout=30s && break
+    fi
+    sleep 5
+    elapsed=$((elapsed + 5))
+  done
+  
+  if [ $elapsed -ge $timeout ]; then
+    echo "Error: OLM CRDs did not become available within ${timeout}s"
+    return 1
+  fi
   
   kubectl auth can-i create namespace --all-namespaces
   kubectl create namespace "${NAMESPACE}" || true
@@ -143,9 +157,23 @@ start_bundle() {
 start_tackle() {
   echo "=== Starting Tackle CR Application ==="
   
-  # Precondition: Only wait for CRD - operator can reconcile when ready
+  # Precondition: Wait for CRD to exist and be established
   echo "Waiting for Tackle CRD to be available..."
-  kubectl wait --for=condition=established customresourcedefinitions.apiextensions.k8s.io/tackles.tackle.konveyor.io --timeout=300s
+  local elapsed=0
+  local timeout=300
+  while [ $elapsed -lt $timeout ]; do
+    if kubectl get customresourcedefinitions.apiextensions.k8s.io/tackles.tackle.konveyor.io >/dev/null 2>&1; then
+      # CRD exists, now wait for it to be established
+      kubectl wait --for=condition=established customresourcedefinitions.apiextensions.k8s.io/tackles.tackle.konveyor.io --timeout=30s && break
+    fi
+    sleep 5
+    elapsed=$((elapsed + 5))
+  done
+  
+  if [ $elapsed -ge $timeout ]; then
+    echo "Error: Tackle CRD did not become available within ${timeout}s"
+    return 1
+  fi
 
   # Apply the Tackle CR
   echo "Applying Tackle custom resource..."
