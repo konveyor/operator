@@ -26,13 +26,19 @@ jobs:
         IMG=ttl.sh/konveyor-tackle-operator-${{ github.run_id }}:2h make docker-build docker-push
         BUNDLE_IMG=ttl.sh/konveyor-tackle-operator-bundle-${{ github.run_id }}:2h make bundle bundle-build bundle-push
 
-    - name: Create API key secret for LLM proxy
+    - name: Setup test environment
       run: |
+        # Create namespace
         kubectl create namespace konveyor-tackle || true
+        
+        # Create API key secret for LLM proxy
         kubectl create secret generic kai-api-keys \
           --from-literal=OPENAI_API_KEY=dummy-key-for-llemulator \
           -n konveyor-tackle \
           --dry-run=client -o yaml | kubectl apply -f -
+        
+        # Deploy llemulator BEFORE Konveyor so llm-proxy can connect to it
+        ./test/e2e/llm-proxy/setup-llemulator.sh
 
     - name: Install Konveyor
       uses: konveyor/tackle2-operator/.github/actions/install-konveyor@main
