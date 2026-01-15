@@ -26,6 +26,14 @@ jobs:
         IMG=ttl.sh/konveyor-tackle-operator-${{ github.run_id }}:2h make docker-build docker-push
         BUNDLE_IMG=ttl.sh/konveyor-tackle-operator-bundle-${{ github.run_id }}:2h make bundle bundle-build bundle-push
 
+    - name: Create API key secret for LLM proxy
+      run: |
+        kubectl create namespace konveyor-tackle || true
+        kubectl create secret generic kai-api-keys \
+          --from-literal=OPENAI_API_KEY=dummy-key-for-llemulator \
+          -n konveyor-tackle \
+          --dry-run=client -o yaml | kubectl apply -f -
+
     - name: Install Konveyor
       uses: konveyor/tackle2-operator/.github/actions/install-konveyor@main
       with:
@@ -38,7 +46,7 @@ jobs:
             name: tackle
           spec:
             feature_auth_required: true
-            kai_solution_server_enabled: true
+            kai_solution_server_enabled: false
             kai_llm_proxy_enabled: true
             kai_llm_model: gpt-4o
             kai_llm_provider: openai
