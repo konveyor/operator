@@ -128,7 +128,29 @@ EOF
   kubectl get deployments.apps -n "${NAMESPACE}" -o yaml
 }
 
-kubectl get customresourcedefinitions.apiextensions.k8s.io clusterserviceversions.operators.coreos.com || operator-sdk olm install --version ${OLM_VERSION}
+install_olm() {
+  local max_attempts=3
+  local attempt=1
+  
+  while [ $attempt -le $max_attempts ]; do
+    echo "Attempt $attempt of $max_attempts: Installing OLM version ${OLM_VERSION}..."
+    if operator-sdk olm install --version ${OLM_VERSION}; then
+      echo "OLM installation successful"
+      return 0
+    fi
+    
+    if [ $attempt -lt $max_attempts ]; then
+      echo "OLM installation failed (possibly due to network issues), retrying in 10 seconds..."
+      sleep 10
+    fi
+    attempt=$((attempt + 1))
+  done
+  
+  echo "Failed to install OLM after $max_attempts attempts"
+  return 1
+}
+
+kubectl get customresourcedefinitions.apiextensions.k8s.io clusterserviceversions.operators.coreos.com || install_olm
 olm_namespace=$(kubectl get clusterserviceversions.operators.coreos.com --all-namespaces | grep packageserver | awk '{print $1}')
 kubectl rollout status -w deployment/olm-operator --namespace="${olm_namespace}"
 kubectl rollout status -w deployment/catalog-operator --namespace="${olm_namespace}"
