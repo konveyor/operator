@@ -362,33 +362,27 @@ echo "=== PHASE 1: Starting All Components ==="
 kubectl create namespace "${NAMESPACE}" 2>/dev/null || true
 
 # Start OLM if not already present
-kubectl get customresourcedefinitions.apiextensions.k8s.io clusterserviceversions.operators.coreos.com || ( set +E; start_olm ) &
+PIDS_TO_WAIT=""
+if ! kubectl get customresourcedefinitions.apiextensions.k8s.io clusterserviceversions.operators.coreos.com 2>/dev/null; then
+  ( set +E; start_olm ) &
+  PIDS_TO_WAIT="$!"
+fi
 
 # Start bundle deployment (will wait for OLM CRDs)
 ( set +E; start_bundle ) &
 BUNDLE_PID=$!
+PIDS_TO_WAIT="$PIDS_TO_WAIT $BUNDLE_PID"
 
 # Start Tackle CR application (will wait for Tackle CRD and operator)
 ( set +E; start_tackle ) &
 TACKLE_PID=$!
+PIDS_TO_WAIT="$PIDS_TO_WAIT $TACKLE_PID"
 
 echo "=== PHASE 2: Waiting for Background Processes ==="
 
-# Wait for both processes and capture their exit codes
-BUNDLE_EXIT=0
-TACKLE_EXIT=0
-
-wait $BUNDLE_PID || BUNDLE_EXIT=$?
-wait $TACKLE_PID || TACKLE_EXIT=$?
-
-# Check if any failed
-if [ $BUNDLE_EXIT -ne 0 ]; then
-  echo "Bundle deployment failed with exit code $BUNDLE_EXIT"
-  exit 1
-fi
-
-if [ $TACKLE_EXIT -ne 0 ]; then
-  echo "Tackle CR application failed with exit code $TACKLE_EXIT"
+# Wait for all processes
+if ! wait_for_all $PIDS_TO_WAIT; then
+  echo "Error: One or more background processes failed"
   exit 1
 fi
 
