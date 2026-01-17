@@ -153,22 +153,25 @@ debug() {
 }
 trap 'debug' ERR
 
-# Function to deploy bundle - waits for OLM CRDs as precondition
+# Function to deploy bundle - waits for OLM operators as precondition
 start_bundle() {
   echo "=== Starting Bundle Deployment ==="
   
-  # Precondition: Wait for OLM CRDs to exist and be established
-  echo "Waiting for OLM CRDs to be available..."
+  # Precondition: Wait for OLM operators to be ready
+  echo "Waiting for OLM operators to be ready..."
   while true; do
     local remaining=$(get_remaining_time)
     if [ $remaining -le 0 ]; then
-      echo "Error: Global timeout reached while waiting for OLM CRDs"
+      echo "Error: Global timeout reached while waiting for OLM"
       return 1
     fi
     
-    if kubectl get customresourcedefinitions.apiextensions.k8s.io/clusterserviceversions.operators.coreos.com >/dev/null 2>&1; then
-      # CRD exists, now wait for it to be established
-      kubectl wait --for=condition=established customresourcedefinitions.apiextensions.k8s.io/clusterserviceversions.operators.coreos.com --timeout=30s && break
+    # Check if OLM namespace exists and operators are ready
+    if kubectl get namespace olm >/dev/null 2>&1; then
+      if kubectl wait --for=condition=Available deployment/olm-operator deployment/catalog-operator -n olm --timeout=30s 2>/dev/null; then
+        echo "OLM operators are ready"
+        break
+      fi
     fi
     sleep 5
   done
