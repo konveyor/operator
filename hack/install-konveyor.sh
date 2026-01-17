@@ -16,6 +16,10 @@ KAI_LLM_MODEL="${KAI_LLM_MODEL:-}"
 KAI_LLM_PROVIDER="${KAI_LLM_PROVIDER:-}"
 KAI_LLM_BASEURL="${KAI_LLM_BASEURL:-}"
 
+# Global timeout configuration - entire script must complete within this time
+GLOBAL_TIMEOUT_SECONDS="${GLOBAL_TIMEOUT_SECONDS:-600}"  # 10 minutes default
+SCRIPT_START_TIME=$(date +%s)
+
 # Configuration for wait behavior
 DEPLOYMENT_TIMEOUT="${DEPLOYMENT_TIMEOUT:-600}"
 
@@ -28,6 +32,19 @@ if ! command -v operator-sdk >/dev/null 2>&1; then
   echo "Please install operator-sdk. See https://sdk.operatorframework.io/docs/installation/"
   exit 1
 fi
+
+# Function to calculate remaining time before global timeout
+get_remaining_time() {
+  local current_time=$(date +%s)
+  local elapsed=$((current_time - SCRIPT_START_TIME))
+  local remaining=$((GLOBAL_TIMEOUT_SECONDS - elapsed))
+  
+  if [ $remaining -le 0 ]; then
+    echo "0"
+  else
+    echo "$remaining"
+  fi
+}
 
 # Enhanced debug function with structured output
 debug() {
@@ -126,21 +143,19 @@ start_bundle() {
   
   # Precondition: Wait for OLM CRDs to exist and be established
   echo "Waiting for OLM CRDs to be available..."
-  local elapsed=0
-  local timeout=300
-  while [ $elapsed -lt $timeout ]; do
+  while true; do
+    local remaining=$(get_remaining_time)
+    if [ $remaining -le 0 ]; then
+      echo "Error: Global timeout reached while waiting for OLM CRDs"
+      return 1
+    fi
+    
     if kubectl get customresourcedefinitions.apiextensions.k8s.io/clusterserviceversions.operators.coreos.com >/dev/null 2>&1; then
       # CRD exists, now wait for it to be established
       kubectl wait --for=condition=established customresourcedefinitions.apiextensions.k8s.io/clusterserviceversions.operators.coreos.com --timeout=30s && break
     fi
     sleep 5
-    elapsed=$((elapsed + 5))
   done
-  
-  if [ $elapsed -ge $timeout ]; then
-    echo "Error: OLM CRDs did not become available within ${timeout}s"
-    return 1
-  fi
   
   kubectl auth can-i create namespace --all-namespaces
   kubectl create namespace "${NAMESPACE}" || true
@@ -157,21 +172,19 @@ start_tackle() {
   
   # Precondition: Wait for CRD to exist and be established
   echo "Waiting for Tackle CRD to be available..."
-  local elapsed=0
-  local timeout=300
-  while [ $elapsed -lt $timeout ]; do
+  while true; do
+    local remaining=$(get_remaining_time)
+    if [ $remaining -le 0 ]; then
+      echo "Error: Global timeout reached while waiting for Tackle CRD"
+      return 1
+    fi
+    
     if kubectl get customresourcedefinitions.apiextensions.k8s.io/tackles.tackle.konveyor.io >/dev/null 2>&1; then
       # CRD exists, now wait for it to be established
       kubectl wait --for=condition=established customresourcedefinitions.apiextensions.k8s.io/tackles.tackle.konveyor.io --timeout=30s && break
     fi
     sleep 5
-    elapsed=$((elapsed + 5))
   done
-  
-  if [ $elapsed -ge $timeout ]; then
-    echo "Error: Tackle CRD did not become available within ${timeout}s"
-    return 1
-  fi
 
   # Apply the Tackle CR
   echo "Applying Tackle custom resource..."
@@ -202,20 +215,24 @@ EOF
 
 # Function to wait for deployments with progress reporting
 wait_for_deployments_with_progress() {
-  local total_timeout=$DEPLOYMENT_TIMEOUT
   local chunk_duration=30
-  local elapsed=0
   
-  while [ $elapsed -lt $total_timeout ]; do
-    local remaining=$((total_timeout - elapsed))
-    local wait_time=$chunk_duration
+  while true; do
+    local remaining=$(get_remaining_time)
+    if [ $remaining -le 0 ]; then
+      echo "Global timeout reached while waiting for deployments"
+      kubectl get deployments.apps -n "${NAMESPACE}"
+      return 1
+    fi
     
-    # Don't wait longer than remaining time
+    local wait_time=$chunk_duration
+    # Don't wait longer than remaining global time
     if [ $wait_time -gt $remaining ]; then
       wait_time=$remaining
     fi
     
-    echo "Waiting for deployments... (${elapsed}s/${total_timeout}s elapsed)"
+    local elapsed=$((GLOBAL_TIMEOUT_SECONDS - remaining))
+    echo "Waiting for deployments... (${elapsed}s elapsed, ${remaining}s remaining)"
     
     # Try waiting for the chunk duration
     if kubectl wait \
@@ -229,11 +246,8 @@ wait_for_deployments_with_progress() {
       return 0
     fi
     
-    # Update elapsed time
-    elapsed=$((elapsed + wait_time))
-    
     # Show status of what we're still waiting for
-    echo "Still waiting for some deployments after ${elapsed}s..."
+    echo "Still waiting for some deployments..."
     local pending_deployments
     pending_deployments=$(kubectl get deployments -n "${NAMESPACE}" -l "app.kubernetes.io/part-of=tackle" \
       --no-headers -o custom-columns="NAME:.metadata.name,READY:.status.readyReplicas,DESIRED:.spec.replicas" \
@@ -249,15 +263,11 @@ wait_for_deployments_with_progress() {
       --field-selector reason!=Scheduled,reason!=Created,reason!=Started \
       | tail -3 | awk '{print "   " $0}' || echo "   (no events found)"
     
-    if [ $elapsed -lt $total_timeout ]; then
+    if [ $remaining -gt $chunk_duration ]; then
       echo "   Continuing to wait..."
       echo ""
     fi
   done
-  
-  echo "Timed out waiting for deployments after ${total_timeout}s"
-  kubectl get deployments.apps -n "${NAMESPACE}"
-  return 1
 }
 
 # Function to install OLM
@@ -387,8 +397,24 @@ BUNDLE_PID=$!
 TACKLE_PID=$!
 
 echo "=== PHASE 2: Waiting for Background Processes ==="
-wait $BUNDLE_PID
-wait $TACKLE_PID
+
+# Wait for both processes and capture their exit codes
+BUNDLE_EXIT=0
+TACKLE_EXIT=0
+
+wait $BUNDLE_PID || BUNDLE_EXIT=$?
+wait $TACKLE_PID || TACKLE_EXIT=$?
+
+# Check if any failed
+if [ $BUNDLE_EXIT -ne 0 ]; then
+  echo "Bundle deployment failed with exit code $BUNDLE_EXIT"
+  exit 1
+fi
+
+if [ $TACKLE_EXIT -ne 0 ]; then
+  echo "Tackle CR application failed with exit code $TACKLE_EXIT"
+  exit 1
+fi
 
 echo "=== PHASE 3: Final Validation ==="
 validate_full_stack
