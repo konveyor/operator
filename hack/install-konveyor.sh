@@ -161,7 +161,10 @@ start_bundle() {
   kubectl create namespace "${NAMESPACE}" || true
   
   echo "Starting operator bundle deployment..."
-  operator-sdk run bundle "${OPERATOR_BUNDLE_IMAGE}" --namespace "${NAMESPACE}" --timeout "${TIMEOUT}"
+  if ! operator-sdk run bundle "${OPERATOR_BUNDLE_IMAGE}" --namespace "${NAMESPACE}" --timeout "${TIMEOUT}"; then
+    echo "Error: Failed to deploy operator bundle"
+    return 1
+  fi
   
   echo "Bundle deployment completed"
 }
@@ -208,8 +211,6 @@ EOF
     echo "${TACKLE_CR}" | kubectl apply --namespace "${NAMESPACE}" -f -
   fi
 
-  # Show what we created
-  kubectl get --namespace "${NAMESPACE}" -o yaml tackles.tackle.konveyor.io/tackle
   echo "Tackle CR applied successfully"
 }
 
@@ -221,7 +222,8 @@ wait_for_deployments_with_progress() {
     local remaining=$(get_remaining_time)
     if [ $remaining -le 0 ]; then
       echo "Global timeout reached while waiting for deployments"
-      kubectl get deployments.apps -n "${NAMESPACE}"
+      # Show what's not ready for debugging
+      kubectl get deployments.apps -n "${NAMESPACE}" --no-headers | grep -v "1/1" || true
       return 1
     fi
     
@@ -242,7 +244,6 @@ wait_for_deployments_with_progress() {
       --timeout=${wait_time}s \
       deployments.apps 2>/dev/null; then
       echo "All deployments are now available!"
-      kubectl get deployments.apps -n "${NAMESPACE}" -o yaml
       return 0
     fi
     
