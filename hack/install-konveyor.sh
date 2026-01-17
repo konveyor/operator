@@ -168,10 +168,15 @@ start_bundle() {
     
     # Check if OLM namespace exists and operators are ready
     if kubectl get namespace olm >/dev/null 2>&1; then
+      echo "  OLM namespace exists, checking if operators are ready..."
       if kubectl wait --for=condition=Available deployment/olm-operator deployment/catalog-operator -n olm --timeout=30s 2>/dev/null; then
-        echo "OLM operators are ready"
+        echo "  OLM operators are ready"
         break
+      else
+        echo "  OLM operators not ready yet, will retry in 5s..."
       fi
+    else
+      echo "  OLM namespace doesn't exist yet, will retry in 5s..."
     fi
     sleep 5
   done
@@ -202,8 +207,15 @@ start_tackle() {
     fi
     
     if kubectl get customresourcedefinitions.apiextensions.k8s.io/tackles.tackle.konveyor.io >/dev/null 2>&1; then
-      # CRD exists, now wait for it to be established
-      kubectl wait --for=condition=established customresourcedefinitions.apiextensions.k8s.io/tackles.tackle.konveyor.io --timeout=30s && break
+      echo "  Tackle CRD exists, waiting for it to be established..."
+      if kubectl wait --for=condition=established customresourcedefinitions.apiextensions.k8s.io/tackles.tackle.konveyor.io --timeout=30s 2>/dev/null; then
+        echo "  Tackle CRD is established"
+        break
+      else
+        echo "  Tackle CRD not established yet, will retry in 5s..."
+      fi
+    else
+      echo "  Tackle CRD doesn't exist yet, will retry in 5s..."
     fi
     sleep 5
   done
