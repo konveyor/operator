@@ -329,61 +329,12 @@ validate_full_stack() {
   echo "Full stack validation completed successfully!"
 }
 
-# Function to pre-pull a single image using kubectl
-prepull_image() {
-  echo "Pre-pulling $1 in background..."
-  local image="$1"
-  local pod_name
-  pod_name="prepull-$(echo "$image" | md5sum | cut -c1-8)"
-  
-  # Create pod to trigger image pull
-  kubectl run "$pod_name" \
-    --image="$image" \
-    --restart=Never \
-    --command -- /bin/sh -c "exit 0" \
-    >/dev/null 2>&1
-  
-  # Wait for pod to complete (image pulled) or timeout
-  # Use jsonpath to wait for Succeeded or Failed status since pod exits immediately
-  kubectl wait --for=jsonpath='{.status.phase}'=Succeeded pod/"$pod_name" --timeout=60s >/dev/null 2>&1 || \
-  kubectl wait --for=jsonpath='{.status.phase}'=Failed pod/"$pod_name" --timeout=5s >/dev/null 2>&1 || true
-  
-  # Clean up the pod
-  kubectl delete pod "$pod_name" --ignore-not-found=true >/dev/null 2>&1
-}
-
-# Function to start pre-pulling images in background
-start_image_prepulls() {
-  # Only prepull if we're in a local environment (minikube/kind)
-  if kubectl get nodes -o json | grep -q "minikube\|kind" 2>/dev/null; then
-    
-    # Core images that are almost always used
-    ( set +E; prepull_image "${OPERATOR_BUNDLE_IMAGE}" ) &
-    ( set +E; prepull_image "quay.io/konveyor/tackle2-operator:latest" ) &
-    ( set +E; prepull_image "quay.io/konveyor/tackle2-hub:latest" ) &
-    ( set +E; prepull_image "quay.io/sclorg/postgresql-15-c9s:latest" ) &
-    ( set +E; prepull_image "quay.io/konveyor/tackle2-ui:latest" ) &
-    ( set +E; prepull_image "quay.io/konveyor/tackle2-addon-analyzer:latest" ) &
-    
-    # Auth-related images
-    ( set +E; prepull_image "quay.io/keycloak/keycloak:26.1" ) &
-    ( set +E; prepull_image "quay.io/konveyor/tackle-keycloak-init:latest" ) &
-    ( set +E; prepull_image "quay.io/openshift/origin-oauth-proxy:latest" ) &
-    
-    # KAI/LLM-related images
-    ( set +E; prepull_image "quay.io/konveyor/kai-solution-server:latest" ) &
-    ( set +E; prepull_image "docker.io/llamastack/distribution-starter:latest" ) &
-  fi
-}
 
 # Main execution flow
 echo "=== PHASE 1: Starting All Components ==="
 
 # Create namespace early if it doesn't exist
 kubectl create namespace "${NAMESPACE}" 2>/dev/null || true
-
-# Start image pre-pulls in background (all async)
-start_image_prepulls
 
 # Start OLM if not already present
 kubectl get customresourcedefinitions.apiextensions.k8s.io clusterserviceversions.operators.coreos.com || ( set +E; start_olm ) &
