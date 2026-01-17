@@ -46,6 +46,22 @@ get_remaining_time() {
   fi
 }
 
+# Function to wait for multiple background processes and check all exit codes
+wait_for_all() {
+  local failed=false
+  
+  for pid in "$@"; do
+    if ! wait "$pid"; then
+      failed=true
+    fi
+  done
+  
+  if [ "$failed" = true ]; then
+    return 1
+  fi
+  return 0
+}
+
 # Enhanced debug function with structured output
 debug() {
   set +e
@@ -313,7 +329,11 @@ validate_full_stack() {
   OLM_PID=$!
   kubectl wait --namespace "${olm_namespace}" --for='jsonpath={.status.phase}'=Succeeded clusterserviceversions.operators.coreos.com packageserver --timeout=60s &
   PKG_PID=$!
-  wait $OLM_PID $PKG_PID
+  
+  if ! wait_for_all $OLM_PID $PKG_PID; then
+    echo "Error: OLM validation failed"
+    return 1
+  fi
   
   # Validate Tackle components - operator and CR in parallel
   echo "Validating Tackle components..."
@@ -321,7 +341,11 @@ validate_full_stack() {
   OP_PID=$!
   kubectl wait --namespace "${NAMESPACE}" --for=condition=Successful tackles.tackle.konveyor.io/tackle --timeout=120s &
   CR_PID=$!
-  wait $OP_PID $CR_PID
+  
+  if ! wait_for_all $OP_PID $CR_PID; then
+    echo "Error: Tackle validation failed"
+    return 1
+  fi
   
   # Validate all deployments
   echo "Validating all Tackle deployments..."
