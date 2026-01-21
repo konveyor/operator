@@ -1,7 +1,7 @@
 name: Make Operator Bundle
 description: |
   Make an operator bundle. This does not save the image for you.
-inputs: 
+inputs:
   operator_bundle:
     description: "image uri for operator bundle (ie. quay.io/<namespace>/<image-name>:<tag>)"
     required: true
@@ -27,10 +27,6 @@ inputs:
     default: ""
   keycloak_sso:
     description: "image uri for keycloak_sso image (ie. quay.io/<namespace>/<image-name>:<tag>)"
-    required: false
-    default: ""
-  keycloak_init:
-    description: "image uri for keycloak_init image (ie. quay.io/<namespace>/<image-name>:<tag>)"
     required: false
     default: ""
   tackle_ui:
@@ -96,7 +92,6 @@ runs:
       [ -n "${{ inputs.kai }}" ] && OPTS+=" --set images.kai=${{ inputs.kai }}"
       [ -n "${{ inputs.tackle_postgres }}" ] && OPTS+=" --set images.tackle_postgres=${{ inputs.tackle_postgres }}"
       [ -n "${{ inputs.keycloak_sso }}" ] && OPTS+=" --set images.keycloak_sso=${{ inputs.keycloak_sso }}"
-      [ -n "${{ inputs.keycloak_init }}" ] && OPTS+=" --set images.keycloak_init=${{ inputs.keycloak_init }}"
       [ -n "${{ inputs.tackle_ui }}" ] && OPTS+=" --set images.tackle_ui=${{ inputs.tackle_ui }}"
       [ -n "${{ inputs.addon_analyzer }}" ] && OPTS+=" --set images.addon_analyzer=${{ inputs.addon_analyzer }}"
       [ -n "${{ inputs.addon_discovery }}" ] && OPTS+=" --set images.addon_discovery=${{ inputs.addon_discovery }}"

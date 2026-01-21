@@ -104,7 +104,6 @@ keycloak_database_db_name_b64: "{{ keycloak_database_db_name | b64encode }}"
 keycloak_database_db_version: "15"
 
 keycloak_sso_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_KEYCLOAK_SSO') }}"
-keycloak_init_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_KEYCLOAK_INIT') }}"
 keycloak_sso_name: "keycloak"
 keycloak_sso_component_name: "{{ 'rhbk' if app_profile == 'mta' else 'sso' }}"
 keycloak_sso_service_name: "{{ app_name }}-{{ keycloak_sso_name }}-{{ keycloak_sso_component_name }}"
