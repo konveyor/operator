@@ -24,6 +24,15 @@ spec:
   rules:
     - http:
         paths:
+{% if feature_auth_required|bool and feature_auth_type == "keycloak" %}
+          - path: /auth
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ keycloak_sso_service_name }}
+                port:
+                  number: {{ keycloak_sso_port }}
+{% endif %}
           - path: /
 {% if ui_ingress_path_type is defined %}
             pathType: {{ ui_ingress_path_type }}
