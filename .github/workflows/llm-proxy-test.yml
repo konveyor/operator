@@ -18,7 +18,7 @@ jobs:
         go-version: '1.22'
 
     - name: Start minikube
-      uses: konveyor/tackle2-operator/.github/actions/start-minikube@main
+      uses: ./.github/actions/start-minikube
 
     - name: Build operator images
       run: |
@@ -41,7 +41,7 @@ jobs:
         ./test/e2e/llm-proxy/setup-llemulator.sh
 
     - name: Install Konveyor
-      uses: konveyor/tackle2-operator/.github/actions/install-konveyor@main
+      uses: ./.github/actions/install-konveyor
       with:
         bundle_image: ttl.sh/konveyor-tackle-operator-bundle-${{ github.run_id }}:2h
         namespace: konveyor-tackle
@@ -64,14 +64,30 @@ jobs:
     - name: Debug on failure
       if: failure()
       run: |
+        # Create debug directory
+        mkdir -p /tmp/llm-proxy-debug
+        
         echo "=== Pod Status ==="
-        kubectl get pods -n konveyor-tackle
+        kubectl get pods -n konveyor-tackle | tee /tmp/llm-proxy-debug/pod-status.txt
         echo ""
         echo "=== Recent Events ==="
-        kubectl get events -n konveyor-tackle --sort-by='.lastTimestamp' | tail -20
+        kubectl get events -n konveyor-tackle --sort-by='.lastTimestamp' | tail -20 | tee /tmp/llm-proxy-debug/events.txt
         echo ""
         echo "=== LLM Proxy Logs ==="
-        kubectl logs -n konveyor-tackle deployment/llm-proxy --tail=50 || true
+        kubectl logs -n konveyor-tackle deployment/llm-proxy --tail=100 | tee /tmp/llm-proxy-debug/llm-proxy.log || true
         echo ""
         echo "=== Llemulator Logs ==="
-        kubectl logs -n konveyor-tackle deployment/llemulator --tail=50 || true
+        kubectl logs -n konveyor-tackle deployment/llemulator --tail=100 | tee /tmp/llm-proxy-debug/llemulator.log || true
+        echo ""
+        echo "=== Tackle CR ==="
+        kubectl get tackles.tackle.konveyor.io tackle -n konveyor-tackle -o yaml | tee /tmp/llm-proxy-debug/tackle-cr.yaml || true
+        echo ""
+        echo "=== All Deployments ==="
+        kubectl get deployments -n konveyor-tackle -o yaml | tee /tmp/llm-proxy-debug/deployments.yaml || true
+
+    - name: Upload debug artifacts on failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: llm-proxy-debug-output
+        path: /tmp/llm-proxy-debug
