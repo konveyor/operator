@@ -137,7 +137,7 @@ install: helm ## Install operator directly into cluster specified in ~/.kube/con
 
 .PHONY: uninstall
 uninstall: helm ## Uninstall CRDs from the K8s cluster specified in ~/.kube/config.
-	$(HELM) uninstall --namespace $(NAMESPACE) $(HELM_RELEASE) 
+	$(HELM) uninstall --namespace $(NAMESPACE) $(HELM_RELEASE)
 
 OS := $(shell uname -s | tr '[:upper:]' '[:lower:]')
 ARCH := $(shell uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/')
@@ -219,7 +219,7 @@ endif
 
 .PHONY: bundle-push
 bundle-push: ## Push the bundle image.
-	$(MAKE) docker-push IMG=$(BUNDLE_IMG)
+	$(CONTAINER_RUNTIME) push $(BUNDLE_IMG)
 
 .PHONY: opm
 OPM = ./bin/opm
@@ -264,7 +264,7 @@ catalog-index: opm ## Generate a catalog image dockerfile.
 # Push the catalog image.
 .PHONY: catalog-push
 catalog-push: ## Push a catalog image.
-	$(MAKE) docker-push IMG=$(CATALOG_IMG)
+	$(CONTAINER_RUNTIME) push $(CATALOG_IMG)
 
 .PHONY: start-minikube
 start-minikube:
