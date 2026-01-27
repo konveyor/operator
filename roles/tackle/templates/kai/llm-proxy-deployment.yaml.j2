@@ -25,6 +25,8 @@ spec:
         # Force pod restart when ConfigMap changes
         checksum/config: "{{ lookup('template', 'kai/llm-proxy-configmap.yaml.j2') | hash('sha256') }}"
     spec:
+      imagePullSecrets:
+        - name: redhat-pull-secret
       containers:
         - name: llm-proxy
           image: "{{ kai_llm_proxy_image_fqin }}"

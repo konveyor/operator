@@ -22,8 +22,15 @@ jobs:
 
     - name: Build operator images
       run: |
-        eval $(minikube docker-env)
+        # Login to Red Hat registry BEFORE switching to minikube context (for pushing to ttl.sh)
         echo "${{ secrets.RH_REGISTRY_PASS }}" | docker login -u ${{ secrets.RH_REGISTRY_USER }} --password-stdin registry.redhat.io
+
+        # Switch to minikube's docker daemon
+        eval $(minikube docker-env)
+
+        # Login to Red Hat registry again in minikube's context (for pulling images in cluster)
+        echo "${{ secrets.RH_REGISTRY_PASS }}" | docker login -u ${{ secrets.RH_REGISTRY_USER }} --password-stdin registry.redhat.io
+
         IMG=ttl.sh/konveyor-tackle-operator-${{ github.run_id }}:2h make docker-build docker-push
         BUNDLE_IMG=ttl.sh/konveyor-tackle-operator-bundle-${{ github.run_id }}:2h make bundle bundle-build bundle-push
 
@@ -31,7 +38,15 @@ jobs:
       run: |
         # Create namespace
         kubectl create namespace konveyor-tackle || true
-        
+
+        # Create image pull secret for Red Hat registry
+        kubectl create secret docker-registry redhat-pull-secret \
+          --docker-server=registry.redhat.io \
+          --docker-username="${{ secrets.RH_REGISTRY_USER }}" \
+          --docker-password="${{ secrets.RH_REGISTRY_PASS }}" \
+          -n konveyor-tackle \
+          --dry-run=client -o yaml | kubectl apply -f -
+
         # Create API key secret for LLM proxy
         kubectl create secret generic kai-api-keys \
           --from-literal=OPENAI_API_KEY=dummy-key-for-llemulator \
