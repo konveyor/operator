@@ -118,14 +118,14 @@ spec:
             periodSeconds: 10
             successThreshold: 1
             failureThreshold: 20
-          volumeMounts:
 {% if keycloak_sso_tls_enabled|bool %}
+          volumeMounts:
             - mountPath: "/service-crt"
               name: service-crt
               readOnly: true
 {% endif %}
-      volumes:
 {% if keycloak_sso_tls_enabled|bool %}
+      volumes:
         - name: service-crt
           secret:
             secretName: {{ keycloak_sso_tls_secret_name }}
