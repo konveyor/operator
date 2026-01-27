@@ -23,7 +23,7 @@ jobs:
     - name: Build operator images
       run: |
         eval $(minikube docker-env)
-        echo "$RH_REGISTRY_PASS" | docker login -u $RH_REGISTRY_USER --password-stdin registry.redhat.io
+        echo "{{ secrets.$RH_REGISTRY_PASS }}" | docker login -u ${{ secrets.RH_REGISTRY_USER}} --password-stdin registry.redhat.io
         IMG=ttl.sh/konveyor-tackle-operator-${{ github.run_id }}:2h make docker-build docker-push
         BUNDLE_IMG=ttl.sh/konveyor-tackle-operator-bundle-${{ github.run_id }}:2h make bundle bundle-build bundle-push
 
