@@ -339,8 +339,6 @@ spec:
                   value: quay.io/sclorg/postgresql-15-c9s:latest
                 - name: RELATED_IMAGE_KEYCLOAK_SSO
                   value: quay.io/keycloak/keycloak:26.1
-                - name: RELATED_IMAGE_KEYCLOAK_INIT
-                  value: quay.io/konveyor/tackle-keycloak-init:latest
                 - name: RELATED_IMAGE_TACKLE_UI
                   value: quay.io/konveyor/tackle2-ui:latest
                 - name: RELATED_IMAGE_ADDON_ANALYZER
@@ -544,8 +542,6 @@ spec:
     name: tackle-postgres
   - image: quay.io/keycloak/keycloak:26.1
     name: keycloak-sso
-  - image: quay.io/konveyor/tackle-keycloak-init:latest
-    name: keycloak-init
   - image: quay.io/konveyor/tackle2-ui:latest
     name: tackle-ui
   - image: quay.io/konveyor/tackle2-addon-analyzer:latest

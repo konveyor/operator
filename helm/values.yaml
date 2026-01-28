@@ -16,7 +16,6 @@ images:
   tackle_hub: quay.io/konveyor/tackle2-hub:latest
   tackle_postgres: quay.io/sclorg/postgresql-15-c9s:latest
   keycloak_sso: quay.io/keycloak/keycloak:26.1
-  keycloak_init: quay.io/konveyor/tackle-keycloak-init:latest
   tackle_ui: quay.io/konveyor/tackle2-ui:latest
   addon_analyzer: quay.io/konveyor/tackle2-addon-analyzer:latest
   addon_platform: quay.io/konveyor/tackle2-addon-platform:latest

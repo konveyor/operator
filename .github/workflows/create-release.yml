@@ -139,8 +139,6 @@ jobs:
             image: ''
           - repo: konveyor/operator
             image: konveyor/tackle2-operator
-          - repo: konveyor/tackle-keycloak-theme
-            image: konveyor/tackle-keycloak-init
           - repo: konveyor/kantra
             image: konveyor/kantra
           - repo: konveyor/tackle2-addon-discovery
@@ -217,7 +215,6 @@ jobs:
         operator_bundle: quay.io/konveyor/tackle2-operator-bundle:${{ inputs.version }}
         operator: quay.io/konveyor/tackle2-operator:${{ inputs.version }}
         tackle_hub: quay.io/konveyor/tackle2-hub:${{ inputs.version }}
-        keycloak_init: quay.io/konveyor/tackle-keycloak-init:${{ inputs.version }}
         tackle_ui: quay.io/konveyor/tackle2-ui:${{ inputs.version }}
         addon_analyzer: quay.io/konveyor/tackle2-addon-analyzer:${{ inputs.version }}
         addon_discovery: quay.io/konveyor/tackle2-addon-discovery:${{ inputs.version }}

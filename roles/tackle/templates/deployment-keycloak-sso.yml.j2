@@ -33,12 +33,6 @@ spec:
         app: {{ app_name }}
         role: {{ keycloak_sso_service_name }}
     spec:
-      initContainers:
-        - name: keycloak-theme
-          image: "{{ keycloak_init_image_fqin }}"
-          volumeMounts:
-            - name: {{ keycloak_sso_service_name }}-theme
-              mountPath: /deployments
       containers:
         - name: {{ keycloak_sso_container_name }}
           image: "{{ keycloak_sso_image_fqin }}"
@@ -124,18 +118,14 @@ spec:
             periodSeconds: 10
             successThreshold: 1
             failureThreshold: 20
-          volumeMounts:
-            - name: {{ keycloak_sso_service_name }}-theme
-              mountPath: /opt/jboss/keycloak/standalone/deployments
 {% if keycloak_sso_tls_enabled|bool %}
+          volumeMounts:
             - mountPath: "/service-crt"
               name: service-crt
               readOnly: true
 {% endif %}
-      volumes:
-        - name: {{ keycloak_sso_service_name }}-theme
-          emptyDir: {}
 {% if keycloak_sso_tls_enabled|bool %}
+      volumes:
         - name: service-crt
           secret:
             secretName: {{ keycloak_sso_tls_secret_name }}

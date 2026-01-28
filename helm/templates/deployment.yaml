@@ -43,8 +43,6 @@ spec:
           value: {{ .Values.images.tackle_postgres }}
         - name: RELATED_IMAGE_KEYCLOAK_SSO
           value: {{ .Values.images.keycloak_sso }}
-        - name: RELATED_IMAGE_KEYCLOAK_INIT
-          value: {{ .Values.images.keycloak_init }}
         - name: RELATED_IMAGE_TACKLE_UI
           value: {{ .Values.images.tackle_ui }}
         - name: RELATED_IMAGE_ADDON_ANALYZER
