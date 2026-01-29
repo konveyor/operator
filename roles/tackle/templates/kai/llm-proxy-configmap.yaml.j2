@@ -9,41 +9,9 @@ metadata:
     app.kubernetes.io/component: kai
     app.kubernetes.io/part-of: tackle
 data:
-  lightspeed-stack.yaml: |
-    # Minimal Lightspeed Stack configuration for running ONLY Llama Stack server
-    # This config disables all LCS features and just uses the project to start Llama Stack
-    name: Llama Stack Server Only
-    service:
-      # LCS service won't actually run with this config - we're just using it for Llama Stack
-      host: 0.0.0.0
-      port: 8080
-      auth_enabled: false
-      workers: 1
-    
-    # This is the key - we're NOT using Llama Stack as a library or connecting to external server
-    # Instead, we'll use the project's ability to start Llama Stack as a separate server
-    llama_stack:
-      use_as_library_client: false
-      # Dummy URL since we're not actually connecting to anything
-      url: http://localhost:8321
-      api_key: unused
-    
-    # Disable all LCS features since we only want Llama Stack
-    user_data_collection:
-      feedback_enabled: false
-      transcripts_enabled: false
-    
-    # Use in-memory cache (minimal)
-    conversation_cache:
-      type: "noop"
-    
-    # No authentication
-    authentication:
-      module: "noop"
   run.yaml: |
     version: 2
     image_name: starter
-    external_providers_dir: /tmp/.llama/providers.d
     apis:
     - inference
     providers:
