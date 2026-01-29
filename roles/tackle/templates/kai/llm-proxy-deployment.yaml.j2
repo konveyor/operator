@@ -28,6 +28,13 @@ spec:
       containers:
         - name: llm-proxy
           image: "{{ kai_llm_proxy_image_fqin }}"
+          command: ["/app-root/.venv/bin/llama"]
+          args:
+            - stack
+            - run
+            - /app/run.yaml
+            - --port
+            - "8321"
           ports:
             - containerPort: 8321
               name: http
@@ -55,10 +62,6 @@ spec:
             successThreshold: 1
             failureThreshold: 3
           env:
-            - name: RUN_CONFIG_PATH
-              value: /app/run.yaml
-            - name: LLAMA_STACK_CONFIG_DIR
-              value: /tmp/.llama
 {% if trusted_ca_enabled | default(false) | bool %}
             # For self-signed certificates
             - name: SSL_CERT_FILE

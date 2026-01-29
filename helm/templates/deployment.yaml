@@ -61,8 +61,8 @@ spec:
           value: {{ .Values.images.kantra }}
         - name: RELATED_IMAGE_KAI
           value: {{ .Values.images.kai }}
-        - name: RELATED_IMAGE_LLAMA_STACK
-          value: {{ .Values.images.llama_stack }}
+        - name: RELATED_IMAGE_LIGHTSPEED_STACK
+          value: {{ .Values.images.lightspeed_stack }}
         name: tackle-operator
         image: {{ .Values.images.operator }}
         imagePullPolicy: Always

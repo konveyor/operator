@@ -227,7 +227,7 @@ jobs:
         oauth_proxy: quay.io/konveyor/origin-oauth-proxy:${{ inputs.version }}
         tackle_postgres: quay.io/konveyor/postgresql-15-c9s:${{ inputs.version }}
         keycloak_sso: quay.io/konveyor/keycloak:${{ inputs.version }}
-        llama_stack: quay.io/konveyor/distribution-starter:${{ inputs.version }}
+        lightspeed_stack: quay.io/konveyor/lightspeed-stack:${{ inputs.version }}
         # Bundle specific args
         version: ${{ inputs.version }}
         channels: ${{ inputs.operator_channels }}

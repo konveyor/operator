@@ -357,8 +357,8 @@ spec:
                   value: quay.io/konveyor/kantra:latest
                 - name: RELATED_IMAGE_KAI
                   value: quay.io/konveyor/kai-solution-server:latest
-                - name: RELATED_IMAGE_LLAMA_STACK
-                  value: docker.io/llamastack/distribution-starter:latest
+                - name: RELATED_IMAGE_LIGHTSPEED_STACK
+                  value: quay.io/lightspeed-core/lightspeed-stack:latest
                 image: quay.io/konveyor/tackle2-operator:latest
                 imagePullPolicy: Always
                 livenessProbe:
@@ -560,6 +560,6 @@ spec:
     name: kantra
   - image: quay.io/konveyor/kai-solution-server:latest
     name: kai
-  - image: docker.io/llamastack/distribution-starter:latest
-    name: llama-stack
+  - image: quay.io/lightspeed-core/lightspeed-stack:latest
+    name: lightspeed-stack
   version: 99.0.0
