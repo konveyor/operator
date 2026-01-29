@@ -28,6 +28,9 @@ spec:
       containers:
         - name: llm-proxy
           image: "{{ kai_llm_proxy_image_fqin }}"
+          args:
+            - --config
+            - /app/lightspeed-stack.yaml
           ports:
             - containerPort: 8321
               name: http
@@ -57,6 +60,10 @@ spec:
           env:
             - name: RUN_CONFIG_PATH
               value: /app/run.yaml
+            - name: INPUT_CONFIG
+              value: /app/run.yaml
+            - name: LIGHTSPEED_STACK_CONFIG_PATH
+              value: /app/lightspeed-stack.yaml
             - name: LLAMA_STACK_CONFIG_DIR
               value: /tmp/.llama
 {% if trusted_ca_enabled | default(false) | bool %}
