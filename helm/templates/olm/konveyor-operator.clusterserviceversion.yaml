@@ -35,8 +35,8 @@ metadata:
         }
       }
     operatorframework.io/suggested-namespace: konveyor-tackle
-    repository: https://github.com/konveyor/tackle2-operator
-    support: https://github.com/konveyor/tackle2-operator/issues
+    repository: https://github.com/konveyor/operator
+    support: https://github.com/konveyor/operator/issues
   labels:
     operatorframework.io/arch.amd64: supported
     operatorframework.io/arch.arm64: supported
@@ -89,17 +89,17 @@ spec:
     If you are just getting started using Konveyor, take a look at an [example application analysis here](https://github.com/konveyor/example-applications/tree/main/example-1)
 
     ### Documentation
-    Documentation can be found on our [website](https://konveyor.github.io/tackle).
+    Documentation can be found on our [website](https://konveyor.github.io).
 
     ### Getting help
-    If you encounter any issues while using Konveyor operator, you can create an issue on our [Github repo](https://github.com/konveyor/tackle2-operator/issues), for bugs, enhancements or other requests.
+    If you encounter any issues while using Konveyor operator, you can create an issue on our [Github repo](https://github.com/konveyor/operator/issues), for bugs, enhancements or other requests.
     Or reach out to us in [#konveyor](https://kubernetes.slack.com/archives/CR85S82A2) on kubernetes.slack.com
 
     ### Contributing
     You can contribute by:
 
     * Raising any issues you find using Konveyor Operator
-    * Fixing issues by opening [Pull Requests](https://github.com/konveyor/tackle2-operator/pulls)
+    * Fixing issues by opening [Pull Requests](https://github.com/konveyor/operator/pulls)
     * Improving [documentation](https://github.com/konveyor/tackle-documentation)
   displayName: Konveyor Operator
   icon:
@@ -125,9 +125,9 @@ spec:
   - tackle
   links:
   - name: Documentation
-    url: https://konveyor.github.io/tackle
+    url: https://konveyor.github.io
   - name: Operator
-    url: https://github.com/konveyor/tackle2-operator
+    url: https://github.com/konveyor/operator
   maintainers:
   - email: konveyor-dev@googlegroups.com
     name: Konveyor Community
