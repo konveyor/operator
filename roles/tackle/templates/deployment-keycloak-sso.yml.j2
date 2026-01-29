@@ -40,6 +40,12 @@ spec:
           - -Djgroups.dns.query=mta-kc-discovery.openshift-mta
           - --verbose
           - start
+{% if keycloak_sso_hostname %}
+          - --hostname={{ keycloak_sso_hostname }}
+{% if keycloak_sso_hostname_backchannel_dynamic|bool %}
+          - --hostname-backchannel-dynamic=true
+{% endif %}
+{% endif %}
           imagePullPolicy: "{{ image_pull_policy }}"
           env:
             - name: KC_BOOTSTRAP_ADMIN_USERNAME
@@ -84,6 +90,14 @@ spec:
               value: "false"
             - name: KC_HTTP_ENABLED
               value: "true"
+{% if keycloak_sso_hostname %}
+            - name: KC_HOSTNAME
+              value: "{{ keycloak_sso_hostname }}"
+{% if keycloak_sso_hostname_backchannel_dynamic|bool %}
+            - name: KC_HOSTNAME_BACKCHANNEL_DYNAMIC
+              value: "true"
+{% endif %}
+{% endif %}
           ports:
             - name: http
               containerPort: 8080
