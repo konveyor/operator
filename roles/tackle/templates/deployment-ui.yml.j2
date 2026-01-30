@@ -165,7 +165,7 @@ spec:
           volumeMounts:
 {% if ui_tls_enabled|bool %}
             - name: {{ ui_tls_secret_name }}
-              mountPath: /var/run/secrets/{{ ui_tls_secret_name }}/tls.crt
+              mountPath: /var/run/secrets/{{ ui_tls_secret_name }}
 {% endif %}
 {% if trusted_ca_enabled is defined and trusted_ca_enabled|bool %}
             - name: trusted-ca
