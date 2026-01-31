@@ -99,102 +99,103 @@ spec:
             - name: METRICS_PORT
               value: "{{ hub_metrics_port }}"
 # settings
-  {% if hub.ttl.bucket is defined %}
+{% if hub.ttl is defined and hub.ttl.bucket is defined %}
               - name: BUCKET_TTL
                 value: "{{ hub.ttl.bucket }}"
-  {% endif %}
-  {% if hub.ttl.file is defined %}
+{% endif %}
+{% if hub.ttl is defined and hub.ttl.file is defined %}
               - name: FILE_TTL
                 value: "{{ hub.ttl.file }}"
-  {% endif %}
-  {% if hub.task.retries is defined %}
+{% endif %}
+{% if hub.task is defined and hub.task.retries is defined %}
               - name: TASK_RETRIES
                 value: "{{ hub.task.retries }}"
-  {% endif %}
-  {% if hub.reaper.created is defined %}
+{% endif %}
+{% if hub.reaper is defined and hub.reaper.created is defined %}
               - name: TASK_REAP_CREATED
                 value: "{{ hub.reaper.created }}"
-  {% endif %}
-  {% if hub.reaper.succeeded is defined %}
+{% endif %}
+{% if hub.reaper is defined and hub.reaper.succeeded is defined %}
               - name: TASK_REAP_SUCCEEDED
                 value: "{{ hub.reaper.succeeded }}"
-  {% endif %}
-  {% if hub.reaper.failed is defined %}
+{% endif %}
+{% if hub.reaper is defined and hub.reaper.failed is defined %}
               - name: TASK_REAP_FAILED
                 value: "{{ hub.reaper.failed }}"
-  {% endif %}
-  {% if hub.pod.quota is defined %}
+{% endif %}
+{% if hub.pod is defined and hub.pod.quota is defined %}
               - name: TASK_POD_QUOTA
                 value: "{{ hub.pod.quota }}"
-  {% endif %}
-  {% if hub.retention.succeeded is defined %}
+{% endif %}
+{% if hub.retention is defined and hub.retention.succeeded is defined %}
               - name: TASK_POD_RETAIN_SUCCEEDED
                 value: "{{ hub.retention.succeeded }}"
-  {% endif %}
-  {% if hub.retention.failed is defined %}
+{% endif %}
+{% if hub.retention is defined and hub.retention.failed is defined %}
               - name: TASK_POD_RETAIN_FAILED
                 value: "{{ hub.retention.failed }}"
-  {% endif %}
-  {% if hub.frequency.task is defined %}
+{% endif %}
+{% if hub.frequency is defined and hub.frequency.task is defined %}
               - name: FREQUENCY_TASK
                 value: "{{ hub.frequency.task }}"
-  {% endif %}
-  {% if hub.frequency.reaper is defined %}
+{% endif %}
+{% if hub.frequency is defined and hub.frequency.reaper is defined %}
               - name: FREQUENCY_REAPER
                 value: "{{ hub.frequency.reaper }}"
-  {% endif %}
-  {% if hub.frequency.heap is defined %}
+{% endif %}
+{% if hub.frequency is defined and hub.frequency.heap is defined %}
               - name: FREQUENCY_HEAP
                 value: "{{ hub.frequency.heap }}"
-  {% endif %}
-  {% if hub.development is defined %}
+{% endif %}
+{% if hub.development is defined %}
               - name: DEVELOPMENT
                 value: "{{ hub.development }}"
-  {% endif %}
-  {% if hub.analysis.archiverEnabled is defined %}
+{% endif %}
+{% if hub.analysis is defined and hub.analysis.archiverEnabled is defined %}
               - name: ANALYSIS_ARCHIVER_ENABLED
                 value: "{{ hub.analysis.archiverEnabled }}"
-  {% endif %}
-  {% if hub.log.master is defined %}
+{% endif %}
+{% if hub.log is defined and hub.log.master is defined %}
               - name: LOG_MASTER
                 value: "{{ hub.log.master }}"
-  {% endif %}
-  {% if hub.log.migration is defined %}
+{% endif %}
+{% if hub.log is defined and hub.log.migration is defined %}
               - name: LOG_MIGRATION
                 value: "{{ hub.log.migration }}"
-  {% endif %}
-  {% if hub.log.web is defined %}
+{% endif %}
+{% if hub.log is defined and hub.log.web is defined %}
               - name: LOG_WEB
                 value: "{{ hub.log.web }}"
-  {% endif %}
-  {% if hub.log.reaper is defined %}
+{% endif %}
+{% if hub.log is defined and hub.log.reaper is defined %}
               - name: LOG_REAPER
                 value: "{{ hub.log.reaper }}"
-  {% endif %}
-  {% if hub.log.task is defined %}
+{% endif %}
+{% if hub.log is defined and hub.log.task is defined %}
               - name: LOG_TASK
                 value: "{{ hub.log.task }}"
-  {% endif %}
-  {% if hub.log.heap is defined %}
+{% endif %}
+{% if hub.log is defined and hub.log.heap is defined %}
               - name: LOG_HEAP
                 value: "{{ hub.log.heap }}"
-  {% endif %}
-  {% if hub.log.auth is defined %}
+{% endif %}
+{% if hub.log is defined and hub.log.auth is defined %}
               - name: LOG_AUTH
                 value: "{{ hub.log.auth }}"
-  {% endif %}
-  {% if hub.log.cmd is defined %}
+{% endif %}
+{% if hub.log is defined and hub.log.cmd is defined %}
               - name: LOG_CMD
                 value: "{{ hub.log.cmd }}"
-  {% endif %}
-  {% if hub.log.ssh is defined %}
+{% endif %}
+{% if hub.log is defined and hub.log.ssh is defined %}
               - name: LOG_SSH
                 value: "{{ hub.log.ssh }}"
-  {% endif %}
-  {% if hub.log.scm is defined %}
+{% endif %}
+{% if hub.log is defined and hub.log.scm is defined %}
               - name: LOG_SCM
                 value: "{{ hub.log.scm }}"
-  {% endif %}
+{% endif %}
+# (end) settings
 
 {% if feature_auth_required|bool and feature_auth_type == "keycloak" %}
             - name: AUTH_REQUIRED
