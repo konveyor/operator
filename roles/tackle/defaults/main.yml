@@ -59,15 +59,43 @@ hub_tls_secret_name: "{{ hub_service_name }}-serving-cert"
 hub_port: "{{ '8443' if hub_tls_enabled | bool else '8080' }}"
 hub_proto: "{{ 'https' if hub_tls_enabled | bool else 'http' }}"
 hub_url: "{{ hub_proto }}://{{ hub_service_name }}.{{ app_namespace }}.svc:{{ hub_port }}"
-hub_log_level: 3
 hub_metrics_enabled: true
 hub_metrics_port: "2112"
-# Log Level (0-n)
-# hub_log_level_master: 0
-# hub_log_level_migration: 0
-# hub_log_level_web: 0
-# hub_log_level_reaper: 0
-# hub_log_level_task: 0
+# Hub settings
+# Use caution when making adjustments.
+hub:
+# ttl:
+#   bucket: "1"        # minutes
+#   file: "720"        # 12 hours in minutes
+# task:
+#   retries: "1"
+# reaper:
+#   created: "4320"    # 72 hours in minutes
+#   succeeded: "4320"  # 72 hours in minutes
+#   failed: "43200"    # 720 hours (30 days) in minutes
+# pod:
+#   quota: "0"         # 0 = disabled
+# retention:
+#   succeeded: "1"
+#   failed: "4320"     # 72 hours in minutes
+# frequency:
+#   task: "1"          # 1 second
+#   reaper: "1"        # 1 minute
+#   heap: "240"        # 4 minutes in seconds
+# development: "false" # development mode
+# analysis:
+#   archiverEnabled: "true"
+# log:
+#   master: "1"        # ALL
+#   migration: "1"     # migrations
+#   web: "1"           # web stack
+#   reaper: "1"        # reaper
+#   task: "1"          # task manager
+#   heap: "1"          # heap management
+#   auth: "1"          # auth
+#   cmd: "1"           # commands
+#   ssh: "1"           # SSH agent
+#   scm: "1"           # SCM (git|svn)
 
 pathfinder_delete_db_volume: false
 pathfinder_database_name: "pathfinder"
