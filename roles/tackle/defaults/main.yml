@@ -16,6 +16,7 @@ feature_discovery: true
 
 # Options.
 disable_maven_search: false
+task_pod_quota: 0
 
 # Environment
 openshift_cluster: false

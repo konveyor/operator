@@ -166,6 +166,10 @@ spec:
             - name: TASK_REAP_FAILED
               value: "{{ hub_task_reap_failed }}"
 {% endif %}
+{% if task_pod_quota is defined %}
+            - name: TASK_POD_QUOTA
+              value: "{{ task_pod_quota }}"
+{% endif %}
 {% if hub_task_retries is defined %}
             - name: TASK_RETRIES
               value: "{{ hub_task_retries }}"
