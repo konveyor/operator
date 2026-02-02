@@ -331,7 +331,7 @@ kai_database_address: kai-db.{{ app_namespace }}.svc
 
 # LLM Proxy configuration
 kai_llm_proxy_enabled: false
-kai_llm_proxy_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_LLAMA_STACK') | default('docker.io/llamastack/distribution-starter:latest', true) }}"
+kai_llm_proxy_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_LIGHTSPEED_STACK') | default('quay.io/lightspeed-core/lightspeed-stack:latest', true) }}"
 
 # Internal URL for the LLM proxy service (used by UI reverse proxy)
 kai_llm_proxy_url: "http://llm-proxy.{{ app_namespace }}.svc.cluster.local:8321"
