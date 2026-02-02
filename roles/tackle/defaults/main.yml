@@ -15,8 +15,8 @@ feature_analysis_archiver: true
 feature_discovery: true
 
 # Options.
+# task_pod_quota: 50
 disable_maven_search: false
-task_pod_quota: 0
 
 # Environment
 openshift_cluster: false
