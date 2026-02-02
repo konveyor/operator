@@ -5,6 +5,9 @@ metadata:
   annotations:
 {% if ui_ingress_class_name == 'nginx' %}
     nginx.ingress.kubernetes.io/proxy-body-size: {{ ui_ingress_proxy_body_size }}
+{% if feature_auth_required|bool and feature_auth_type == "keycloak" %}
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+{% endif %}
 {% elif ui_ingress_class_name == 'alb' %}
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/scheme: internet-facing
