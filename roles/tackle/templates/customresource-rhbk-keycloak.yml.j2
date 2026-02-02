@@ -4,7 +4,7 @@ metadata:
   name: {{ app_name }}-{{ rhbk_name }}
   namespace: {{ app_namespace }}
 spec:
-  instances: 1
+  instances: {{ rhbk_instances }}
   ingress:
     enabled: false
   db:
