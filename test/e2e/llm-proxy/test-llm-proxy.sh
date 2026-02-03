@@ -55,6 +55,38 @@ if [ "$KC_READY" != true ]; then
     echo " timeout (Keycloak may not be fully ready)"
 fi
 
+# Wait for admin user to exist in tackle realm (created by keycloak job)
+echo -n "Waiting for admin user in tackle realm..."
+ADMIN_EXISTS=false
+ADMIN_SECRET=$(kubectl get secret tackle-keycloak-sso -n $NAMESPACE -o jsonpath='{.data.password}' 2>/dev/null | base64 -d || true)
+for i in $(seq 1 30); do
+    # Get admin token
+    ADMIN_TOKEN_RESP=$(kubectl exec -n $NAMESPACE deployment/tackle-hub -- curl -s -X POST \
+      http://tackle-keycloak-sso:8080/auth/realms/master/protocol/openid-connect/token \
+      -H "Content-Type: application/x-www-form-urlencoded" \
+      -d "grant_type=password&client_id=admin-cli&username=admin&password=$ADMIN_SECRET" 2>/dev/null || echo "{}")
+
+    if echo "$ADMIN_TOKEN_RESP" | grep -q "access_token"; then
+        TEMP_TOKEN=$(echo "$ADMIN_TOKEN_RESP" | jq -r '.access_token' 2>/dev/null || true)
+        if [ -n "$TEMP_TOKEN" ]; then
+            # Check for admin user in tackle realm
+            USERS=$(kubectl exec -n $NAMESPACE deployment/tackle-hub -- curl -s \
+              "http://tackle-keycloak-sso:8080/auth/admin/realms/tackle/users?username=admin" \
+              -H "Authorization: Bearer $TEMP_TOKEN" 2>/dev/null || echo "[]")
+            if echo "$USERS" | grep -q '"username":"admin"'; then
+                echo " found"
+                ADMIN_EXISTS=true
+                break
+            fi
+        fi
+    fi
+    echo -n "."
+    sleep 5
+done
+if [ "$ADMIN_EXISTS" != true ]; then
+    echo " timeout (admin user may not exist yet)"
+fi
+
 # Get hub URL
 HUB_URL=""
 if kubectl get ingress -n $NAMESPACE &>/dev/null; then
@@ -77,11 +109,12 @@ echo "Hub URL: $HUB_URL"
 
 # Clear password change requirement for admin user
 echo "Configuring authentication..."
-ADMIN_SECRET=$(kubectl get secret tackle-keycloak-sso -n $NAMESPACE -o jsonpath='{.data.password}' | base64 -d || true)
+# ADMIN_SECRET was already retrieved in the wait loop above
 
 if [ -z "$ADMIN_SECRET" ]; then
     echo "  Warning: Could not get Keycloak admin secret, skipping admin user configuration"
 else
+    # Always try to configure admin user (even if wait timed out, user might exist now)
     # Get admin token from Keycloak
     ADMIN_TOKEN_RESPONSE=$(kubectl exec -n $NAMESPACE deployment/tackle-hub -- curl -s -X POST \
       http://tackle-keycloak-sso:8080/auth/realms/master/protocol/openid-connect/token \
