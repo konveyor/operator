@@ -537,11 +537,11 @@
       retries: 30
       delay: 5
 
-    - name: "Set number of RHBK instances to 0 to prepare secret resources"
+    - name: "Set number of RHBK instances to 1"
       set_fact:
         rhbk_instances: 1
 
-    - name: "Create RHBK Keycloak CR"
+    - name: "Update RHBK Keycloak CR"
       k8s:
         state: present
         definition: "{{ lookup('template', 'customresource-rhbk-keycloak.yml.j2') }}"
