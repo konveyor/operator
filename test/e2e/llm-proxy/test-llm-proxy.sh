@@ -35,6 +35,57 @@ wait_for_deployment() {
 wait_for_deployment tackle-hub
 wait_for_deployment llm-proxy
 wait_for_deployment llemulator
+wait_for_deployment tackle-keycloak-sso
+
+# Wait for Keycloak to be fully ready (not just the pod, but the service responding)
+echo -n "Waiting for Keycloak to be ready..."
+KC_READY=false
+for i in $(seq 1 30); do
+    KC_STATUS=$(kubectl exec -n $NAMESPACE deployment/tackle-hub -- curl -s -o /dev/null -w "%{http_code}" \
+        http://tackle-keycloak-sso:8080/auth/realms/tackle/.well-known/openid-configuration 2>/dev/null || echo "000")
+    if [ "$KC_STATUS" = "200" ]; then
+        echo " ready"
+        KC_READY=true
+        break
+    fi
+    echo -n "."
+    sleep 5
+done
+if [ "$KC_READY" != true ]; then
+    echo " timeout (Keycloak may not be fully ready)"
+fi
+
+# Wait for admin user to exist in tackle realm (created by keycloak job)
+echo -n "Waiting for admin user in tackle realm..."
+ADMIN_EXISTS=false
+ADMIN_SECRET=$(kubectl get secret tackle-keycloak-sso -n $NAMESPACE -o jsonpath='{.data.password}' 2>/dev/null | base64 -d || true)
+for i in $(seq 1 30); do
+    # Get admin token
+    ADMIN_TOKEN_RESP=$(kubectl exec -n $NAMESPACE deployment/tackle-hub -- curl -s -X POST \
+      http://tackle-keycloak-sso:8080/auth/realms/master/protocol/openid-connect/token \
+      -H "Content-Type: application/x-www-form-urlencoded" \
+      -d "grant_type=password&client_id=admin-cli&username=admin&password=$ADMIN_SECRET" 2>/dev/null || echo "{}")
+
+    if echo "$ADMIN_TOKEN_RESP" | grep -q "access_token"; then
+        TEMP_TOKEN=$(echo "$ADMIN_TOKEN_RESP" | jq -r '.access_token' 2>/dev/null || true)
+        if [ -n "$TEMP_TOKEN" ]; then
+            # Check for admin user in tackle realm
+            USERS=$(kubectl exec -n $NAMESPACE deployment/tackle-hub -- curl -s \
+              "http://tackle-keycloak-sso:8080/auth/admin/realms/tackle/users?username=admin" \
+              -H "Authorization: Bearer $TEMP_TOKEN" 2>/dev/null || echo "[]")
+            if echo "$USERS" | grep -q '"username":"admin"'; then
+                echo " found"
+                ADMIN_EXISTS=true
+                break
+            fi
+        fi
+    fi
+    echo -n "."
+    sleep 5
+done
+if [ "$ADMIN_EXISTS" != true ]; then
+    echo " timeout (admin user may not exist yet)"
+fi
 
 # Get hub URL
 HUB_URL=""
@@ -58,60 +109,119 @@ echo "Hub URL: $HUB_URL"
 
 # Clear password change requirement for admin user
 echo "Configuring authentication..."
-ADMIN_SECRET=$(kubectl get secret tackle-keycloak-sso -n $NAMESPACE -o jsonpath='{.data.password}' | base64 -d)
+# ADMIN_SECRET was already retrieved in the wait loop above
 
-# Get admin token from Keycloak
-ADMIN_TOKEN_RESPONSE=$(kubectl exec -n $NAMESPACE deployment/tackle-hub -- curl -s -X POST \
-  http://tackle-keycloak-sso:8080/auth/realms/master/protocol/openid-connect/token \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "grant_type=password" \
-  -d "client_id=admin-cli" \
-  -d "username=admin" \
-  -d "password=$ADMIN_SECRET" 2>/dev/null || echo "{}")
+if [ -z "$ADMIN_SECRET" ]; then
+    echo "  Warning: Could not get Keycloak admin secret, skipping admin user configuration"
+else
+    # Always try to configure admin user (even if wait timed out, user might exist now)
+    # Get admin token from Keycloak
+    ADMIN_TOKEN_RESPONSE=$(kubectl exec -n $NAMESPACE deployment/tackle-hub -- curl -s -X POST \
+      http://tackle-keycloak-sso:8080/auth/realms/master/protocol/openid-connect/token \
+      -H "Content-Type: application/x-www-form-urlencoded" \
+      -d "grant_type=password" \
+      -d "client_id=admin-cli" \
+      -d "username=admin" \
+      -d "password=$ADMIN_SECRET" 2>/dev/null || echo "{}")
 
-ADMIN_TOKEN=$(echo "$ADMIN_TOKEN_RESPONSE" | jq -r '.access_token // empty')
+    # Safely extract token (handle non-JSON responses)
+    if echo "$ADMIN_TOKEN_RESPONSE" | grep -q "access_token"; then
+        ADMIN_TOKEN=$(echo "$ADMIN_TOKEN_RESPONSE" | jq -r '.access_token // empty' 2>/dev/null || true)
+    else
+        ADMIN_TOKEN=""
+        echo "  Warning: Could not get Keycloak admin token (response: $(echo "$ADMIN_TOKEN_RESPONSE" | head -c 200))"
+    fi
 
-if [ -n "$ADMIN_TOKEN" ] && [ "$ADMIN_TOKEN" != "null" ]; then
-    # Get admin user ID in tackle realm
-    ADMIN_USER_ID=$(kubectl exec -n $NAMESPACE deployment/tackle-hub -- curl -s \
-      http://tackle-keycloak-sso:8080/auth/admin/realms/tackle/users \
-      -H "Authorization: Bearer $ADMIN_TOKEN" | jq -r '.[] | select(.username=="admin") | .id // empty')
+    if [ -n "$ADMIN_TOKEN" ] && [ "$ADMIN_TOKEN" != "null" ]; then
+        echo "  Got Keycloak admin token, configuring admin user..."
+        # Get admin user ID in tackle realm
+        USERS_RESPONSE=$(kubectl exec -n $NAMESPACE deployment/tackle-hub -- curl -s \
+          http://tackle-keycloak-sso:8080/auth/admin/realms/tackle/users \
+          -H "Authorization: Bearer $ADMIN_TOKEN" 2>/dev/null || echo "[]")
 
-    if [ -n "$ADMIN_USER_ID" ]; then
-        # Clear required actions and reset password
-        kubectl exec -n $NAMESPACE deployment/tackle-hub -- curl -s -X PUT \
-          "http://tackle-keycloak-sso:8080/auth/admin/realms/tackle/users/$ADMIN_USER_ID" \
-          -H "Authorization: Bearer $ADMIN_TOKEN" \
-          -H "Content-Type: application/json" \
-          -d '{"requiredActions": []}' &>/dev/null
+        if echo "$USERS_RESPONSE" | grep -q "username"; then
+            ADMIN_USER_ID=$(echo "$USERS_RESPONSE" | jq -r '.[] | select(.username=="admin") | .id // empty' 2>/dev/null || true)
+        else
+            ADMIN_USER_ID=""
+        fi
 
-        kubectl exec -n $NAMESPACE deployment/tackle-hub -- curl -s -X PUT \
-          "http://tackle-keycloak-sso:8080/auth/admin/realms/tackle/users/$ADMIN_USER_ID/reset-password" \
-          -H "Authorization: Bearer $ADMIN_TOKEN" \
-          -H "Content-Type: application/json" \
-          -d '{"type": "password", "value": "Passw0rd!", "temporary": false}' &>/dev/null
+        if [ -n "$ADMIN_USER_ID" ]; then
+            echo "  Found admin user ID: $ADMIN_USER_ID"
+            # Clear required actions and reset password
+            kubectl exec -n $NAMESPACE deployment/tackle-hub -- curl -s -X PUT \
+              "http://tackle-keycloak-sso:8080/auth/admin/realms/tackle/users/$ADMIN_USER_ID" \
+              -H "Authorization: Bearer $ADMIN_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d '{"requiredActions": []}' &>/dev/null || true
+
+            kubectl exec -n $NAMESPACE deployment/tackle-hub -- curl -s -X PUT \
+              "http://tackle-keycloak-sso:8080/auth/admin/realms/tackle/users/$ADMIN_USER_ID/reset-password" \
+              -H "Authorization: Bearer $ADMIN_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d '{"type": "password", "value": "Passw0rd!", "temporary": false}' &>/dev/null || true
+            echo "  Admin user configured"
+        else
+            echo "  Warning: Could not find admin user in tackle realm"
+        fi
+    else
+        echo "  Warning: Skipping admin user configuration (no admin token)"
     fi
 fi
 
-# Test hub authentication
+# Test hub authentication (with retries since Keycloak may need time)
 echo "Testing hub authentication..."
-HUB_AUTH_RESPONSE=$(curl -s -X POST \
-  $HUB_URL/hub/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"user": "admin", "password": "Passw0rd!"}' \
-  -D /tmp/auth_headers.txt 2>/dev/null)
+ACCESS_TOKEN=""
+for attempt in 1 2 3; do
+    echo "  Attempt $attempt/3..."
+    HUB_AUTH_RESPONSE=$(curl -s -X POST \
+      $HUB_URL/hub/auth/login \
+      -H "Content-Type: application/json" \
+      -d '{"user": "admin", "password": "Passw0rd!"}' \
+      --connect-timeout 10 \
+      --max-time 30 \
+      -D /tmp/auth_headers.txt -w "\n%{http_code}" 2>/dev/null || echo "CURL_FAILED")
 
-# Extract token
-ACCESS_TOKEN=$(grep -i "authorization" /tmp/auth_headers.txt 2>/dev/null | sed 's/.*Bearer //' | tr -d '\r\n')
-if [ -z "$ACCESS_TOKEN" ]; then
-    ACCESS_TOKEN=$(echo "$HUB_AUTH_RESPONSE" | jq -r '.token // .access_token // empty' 2>/dev/null)
-fi
+    # Extract HTTP status code (last line)
+    HTTP_STATUS=$(echo "$HUB_AUTH_RESPONSE" | tail -1)
+    # Remove status code from response body
+    HUB_AUTH_RESPONSE=$(echo "$HUB_AUTH_RESPONSE" | sed '$d')
+
+    echo "  Hub auth response status: $HTTP_STATUS"
+
+    # Check if curl failed or got non-2xx response
+    if [ "$HTTP_STATUS" = "CURL_FAILED" ]; then
+        echo "  Warning: curl failed to connect to hub"
+    elif [ "$HTTP_STATUS" -lt 200 ] || [ "$HTTP_STATUS" -ge 400 ] 2>/dev/null; then
+        echo "  Warning: Hub authentication failed with HTTP $HTTP_STATUS"
+        echo "  Response preview: $(echo "$HUB_AUTH_RESPONSE" | head -c 200)"
+    else
+        # Extract token from headers first
+        ACCESS_TOKEN=$(grep -i "authorization" /tmp/auth_headers.txt 2>/dev/null | sed 's/.*Bearer //' | tr -d '\r\n' || true)
+
+        # If not in headers, try to parse from JSON body
+        if [ -z "$ACCESS_TOKEN" ]; then
+            # Only parse if response looks like JSON
+            if echo "$HUB_AUTH_RESPONSE" | grep -q "^{"; then
+                ACCESS_TOKEN=$(echo "$HUB_AUTH_RESPONSE" | jq -r '.token // .access_token // empty' 2>/dev/null || true)
+            fi
+        fi
+
+        if [ -n "$ACCESS_TOKEN" ] && [ "$ACCESS_TOKEN" != "null" ]; then
+            echo "Authentication successful"
+            break
+        fi
+    fi
+
+    if [ $attempt -lt 3 ]; then
+        echo "  Retrying in 5 seconds..."
+        sleep 5
+    fi
+done
 
 if [ -z "$ACCESS_TOKEN" ] || [ "$ACCESS_TOKEN" == "null" ]; then
-    echo "ERROR: Failed to get authentication token"
+    echo "ERROR: Failed to get authentication token after 3 attempts"
+    echo "  Last response headers: $(cat /tmp/auth_headers.txt 2>/dev/null | head -10)"
     TEST_FAILED=true
-else
-    echo "Authentication successful"
 fi
 
 # Test LLM proxy with all configured responses
