@@ -491,15 +491,29 @@
         - rhsso_api_version in cluster_info.apis
         - '"Keycloak" in cluster_info.apis[rhsso_api_version]'
 
+    - name: "Check RHBK for CR"
+      k8s_info:
+        api_version: "{{ rhbk_api_version }}"
+        kind: Keycloak
+        name: "{{ app_name }}-{{ rhbk_name }}"
+        namespace: "{{ app_namespace }}"
+      register: rhbk_cr
+
+    - name: "Set number of RHBK instances to 0 to prepare secret resources"
+      set_fact:
+        rhbk_instances: 0
+      when: rhbk_cr.resources|length == 0
+
     - name: "Create RHBK Keycloak CR"
       k8s:
         state: present
         definition: "{{ lookup('template', 'customresource-rhbk-keycloak.yml.j2') }}"
+      when: rhbk_cr.resources|length == 0
 
-    - name: "Check RHBK for service"
+    - name: "Check for RHBK service"
       k8s_info:
         api_version: v1
-        kind: service
+        kind: Service
         name: "{{ rhbk_service_name }}-service"
         namespace: "{{ app_namespace }}"
       register: rhbk_service
@@ -511,6 +525,26 @@
       k8s:
         state: present
         definition: "{{ lookup('template', 'service-keycloak-rhbk.yml.j2') }}"
+
+    - name: "Check for RHBK Cert Secret"
+      k8s_info:
+        api_version: v1
+        kind: Secret
+        name: "{{ rhbk_tls_secret_name }}"
+        namespace: "{{ app_namespace }}"
+      register: rhbk_secret
+      until: rhbk_secret.resources|length > 0
+      retries: 30
+      delay: 5
+
+    - name: "Set number of RHBK instances to 0 to prepare secret resources"
+      set_fact:
+        rhbk_instances: 1
+
+    - name: "Create RHBK Keycloak CR"
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'customresource-rhbk-keycloak.yml.j2') }}"
 
     - name: "Check RHBK for readiness"
       k8s_info:
@@ -605,7 +639,7 @@
     state: present
     definition: "{{ lookup('template', 'customresource-extension.yml.j2') }}"
 
-- name: "Create Task CRs" 
+- name: "Create Task CRs"
   k8s:
     state: present
     definition: "{{ lookup('template', 'customresource-task.yml.j2') }}"
