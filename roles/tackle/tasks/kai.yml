@@ -1,4 +1,9 @@
 ---
+- name: Set Kai deployment state
+  set_fact:
+    kai_common_state: "{{ 'present' if (kai_solution_server_enabled | bool or kai_llm_proxy_enabled | bool) else 'absent' }}"
+    kai_llm_proxy_state: "{{ 'present' if kai_llm_proxy_enabled | bool else 'absent' }}"
+    kai_solution_server_state: "{{ 'present' if kai_solution_server_enabled | bool else 'absent' }}"
 
 - name: Get API key secret
   k8s_info:
@@ -10,7 +15,6 @@
 
 - when: kai_llm_proxy_enabled|bool or kai_solution_server_enabled|bool
   block:
-
     - name: Check if DB secret is defined
       k8s_info:
         api_version: v1
@@ -45,58 +49,53 @@
         pg_password: "{{ kai_db_secret_status.resources.0.data.POSTGRESQL_PASSWORD | b64decode }}"
       when: (kai_db_secret_status.resources|length) > 0
 
-    - name: Deploy KAI DB
-      k8s:
-        state: present
-        template: kai/kai-db-deployment.yaml.j2
-
-    - name: Create KAI DB Service
-      k8s:
-        state: present
-        template: kai/kai-db-service.yaml.j2
-
     - name: Create KAI DB PersistentVolumeClaim
       k8s:
         state: present
         template: kai/kai-db-pvc.yaml.j2
 
+- name: Deploy KAI DB
+  k8s:
+    state: "{{ kai_common_state }}"
+    template: kai/kai-db-deployment.yaml.j2
 
-    - name: Deploy LLM Proxy
-      when: kai_llm_proxy_enabled | bool
-      block:
-        - name: Create LLM Proxy ConfigMap
-          k8s:
-            state: present
-            template: kai/llm-proxy-configmap.yaml.j2
+- name: Create KAI DB Service
+  k8s:
+    state: "{{ kai_common_state }}"
+    template: kai/kai-db-service.yaml.j2
 
-        - name: Create LLM Proxy Deployment
-          k8s:
-            state: present
-            template: kai/llm-proxy-deployment.yaml.j2
+- name: Create LLM Proxy ConfigMap
+  k8s:
+    state: present
+    template: kai/llm-proxy-configmap.yaml.j2
+  when: kai_llm_proxy_enabled | bool
 
-        - name: Create LLM Proxy Service
-          k8s:
-            state: present
-            template: kai/llm-proxy-service.yaml.j2
+- name: Create LLM Proxy Deployment
+  k8s:
+    state: "{{ kai_llm_proxy_state }}"
+    template: kai/llm-proxy-deployment.yaml.j2
 
-        - name: Create LLM Proxy Client Configuration
-          k8s:
-            state: present
-            template: kai/llm-proxy-client-configmap.yaml.j2
+- name: Create LLM Proxy Service
+  k8s:
+    state: "{{ kai_llm_proxy_state }}"
+    template: kai/llm-proxy-service.yaml.j2
 
-    - name: Deploy Solution server
-      when: kai_solution_server_enabled | bool
-      block:
-        - name: Create Kai API deployment
-          k8s:
-            state: present
-            template: kai/kai-api-deployment.yaml.j2
-            merge_type: merge
+- name: Create LLM Proxy Client Configuration
+  k8s:
+    state: present
+    template: kai/llm-proxy-client-configmap.yaml.j2
+  when: kai_llm_proxy_enabled | bool
 
-        - name: Create KAI API Service
-          k8s:
-            state: present
-            template: kai/kai-api-service.yaml.j2
+- name: Create Kai API deployment
+  k8s:
+    state: "{{ kai_solution_server_state }}"
+    template: kai/kai-api-deployment.yaml.j2
+    merge_type: merge
+
+- name: Create KAI API Service
+  k8s:
+    state: "{{ kai_solution_server_state }}"
+    template: kai/kai-api-service.yaml.j2
 
 - name: Update Kai component status conditions
   when: ansible_operator_meta is defined
