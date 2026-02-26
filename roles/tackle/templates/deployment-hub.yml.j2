@@ -236,13 +236,12 @@ spec:
             - name: {{ hub_tls_secret_name }}
               mountPath: /var/run/secrets/{{ hub_tls_secret_name }}/tls.crt
 {% endif %}
+{% if enable_chown_init_container|bool %}
       initContainers:
         - command:
-            - chown
-            - -R
-            - {{ hub_uid }}:root
-            - {{ hub_database_volume_path }}
-            - {{ hub_bucket_volume_path }}
+            - bash
+            - -c
+            - 'chown -R {{ hub_uid }}:root {{ hub_database_volume_path }} {{ hub_bucket_volume_path }} ||:'
           image: "{{ hub_image_fqin }}"
           imagePullPolicy: "{{ image_pull_policy }}"
           name: update-perms
@@ -260,6 +259,7 @@ spec:
               name: {{ hub_database_volume_name }}
             - mountPath: {{ hub_bucket_volume_path }}
               name: {{ hub_bucket_volume_name }}
+{% endif %}
       volumes:
 {% if rwx_supported|bool %}
         - name: {{ cache_data_volume_name }}
