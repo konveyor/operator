@@ -65,8 +65,10 @@ ifeq ($(USE_IMAGE_DIGESTS), true)
 	BUNDLE_GEN_FLAGS += --use-image-digests
 endif
 
+OPERATOR_SDK_VERSION ?= v1.39.1
+
 # Image URL to use all building/pushing image targets
-IMG ?= $(IMAGE_ORG)/tackle2-operator:latest
+IMG ?= $(IMAGE_ORG)/tackle2-operator:release-0.9
 
 .PHONY: all
 all: docker-build
@@ -96,7 +98,7 @@ run: ansible-operator ## Run against the configured Kubernetes cluster in ~/.kub
 	$(ANSIBLE_OPERATOR) run
 
 TARGET_PLATFORMS ?= linux/${TARGET_ARCH}
-CONTAINER_BUILDARGS ?= --build-arg OPERATOR_SDK_VERSION=v1.34.2
+CONTAINER_BUILDARGS ?= --build-arg OPERATOR_SDK_VERSION=${OPERATOR_SDK_VERSION}
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.
 ifeq ($(CONTAINER_RUNTIME), podman)
@@ -182,7 +184,6 @@ endif
 endif
 
 OPERATOR_SDK = $(shell pwd)/bin/operator-sdk
-OPERATOR_SDK_VERSION ?= v1.35.0
 .PHONY: operator-sdk
 operator-sdk:
 ifeq (,$(wildcard $(OPERATOR_SDK)))

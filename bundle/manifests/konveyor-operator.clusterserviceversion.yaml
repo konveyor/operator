@@ -13,7 +13,7 @@ metadata:
           },
           "spec": {
             "container": {
-              "image": "quay.io/konveyor/tackle2-addon-analyzer:latest",
+              "image": "quay.io/myorg/myaddon:latest",
               "imagePullPolicy": "Always",
               "name": "myaddon",
               "resources": {
@@ -50,7 +50,7 @@ metadata:
                   "value": "${seq:8000}"
                 }
               ],
-              "image": "quay.io/konveyor/generic-external-provider:latest",
+              "image": "quay.io/myorg/myaddon-image:latest",
               "imagePullPolicy": "Always",
               "name": "myextension",
               "resources": {
@@ -147,8 +147,8 @@ metadata:
     capabilities: Seamless Upgrades
     categories: Modernization & Migration
     certified: "false"
-    containerImage: quay.io/konveyor/tackle2-operator:latest
-    createdAt: "2026-01-29T17:09:06Z"
+    containerImage: quay.io/konveyor/tackle2-operator:release-0.9
+    createdAt: "2026-02-27T19:34:08Z"
     description: Konveyor is an open-source application modernization platform that
       helps organizations safely and predictably modernize applications to Kubernetes
       at scale.
@@ -176,7 +176,7 @@ metadata:
         }
       }
     operatorframework.io/suggested-namespace: konveyor-tackle
-    operators.operatorframework.io/builder: operator-sdk-v1.35.0
+    operators.operatorframework.io/builder: operator-sdk-v1.39.1
     operators.operatorframework.io/project_layout: ansible.sdk.operatorframework.io/v1
     repository: https://github.com/konveyor/operator
     support: https://github.com/konveyor/operator/issues
@@ -332,34 +332,34 @@ spec:
                 - name: VERSION
                   value: 99.0.0
                 - name: RELATED_IMAGE_OAUTH_PROXY
-                  value: quay.io/openshift/origin-oauth-proxy:latest
+                  value: quay.io/openshift/origin-oauth-proxy:release-0.9
                 - name: RELATED_IMAGE_TACKLE_HUB
-                  value: quay.io/konveyor/tackle2-hub:latest
+                  value: quay.io/konveyor/tackle2-hub:release-0.9
                 - name: RELATED_IMAGE_TACKLE_POSTGRES
-                  value: quay.io/sclorg/postgresql-15-c9s:latest
+                  value: quay.io/sclorg/postgresql-15-c9s:release-0.9
                 - name: RELATED_IMAGE_KEYCLOAK_SSO
                   value: quay.io/keycloak/keycloak:26.1
                 - name: RELATED_IMAGE_TACKLE_UI
-                  value: quay.io/konveyor/tackle2-ui:latest
+                  value: quay.io/konveyor/tackle2-ui:release-0.9
                 - name: RELATED_IMAGE_ADDON_ANALYZER
-                  value: quay.io/konveyor/tackle2-addon-analyzer:latest
+                  value: quay.io/konveyor/tackle2-addon-analyzer:release-0.9
                 - name: RELATED_IMAGE_ADDON_DISCOVERY
-                  value: quay.io/konveyor/tackle2-addon-discovery:latest
+                  value: quay.io/konveyor/tackle2-addon-discovery:release-0.9
                 - name: RELATED_IMAGE_ADDON_PLATFORM
-                  value: quay.io/konveyor/tackle2-addon-platform:latest
+                  value: quay.io/konveyor/tackle2-addon-platform:release-0.9
                 - name: RELATED_IMAGE_PROVIDER_GENERIC
-                  value: quay.io/konveyor/generic-external-provider:latest
+                  value: quay.io/konveyor/generic-external-provider:release-0.9
                 - name: RELATED_IMAGE_PROVIDER_JAVA
-                  value: quay.io/konveyor/java-external-provider:latest
+                  value: quay.io/konveyor/java-external-provider:release-0.9
                 - name: RELATED_IMAGE_PROVIDER_C_SHARP
-                  value: quay.io/konveyor/c-sharp-provider:latest
+                  value: quay.io/konveyor/c-sharp-provider:release-0.9
                 - name: RELATED_IMAGE_KANTRA
-                  value: quay.io/konveyor/kantra:latest
+                  value: quay.io/konveyor/kantra:release-0.9
                 - name: RELATED_IMAGE_KAI
-                  value: quay.io/konveyor/kai-solution-server:latest
+                  value: quay.io/konveyor/kai-solution-server:release-0.9
                 - name: RELATED_IMAGE_LIGHTSPEED_STACK
                   value: quay.io/lightspeed-core/lightspeed-stack:latest
-                image: quay.io/konveyor/tackle2-operator:latest
+                image: quay.io/konveyor/tackle2-operator:release-0.9
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
@@ -534,31 +534,31 @@ spec:
     name: Konveyor
     url: https://www.konveyor.io
   relatedImages:
-  - image: quay.io/openshift/origin-oauth-proxy:latest
+  - image: quay.io/openshift/origin-oauth-proxy:release-0.9
     name: oauth-proxy
-  - image: quay.io/konveyor/tackle2-hub:latest
+  - image: quay.io/konveyor/tackle2-hub:release-0.9
     name: tackle-hub
-  - image: quay.io/sclorg/postgresql-15-c9s:latest
+  - image: quay.io/sclorg/postgresql-15-c9s:release-0.9
     name: tackle-postgres
   - image: quay.io/keycloak/keycloak:26.1
     name: keycloak-sso
-  - image: quay.io/konveyor/tackle2-ui:latest
+  - image: quay.io/konveyor/tackle2-ui:release-0.9
     name: tackle-ui
-  - image: quay.io/konveyor/tackle2-addon-analyzer:latest
+  - image: quay.io/konveyor/tackle2-addon-analyzer:release-0.9
     name: addon-analyzer
-  - image: quay.io/konveyor/tackle2-addon-discovery:latest
+  - image: quay.io/konveyor/tackle2-addon-discovery:release-0.9
     name: addon-discovery
-  - image: quay.io/konveyor/tackle2-addon-platform:latest
+  - image: quay.io/konveyor/tackle2-addon-platform:release-0.9
     name: addon-platform
-  - image: quay.io/konveyor/generic-external-provider:latest
+  - image: quay.io/konveyor/generic-external-provider:release-0.9
     name: provider-generic
-  - image: quay.io/konveyor/java-external-provider:latest
+  - image: quay.io/konveyor/java-external-provider:release-0.9
     name: provider-java
-  - image: quay.io/konveyor/c-sharp-provider:latest
+  - image: quay.io/konveyor/c-sharp-provider:release-0.9
     name: provider-c-sharp
-  - image: quay.io/konveyor/kantra:latest
+  - image: quay.io/konveyor/kantra:release-0.9
     name: kantra
-  - image: quay.io/konveyor/kai-solution-server:latest
+  - image: quay.io/konveyor/kai-solution-server:release-0.9
     name: kai
   - image: quay.io/lightspeed-core/lightspeed-stack:latest
     name: lightspeed-stack
