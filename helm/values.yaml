@@ -25,4 +25,4 @@ images:
   provider_c_sharp: quay.io/konveyor/c-sharp-provider:release-0.9
   kantra: quay.io/konveyor/kantra:release-0.9
   kai: quay.io/konveyor/kai-solution-server:release-0.9
-  lightspeed_stack: quay.io/lightspeed-core/lightspeed-stack:release-0.9
+  lightspeed_stack: quay.io/lightspeed-core/lightspeed-stack:latest

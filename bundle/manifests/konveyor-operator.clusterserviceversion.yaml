@@ -147,8 +147,8 @@ metadata:
     capabilities: Seamless Upgrades
     categories: Modernization & Migration
     certified: "false"
-    containerImage: quay.io/konveyor/tackle2-operator:latest
-    createdAt: "2026-02-27T19:07:40Z"
+    containerImage: quay.io/konveyor/tackle2-operator:release-0.9
+    createdAt: "2026-02-27T19:34:08Z"
     description: Konveyor is an open-source application modernization platform that
       helps organizations safely and predictably modernize applications to Kubernetes
       at scale.
@@ -358,8 +358,8 @@ spec:
                 - name: RELATED_IMAGE_KAI
                   value: quay.io/konveyor/kai-solution-server:release-0.9
                 - name: RELATED_IMAGE_LIGHTSPEED_STACK
-                  value: quay.io/lightspeed-core/lightspeed-stack:release-0.9
-                image: quay.io/konveyor/tackle2-operator:latest
+                  value: quay.io/lightspeed-core/lightspeed-stack:latest
+                image: quay.io/konveyor/tackle2-operator:release-0.9
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
@@ -560,6 +560,6 @@ spec:
     name: kantra
   - image: quay.io/konveyor/kai-solution-server:release-0.9
     name: kai
-  - image: quay.io/lightspeed-core/lightspeed-stack:release-0.9
+  - image: quay.io/lightspeed-core/lightspeed-stack:latest
     name: lightspeed-stack
   version: 99.0.0
