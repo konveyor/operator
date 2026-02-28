@@ -12,9 +12,9 @@ csv:
 
 images:
   operator: quay.io/konveyor/tackle2-operator:release-0.9
-  oauth_proxy: quay.io/openshift/origin-oauth-proxy:release-0.9
+  oauth_proxy: quay.io/openshift/origin-oauth-proxy:4.22
   tackle_hub: quay.io/konveyor/tackle2-hub:release-0.9
-  tackle_postgres: quay.io/sclorg/postgresql-15-c9s:release-0.9
+  tackle_postgres: quay.io/sclorg/postgresql-15-c9s:latest
   keycloak_sso: quay.io/keycloak/keycloak:26.1
   tackle_ui: quay.io/konveyor/tackle2-ui:release-0.9
   addon_analyzer: quay.io/konveyor/tackle2-addon-analyzer:release-0.9
@@ -25,4 +25,4 @@ images:
   provider_c_sharp: quay.io/konveyor/c-sharp-provider:release-0.9
   kantra: quay.io/konveyor/kantra:release-0.9
   kai: quay.io/konveyor/kai-solution-server:release-0.9
-  lightspeed_stack: quay.io/lightspeed-core/lightspeed-stack:latest
+  lightspeed_stack: quay.io/lightspeed-core/lightspeed-stack:0.4.1

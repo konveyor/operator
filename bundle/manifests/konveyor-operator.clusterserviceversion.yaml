@@ -332,11 +332,11 @@ spec:
                 - name: VERSION
                   value: 99.0.0
                 - name: RELATED_IMAGE_OAUTH_PROXY
-                  value: quay.io/openshift/origin-oauth-proxy:release-0.9
+                  value: quay.io/openshift/origin-oauth-proxy:4.22
                 - name: RELATED_IMAGE_TACKLE_HUB
                   value: quay.io/konveyor/tackle2-hub:release-0.9
                 - name: RELATED_IMAGE_TACKLE_POSTGRES
-                  value: quay.io/sclorg/postgresql-15-c9s:release-0.9
+                  value: quay.io/sclorg/postgresql-15-c9s:latest
                 - name: RELATED_IMAGE_KEYCLOAK_SSO
                   value: quay.io/keycloak/keycloak:26.1
                 - name: RELATED_IMAGE_TACKLE_UI
@@ -358,7 +358,7 @@ spec:
                 - name: RELATED_IMAGE_KAI
                   value: quay.io/konveyor/kai-solution-server:release-0.9
                 - name: RELATED_IMAGE_LIGHTSPEED_STACK
-                  value: quay.io/lightspeed-core/lightspeed-stack:latest
+                  value: quay.io/lightspeed-core/lightspeed-stack:0.4.1
                 image: quay.io/konveyor/tackle2-operator:release-0.9
                 imagePullPolicy: Always
                 livenessProbe:
@@ -534,11 +534,11 @@ spec:
     name: Konveyor
     url: https://www.konveyor.io
   relatedImages:
-  - image: quay.io/openshift/origin-oauth-proxy:release-0.9
+  - image: quay.io/openshift/origin-oauth-proxy:4.22
     name: oauth-proxy
   - image: quay.io/konveyor/tackle2-hub:release-0.9
     name: tackle-hub
-  - image: quay.io/sclorg/postgresql-15-c9s:release-0.9
+  - image: quay.io/sclorg/postgresql-15-c9s:latest
     name: tackle-postgres
   - image: quay.io/keycloak/keycloak:26.1
     name: keycloak-sso
@@ -560,6 +560,6 @@ spec:
     name: kantra
   - image: quay.io/konveyor/kai-solution-server:release-0.9
     name: kai
-  - image: quay.io/lightspeed-core/lightspeed-stack:latest
+  - image: quay.io/lightspeed-core/lightspeed-stack:0.4.1
     name: lightspeed-stack
   version: 99.0.0
