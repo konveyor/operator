@@ -534,11 +534,11 @@ spec:
     name: Konveyor
     url: https://www.konveyor.io
   relatedImages:
-  - image: quay.io/openshift/origin-oauth-proxy:release-0.9
+  - image: quay.io/openshift/origin-oauth-proxy:4.22
     name: oauth-proxy
   - image: quay.io/konveyor/tackle2-hub:release-0.9
     name: tackle-hub
-  - image: quay.io/sclorg/postgresql-15-c9s:release-0.9
+  - image: quay.io/sclorg/postgresql-15-c9s:latest
     name: tackle-postgres
   - image: quay.io/keycloak/keycloak:26.1
     name: keycloak-sso
@@ -560,6 +560,6 @@ spec:
     name: kantra
   - image: quay.io/konveyor/kai-solution-server:release-0.9
     name: kai
-  - image: quay.io/lightspeed-core/lightspeed-stack:latest
+  - image: quay.io/lightspeed-core/lightspeed-stack:0.4.1
     name: lightspeed-stack
   version: 99.0.0
