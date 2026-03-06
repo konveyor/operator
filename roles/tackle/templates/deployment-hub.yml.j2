@@ -260,6 +260,10 @@ spec:
             - mountPath: {{ hub_bucket_volume_path }}
               name: {{ hub_bucket_volume_name }}
 {% endif %}
+{% if openshift_cluster %}
+      securityContext:
+        fsGroup: {{ hub_uid }}
+{% endif %}
       volumes:
 {% if rwx_supported|bool %}
         - name: {{ cache_data_volume_name }}
