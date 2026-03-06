@@ -16,7 +16,7 @@ feature_discovery: true
 
 # Options.
 # task_pod_quota: 50
-enable_chown_init_container: false
+enable_chown_init_container: true
 disable_maven_search: false
 
 # Environment
