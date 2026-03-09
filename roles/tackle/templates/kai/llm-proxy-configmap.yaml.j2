@@ -104,7 +104,7 @@ data:
       tool_groups: []
     server:
       port: 8321
-{% if feature_auth_required %}
+{% if feature_auth_required|bool %}
       auth:
         provider_config:
           type: "oauth2_token"
