@@ -112,9 +112,15 @@ data:
           verify_tls: false
           jwks:
             # Use the same protocol and base URL that the hub uses for Keycloak
+{% if app_profile == 'mta' %}
+            uri: "{{ rhbk_url }}/auth/realms/{{ keycloak_sso_realm }}/protocol/openid-connect/certs"
+          # The issuer must match exactly what's in the JWT token from hub auth
+          issuer: "{{ rhbk_url }}/auth/realms/{{ keycloak_sso_realm }}"
+{% else %}
             uri: "{{ keycloak_sso_url }}/auth/realms/{{ keycloak_sso_realm }}/protocol/openid-connect/certs"
           # The issuer must match exactly what's in the JWT token from hub auth
           issuer: "{{ keycloak_sso_url }}/auth/realms/{{ keycloak_sso_realm }}"
+{% endif %}
           audience: "{{ keycloak_api_audience }}"
 {% endif %}
     telemetry:
