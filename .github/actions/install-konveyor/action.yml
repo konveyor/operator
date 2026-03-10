@@ -1,7 +1,7 @@
 name: Install Konveyor
 description: |
-  Install Konveyor Operator.
-inputs: 
+  Install Konveyor Operator using either operator-sdk/OLM or Helm.
+inputs:
   bundle_image:
     description: "image url for operator bundle container image"
     required: false
@@ -18,6 +18,10 @@ inputs:
     description: "Disable maven central search"
     required: false
     default: "true"
+  use_helm:
+    description: "Use Helm for installation instead of operator-sdk/OLM"
+    required: false
+    default: "false"
 runs:
   using: "composite"
   steps:
@@ -31,6 +35,7 @@ runs:
       curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
       sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
   - name: Install operator-sdk
+    if: ${{ inputs.use_helm != 'true' }}
     shell: bash
     run: |
       if command -v operator-sdk >/dev/null 2>&1; then
@@ -39,12 +44,22 @@ runs:
       fi
       curl -LO https://github.com/operator-framework/operator-sdk/releases/download/v1.35.0/operator-sdk_linux_amd64
       sudo install -o root -g root -m 0755 operator-sdk_linux_amd64 /usr/local/bin/operator-sdk
+  - name: Install Helm
+    if: ${{ inputs.use_helm == 'true' }}
+    shell: bash
+    run: |
+      if command -v helm >/dev/null 2>&1; then
+        echo "helm is already installed...yay"
+        exit 0
+      fi
+      curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
   - name: Install Konveyor
     env:
       OPERATOR_BUNDLE_IMAGE: ${{ inputs.bundle_image }}
       NAMESPACE: ${{ inputs.namespace }}
       TACKLE_CR: ${{ inputs.tackle_cr }}
       DISABLE_MAVEN_SEARCH: ${{ inputs.disable_maven_search }}
+      USE_HELM: ${{ inputs.use_helm }}
     run: make install-konveyor
     working-directory: ${{ github.action_path }}/../../..
     shell: bash

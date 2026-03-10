@@ -15,6 +15,7 @@ KAI_SOLUTION_SERVER_ENABLED="${KAI_SOLUTION_SERVER_ENABLED:-}"
 KAI_LLM_MODEL="${KAI_LLM_MODEL:-}"
 KAI_LLM_PROVIDER="${KAI_LLM_PROVIDER:-}"
 KAI_LLM_BASEURL="${KAI_LLM_BASEURL:-}"
+USE_HELM="${USE_HELM:-false}"
 
 # Global timeout configuration - entire script must complete within this time
 GLOBAL_TIMEOUT_SECONDS="${GLOBAL_TIMEOUT_SECONDS:-600}"  # 10 minutes default
@@ -28,9 +29,16 @@ if ! command -v kubectl >/dev/null 2>&1; then
   exit 1
 fi
 
-if ! command -v operator-sdk >/dev/null 2>&1; then
-  echo "Please install operator-sdk. See https://sdk.operatorframework.io/docs/installation/"
-  exit 1
+if [ "${USE_HELM}" == "true" ]; then
+  if ! command -v helm >/dev/null 2>&1; then
+    echo "Please install helm. See https://helm.sh/docs/intro/install/"
+    exit 1
+  fi
+else
+  if ! command -v operator-sdk >/dev/null 2>&1; then
+    echo "Please install operator-sdk. See https://sdk.operatorframework.io/docs/installation/"
+    exit 1
+  fi
 fi
 
 # Function to calculate remaining time before global timeout
@@ -112,6 +120,16 @@ debug() {
     echo "=== EVENTS ==="
     kubectl get events --namespace="${NAMESPACE}" --sort-by='.lastTimestamp' | tail -20 > "${debug_output}/events.txt" 2>&1
     
+    if [ "${USE_HELM}" == "true" ]; then
+      echo ""
+      echo "=== HELM RELEASE STATUS ==="
+      helm status tackle-operator --namespace "${NAMESPACE}" > "${debug_output}/helm_status.txt" 2>&1
+
+      echo ""
+      echo "=== HELM RELEASE VALUES ==="
+      helm get values tackle-operator --namespace "${NAMESPACE}" > "${debug_output}/helm_values.yaml" 2>&1
+    fi
+
     echo ""
     echo "Debug files saved to: ${debug_output}/"
     ls -la "${debug_output}/"
@@ -322,6 +340,70 @@ start_olm() {
   fi
 }
 
+# Function to install operator via Helm
+start_helm_operator() {
+  echo "=== Starting Helm Operator Installation ==="
+
+  # Create namespace if it doesn't exist
+  kubectl create namespace "${NAMESPACE}" 2>/dev/null || true
+
+  echo "Installing Tackle operator via Helm chart..."
+  if ! helm install tackle-operator ./helm --namespace "${NAMESPACE}" --timeout "${TIMEOUT}"; then
+    echo "Error: Failed to install Helm chart"
+    return 1
+  fi
+
+  echo "Helm operator installation completed"
+}
+
+# Function to wait for Helm operator deployment
+wait_for_helm_operator() {
+  echo "=== Waiting for Helm Operator Deployment ==="
+
+  while true; do
+    local remaining=$(get_remaining_time)
+    if [ $remaining -le 0 ]; then
+      echo "Error: Global timeout reached while waiting for Helm operator"
+      return 1
+    fi
+
+    echo "Waiting for tackle-operator deployment to be available..."
+    if kubectl wait --namespace "${NAMESPACE}" --for=condition=Available deployment/tackle-operator --timeout=30s 2>/dev/null; then
+      echo "Helm operator deployment is ready"
+      break
+    else
+      echo "  Helm operator not ready yet, will retry in 5s..."
+      sleep 5
+    fi
+  done
+}
+
+# Function to validate Helm-deployed stack
+validate_helm_stack() {
+  echo "=== Validating Helm Stack Readiness ==="
+
+  # Validate Tackle operator deployment
+  echo "Validating Helm-deployed operator..."
+  kubectl wait --namespace "${NAMESPACE}" --for=condition=Available deployment/tackle-operator --timeout=60s &
+  OP_PID=$!
+
+  # Validate Tackle CR
+  echo "Validating Tackle custom resource..."
+  kubectl wait --namespace "${NAMESPACE}" --for=condition=Successful tackles.tackle.konveyor.io/tackle --timeout=120s &
+  CR_PID=$!
+
+  if ! wait_for_all $OP_PID $CR_PID; then
+    echo "Error: Helm stack validation failed"
+    return 1
+  fi
+
+  # Validate all deployments
+  echo "Validating all Tackle deployments..."
+  wait_for_deployments_with_progress
+
+  echo "Helm stack validation completed successfully!"
+}
+
 # Function to validate entire stack is ready
 validate_full_stack() {
   echo "=== Validating Full Stack Readiness ==="
@@ -376,25 +458,44 @@ echo "=== PHASE 1: Starting All Components ==="
 # Create namespace early if it doesn't exist
 kubectl create namespace "${NAMESPACE}" 2>/dev/null || true
 
-# Start OLM if not already present (check and install both in background for parallelism)
-(kubectl get customresourcedefinitions.apiextensions.k8s.io clusterserviceversions.operators.coreos.com 2>/dev/null || (set +E; start_olm)) &
-OLM_PID=$!
+if [ "${USE_HELM}" == "true" ]; then
+  # Helm-based installation
+  ( set +E; start_helm_operator ) &
+  HELM_OP_PID=$!
 
-# Start bundle deployment (will wait for OLM CRDs)
-( set +E; start_bundle ) &
-BUNDLE_PID=$!
+  ( set +E; wait_for_helm_operator && start_tackle ) &
+  TACKLE_PID=$!
 
-# Start Tackle CR application (will wait for Tackle CRD and operator)
-( set +E; start_tackle ) &
-TACKLE_PID=$!
+  echo "=== PHASE 2: Waiting for Helm Processes ==="
+  if ! wait_for_all $HELM_OP_PID $TACKLE_PID; then
+    echo "Error: Helm installation failed"
+    exit 1
+  fi
 
-echo "=== PHASE 2: Waiting for Background Processes ==="
+  echo "=== PHASE 3: Final Validation ==="
+  validate_helm_stack
+else
+  # Existing OLM-based installation
+  # Start OLM if not already present (check and install both in background for parallelism)
+  (kubectl get customresourcedefinitions.apiextensions.k8s.io clusterserviceversions.operators.coreos.com 2>/dev/null || (set +E; start_olm)) &
+  OLM_PID=$!
 
-# Wait for all processes - OLM first, then bundle, then tackle
-if ! wait_for_all $OLM_PID $BUNDLE_PID $TACKLE_PID; then
-  echo "Error: One or more background processes failed"
-  exit 1
+  # Start bundle deployment (will wait for OLM CRDs)
+  ( set +E; start_bundle ) &
+  BUNDLE_PID=$!
+
+  # Start Tackle CR application (will wait for Tackle CRD and operator)
+  ( set +E; start_tackle ) &
+  TACKLE_PID=$!
+
+  echo "=== PHASE 2: Waiting for Background Processes ==="
+
+  # Wait for all processes - OLM first, then bundle, then tackle
+  if ! wait_for_all $OLM_PID $BUNDLE_PID $TACKLE_PID; then
+    echo "Error: One or more background processes failed"
+    exit 1
+  fi
+
+  echo "=== PHASE 3: Final Validation ==="
+  validate_full_stack
 fi
-
-echo "=== PHASE 3: Final Validation ==="
-validate_full_stack
