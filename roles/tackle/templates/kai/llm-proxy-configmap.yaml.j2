@@ -34,7 +34,7 @@ data:
           base_url: ${env.AZURE_OPENAI_ENDPOINT}
 {% endif %}
           api_version: ${env.AZURE_OPENAI_API_VERSION:2024-02-15-preview}
-{% elif kai_llm_proxy_provider_type == 'remote::google' %}
+{% elif kai_llm_proxy_provider_type == 'remote::gemini' %}
           api_key: ${env.GOOGLE_API_KEY}
 {% if kai_llm_baseurl %}
           base_url: {{ kai_llm_baseurl }}
@@ -92,7 +92,7 @@ data:
       - model_id: proxied-model
         provider_id: {{ kai_llm_proxy_provider_id }}
         model_type: llm
-        provider_model_id: {{ kai_llm_model }}
+        provider_model_id: {{ kai_llm_proxy_model_id }}
 {% else %}
       models: []
 {% endif %}
