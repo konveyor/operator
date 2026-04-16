@@ -87,7 +87,7 @@ data:
           table_name: llm_proxy_conversations
           backend: sql_default
     registered_resources:
-{% if kai_llm_model %}
+{% if kai_llm_proxy_model_id %}
       models:
       - model_id: proxied-model
         provider_id: {{ kai_llm_proxy_provider_id }}

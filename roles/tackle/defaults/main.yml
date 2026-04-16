@@ -319,7 +319,7 @@ kai_llm_proxy_model_prefix_map:
   google: "models/"
   gemini: "models/"
 kai_llm_proxy_model_prefix: "{{ kai_llm_proxy_model_prefix_map[kai_llm_provider] | default('') }}"
-kai_llm_proxy_model_id: "{{ kai_llm_proxy_model_prefix + kai_llm_model if kai_llm_model else kai_llm_model }}"
+kai_llm_proxy_model_id: "{{ kai_llm_model if (not kai_llm_model) or kai_llm_model.startswith(kai_llm_proxy_model_prefix) else kai_llm_proxy_model_prefix + kai_llm_model }}"
 kai_llm_params_proxy:
   model: "{{ kai_llm_proxy_provider_id }}/{{ kai_llm_proxy_model_id }}"
   model_provider: "openai_api"
