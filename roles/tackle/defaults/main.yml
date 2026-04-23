@@ -314,8 +314,14 @@ kai_llm_params:
 
 # LLM params when using the proxy - points to the local llm-proxy service
 kai_llm_proxy_provider_id: "{{ kai_llm_provider }}"
+# Some providers require a prefix on model IDs (e.g. Gemini uses 'models/')
+kai_llm_proxy_model_prefix_map:
+  google: "models/"
+  gemini: "models/"
+kai_llm_proxy_model_prefix: "{{ kai_llm_proxy_model_prefix_map[kai_llm_provider] | default('') }}"
+kai_llm_proxy_model_id: "{{ kai_llm_model if (not kai_llm_model) or kai_llm_model.startswith(kai_llm_proxy_model_prefix) else kai_llm_proxy_model_prefix + kai_llm_model }}"
 kai_llm_params_proxy:
-  model: "{{ kai_llm_proxy_provider_id }}/{{ kai_llm_model }}"
+  model: "{{ kai_llm_proxy_provider_id }}/{{ kai_llm_proxy_model_id }}"
   model_provider: "openai_api"
   configurable_fields:
     temperature: "{{ kai_llm_temperature }}"
@@ -347,8 +353,8 @@ kai_llm_proxy_provider_type_map:
   openai_api: "remote::openai"
   azure: "remote::azure-openai"
   azure_openai: "remote::azure-openai"
-  google: "remote::google"
-  gemini: "remote::google"
+  google: "remote::gemini"
+  gemini: "remote::gemini"
   bedrock: "remote::bedrock"
   anthropic: "remote::anthropic"
 
