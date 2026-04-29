@@ -41,6 +41,10 @@ inputs:
     description: "image uri for discovery addon (ie. quay.io/<namespace>/<image-name>:<tag>)"
     required: false
     default: ""
+  provider_go:
+    description: "image uri for go provider (ie. quay.io/<namespace>/<image-name>:<tag>)"
+    required: false
+    default: ""
   provider_python:
     description: "image uri for python provider (ie. quay.io/<namespace>/<image-name>:<tag>)"
     required: false
@@ -99,6 +103,7 @@ runs:
       [ -n "${{ inputs.tackle_ui }}" ] && OPTS+=" --set images.tackle_ui=${{ inputs.tackle_ui }}"
       [ -n "${{ inputs.addon_analyzer }}" ] && OPTS+=" --set images.addon_analyzer=${{ inputs.addon_analyzer }}"
       [ -n "${{ inputs.addon_discovery }}" ] && OPTS+=" --set images.addon_discovery=${{ inputs.addon_discovery }}"
+      [ -n "${{ inputs.provider_go }}" ] && OPTS+=" --set images.provider_go=${{ inputs.provider_go }}"
       [ -n "${{ inputs.provider_python }}" ] && OPTS+=" --set images.provider_python=${{ inputs.provider_python }}"
       [ -n "${{ inputs.provider_nodejs }}" ] && OPTS+=" --set images.provider_nodejs=${{ inputs.provider_nodejs }}"
       [ -n "${{ inputs.provider_java }}" ] && OPTS+=" --set images.provider_java=${{ inputs.provider_java }}"
