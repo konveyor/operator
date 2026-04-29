@@ -218,7 +218,8 @@ jobs:
         tackle_ui: quay.io/konveyor/tackle2-ui:${{ inputs.version }}
         addon_analyzer: quay.io/konveyor/tackle2-addon-analyzer:${{ inputs.version }}
         addon_discovery: quay.io/konveyor/tackle2-addon-discovery:${{ inputs.version }}
-        provider_generic: quay.io/konveyor/generic-external-provider:${{ inputs.version }}
+        provider_python: quay.io/konveyor/python-external-provider:${{ inputs.version }}
+        provider_nodejs: quay.io/konveyor/nodejs-external-provider:${{ inputs.version }}
         provider_java: quay.io/konveyor/java-external-provider:${{ inputs.version }}
         provider_c_sharp: quay.io/konveyor/c-sharp-provider:${{ inputs.version }}
         kantra: quay.io/konveyor/kantra:${{ inputs.version }}

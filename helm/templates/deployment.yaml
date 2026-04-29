@@ -51,8 +51,10 @@ spec:
           value: {{ .Values.images.addon_discovery }}
         - name: RELATED_IMAGE_ADDON_PLATFORM
           value: {{ .Values.images.addon_platform }}
-        - name: RELATED_IMAGE_PROVIDER_GENERIC
-          value: {{ .Values.images.provider_generic }}
+        - name: RELATED_IMAGE_PROVIDER_PYTHON
+          value: {{ .Values.images.provider_python }}
+        - name: RELATED_IMAGE_PROVIDER_NODEJS
+          value: {{ .Values.images.provider_nodejs }}
         - name: RELATED_IMAGE_PROVIDER_JAVA
           value: {{ .Values.images.provider_java }}
         - name: RELATED_IMAGE_PROVIDER_C_SHARP
