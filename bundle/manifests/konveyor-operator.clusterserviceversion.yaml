@@ -148,7 +148,7 @@ metadata:
     categories: Modernization & Migration
     certified: "false"
     containerImage: quay.io/konveyor/tackle2-operator:latest
-    createdAt: "2026-01-29T17:09:06Z"
+    createdAt: "2026-04-29T10:07:56Z"
     description: Konveyor is an open-source application modernization platform that
       helps organizations safely and predictably modernize applications to Kubernetes
       at scale.
@@ -347,8 +347,12 @@ spec:
                   value: quay.io/konveyor/tackle2-addon-discovery:latest
                 - name: RELATED_IMAGE_ADDON_PLATFORM
                   value: quay.io/konveyor/tackle2-addon-platform:latest
-                - name: RELATED_IMAGE_PROVIDER_GENERIC
-                  value: quay.io/konveyor/generic-external-provider:latest
+                - name: RELATED_IMAGE_PROVIDER_GO
+                  value: quay.io/konveyor/go-external-provider:latest
+                - name: RELATED_IMAGE_PROVIDER_PYTHON
+                  value: quay.io/konveyor/python-external-provider:latest
+                - name: RELATED_IMAGE_PROVIDER_NODEJS
+                  value: quay.io/konveyor/nodejs-external-provider:latest
                 - name: RELATED_IMAGE_PROVIDER_JAVA
                   value: quay.io/konveyor/java-external-provider:latest
                 - name: RELATED_IMAGE_PROVIDER_C_SHARP
@@ -550,8 +554,12 @@ spec:
     name: addon-discovery
   - image: quay.io/konveyor/tackle2-addon-platform:latest
     name: addon-platform
-  - image: quay.io/konveyor/generic-external-provider:latest
-    name: provider-generic
+  - image: quay.io/konveyor/go-external-provider:latest
+    name: provider-go
+  - image: quay.io/konveyor/python-external-provider:latest
+    name: provider-python
+  - image: quay.io/konveyor/nodejs-external-provider:latest
+    name: provider-nodejs
   - image: quay.io/konveyor/java-external-provider:latest
     name: provider-java
   - image: quay.io/konveyor/c-sharp-provider:latest
