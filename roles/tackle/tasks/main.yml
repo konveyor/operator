@@ -101,9 +101,9 @@
         oauth_client_secret: "{{ oauth_client_secret_status.resources[0].data['client-secret'] | b64decode }}"
       when: (oauth_client_secret_status.resources | length) > 0
 
-- when:
-    - feature_auth_required|bool
-    - feature_auth_type == "keycloak"
+# Keycloak deployment is disabled - operator no longer deploys or maintains Keycloak
+# Users should configure federated_idp_issuer to point to their Keycloak if needed
+- when: false
   block:
     - name: "Setup Keycloak PostgreSQL PersistentVolumeClaim"
       k8s:
@@ -412,10 +412,9 @@
             state: present
             definition: "{{ lookup('template', 'deployment-keycloak-sso.yml.j2') }}"
 
-- when:
-    - feature_auth_required|bool
-    - feature_auth_type == "keycloak"
-    - app_profile == "mta"
+# RHBK deployment is disabled - operator no longer deploys or maintains RHBK/Keycloak
+# Users should configure federated_idp_issuer to point to their RHBK if needed
+- when: false
   block:
     - name: "Check for existing RHSSO Keycloak CR"
       k8s_info:
@@ -588,37 +587,97 @@
     namespace: "{{ app_namespace }}"
   register: hub_secret_status
 
-- when: (hub_secret_status.resources | length) == 0
+- name: "Detect operator-deployed Keycloak variants for federated authentication"
+  when: feature_auth_required|bool
   block:
-    - name: "Generate Hub random AES passphrase"
+    - name: "Check for standalone Keycloak service"
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Service
+        namespace: "{{ app_namespace }}"
+        label_selectors:
+          - "app.kubernetes.io/part-of={{ app_name }}"
+          - "app.kubernetes.io/component=sso"
+      register: standalone_keycloak_svc
+
+    - name: "Check for RHSSO Keycloak CR"
+      kubernetes.core.k8s_info:
+        api_version: keycloak.org/v1alpha1
+        kind: Keycloak
+        namespace: "{{ app_namespace }}"
+        label_selectors:
+          - "app={{ app_name }}-rhsso"
+      register: rhsso_keycloak_cr
+      when:
+        - app_profile == 'mta'
+
+    - name: "Check for RHBK Keycloak CR"
+      kubernetes.core.k8s_info:
+        api_version: k8s.keycloak.org/v2alpha1
+        kind: Keycloak
+        namespace: "{{ app_namespace }}"
+        name: "{{ app_name }}-keycloak"
+      register: rhbk_keycloak_cr
+      when:
+        - app_profile == 'mta'
+
+    - name: "Set federated IDP issuer based on detection or explicit config"
       set_fact:
-        hub_aes_passphrase: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=32') }}"
+        federated_idp_issuer: >-
+          {% if keycloak_sso_url | length > 0 %}
+            {{ keycloak_sso_url }}/realms/{{ keycloak_sso_realm }}
+          {% elif rhbk_url | length > 0 %}
+            {{ rhbk_url }}/realms/{{ keycloak_sso_realm }}
+          {% elif standalone_keycloak_svc.resources | length > 0 %}
+            http://{{ standalone_keycloak_svc.resources[0].metadata.name }}:8080/realms/{{ keycloak_sso_realm }}
+          {% elif rhsso_keycloak_cr is defined and rhsso_keycloak_cr.resources | length > 0 %}
+            http://keycloak.{{ app_namespace }}.svc:8080/realms/{{ keycloak_sso_realm }}
+          {% elif rhbk_keycloak_cr is defined and rhbk_keycloak_cr.resources | length > 0 %}
+            https://{{ app_name }}-keycloak-service.{{ app_namespace }}.svc:8443/realms/{{ keycloak_sso_realm }}
+          {% else %}
 
-    - name: "Encode Hub AES passphrase"
-      set_fact:
-        hub_aes_passphrase_b64: "{{ hub_aes_passphrase | b64encode }}"
+          {% endif %}
 
-    - name: "Generate Hub addon token"
-      set_fact:
-        hub_addon_token: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=32') }}"
-
-    - name: "Encode Hub addon token"
-      set_fact:
-        hub_addon_token_b64: "{{ hub_addon_token | b64encode }}"
-
-    - name: "Setup Hub Secret"
-      k8s:
-        state: present
-        definition: "{{ lookup('template', 'secret-hub.yml.j2') }}"
-
-- name: "Look up Keycloak DB Secret for Hashing"
-  set_fact:
-    keycloak_db_secret:
-      env: "{{ lookup('template', 'secret-keycloak-db.yml.j2') | from_yaml }}"
+- name: "Create OpenidProvider CR for federated authentication"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'openidprovider-federated.yml.j2') }}"
   when:
     - feature_auth_required|bool
-    - feature_auth_type == "keycloak"
-    - app_profile == "mta"
+    - federated_idp_issuer is defined
+    - federated_idp_issuer | length > 0
+
+- name: "Notify about federated identity provider configuration"
+  debug:
+    msg: |
+      Hub OIDC is now configured to federate authentication to an external identity provider.
+      Federated IDP Issuer: {{ federated_idp_issuer }}
+      Using existing client: {{ federated_idp_client_id }}
+      Hub OIDC Issuer: {{ hub_oidc_issuer }}
+      Redirect URI: {{ hub_oidc_issuer }}/callback
+
+      NOTE: Ensure the existing '{{ federated_idp_client_id }}' client in the federated identity provider has the redirect URI '{{ hub_oidc_issuer }}/callback' configured.
+  when:
+    - feature_auth_required|bool
+    - federated_idp_issuer is defined
+    - federated_idp_issuer | length > 0
+
+- name: "Set Hub secrets from existing secret or generate new ones"
+  set_fact:
+    hub_aes_passphrase: "{{ hub_secret_status.resources[0].data.passphrase | b64decode if (hub_secret_status.resources | length) > 0 else lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=32') }}"
+    hub_addon_token: "{{ hub_secret_status.resources[0].data.addon_token | b64decode if (hub_secret_status.resources | length) > 0 else lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=32') }}"
+    hub_apikey_secret: "{{ hub_secret_status.resources[0].data.apikey_secret | b64decode if (hub_secret_status.resources | length) > 0 and 'apikey_secret' in hub_secret_status.resources[0].data else lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=32') }}"
+
+- name: "Set Hub secrets base64 encoded"
+  set_fact:
+    hub_aes_passphrase_b64: "{{ hub_aes_passphrase | b64encode }}"
+    hub_addon_token_b64: "{{ hub_addon_token | b64encode }}"
+    hub_apikey_secret_b64: "{{ hub_apikey_secret | b64encode }}"
+
+- name: "Setup Hub Secret"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'secret-hub.yml.j2') }}"
 
 # Create all the neccessary CR's before the hub deployment is created
 - name: "Remove Admin Addon CR"
@@ -729,6 +788,44 @@
     state: present
     definition: "{{ lookup('template', 'route-ui.yml.j2') }}"
   when: openshift_cluster|bool
+
+- name: "Get UI Route hostname for Hub OIDC issuer"
+  kubernetes.core.k8s_info:
+    api_version: route.openshift.io/v1
+    kind: Route
+    namespace: "{{ app_namespace }}"
+    name: "{{ ui_route_name }}"
+  register: ui_route_info
+  when:
+    - openshift_cluster|bool
+    - feature_auth_required|bool
+
+- name: "Set Hub OIDC issuer URL from UI Route"
+  set_fact:
+    hub_oidc_issuer: "https://{{ ui_route_info.resources[0].spec.host }}/oidc"
+  when:
+    - openshift_cluster|bool
+    - feature_auth_required|bool
+    - ui_route_info.resources | length > 0
+
+- name: "Get UI Ingress hostname for Hub OIDC issuer"
+  kubernetes.core.k8s_info:
+    api_version: networking.k8s.io/v1
+    kind: Ingress
+    namespace: "{{ app_namespace }}"
+    name: "{{ ui_ingress_name }}"
+  register: ui_ingress_info
+  when:
+    - not openshift_cluster|bool
+    - feature_auth_required|bool
+
+- name: "Set Hub OIDC issuer URL from Ingress"
+  set_fact:
+    hub_oidc_issuer: "https://{{ ui_ingress_info.resources[0].spec.rules[0].host }}/oidc"
+  when:
+    - not openshift_cluster|bool
+    - feature_auth_required|bool
+    - ui_ingress_info.resources | length > 0
 
 - name: "Check if Cache PersistentVolumeClaim exists"
   kubernetes.core.k8s_info:
