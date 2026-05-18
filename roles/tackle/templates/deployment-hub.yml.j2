@@ -118,15 +118,10 @@ spec:
             - name: LOG_TASK
               value: "{{ hub_log_level_task }}"
 {% endif %}
-{% if feature_auth_required|bool %}
             - name: AUTH_REQUIRED
-              value: "true"
+              value: "{{ feature_auth_required | string | lower }}"
             - name: OIDC_ISSUER
               value: "{{ hub_oidc_issuer }}"
-{% else %}
-            - name: AUTH_REQUIRED
-              value: "false"
-{% endif %}
             - name: TASK_SA
               value: "{{ hub_task_sa }}"
 {% if hub_task_reap_created is defined %}

@@ -98,17 +98,12 @@ spec:
             - name: KAI_LLM_PROXY_URL 
               value: "{{ kai_llm_proxy_url }}"
 {% endif %}
-{% if feature_auth_required|bool %}
             - name: AUTH_REQUIRED
-              value: "true"
+              value: "{{ feature_auth_required | string | lower }}"
             - name: OIDC_ISSUER
               value: "{{ hub_oidc_issuer }}"
             - name: OIDC_CLIENT_ID
               value: "{{ ui_oidc_client_id }}"
-{% else %}
-            - name: AUTH_REQUIRED
-              value: "false"
-{% endif %}
             - name: NODE_EXTRA_CA_CERTS
               value: {{ ui_node_extra_ca_certs }}
 {% if ui_tls_enabled|bool %}

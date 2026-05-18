@@ -588,7 +588,6 @@
   register: hub_secret_status
 
 - name: "Detect operator-deployed Keycloak variants for federated authentication"
-  when: feature_auth_required|bool
   block:
     - name: "Check for standalone Keycloak service"
       kubernetes.core.k8s_info:
@@ -643,7 +642,6 @@
     state: present
     definition: "{{ lookup('template', 'openidprovider-federated.yml.j2') }}"
   when:
-    - feature_auth_required|bool
     - federated_idp_issuer is defined
     - federated_idp_issuer | length > 0
 
@@ -658,7 +656,6 @@
 
       NOTE: Ensure the existing '{{ federated_idp_client_id }}' client in the federated identity provider has the redirect URI '{{ hub_oidc_issuer }}/callback' configured.
   when:
-    - feature_auth_required|bool
     - federated_idp_issuer is defined
     - federated_idp_issuer | length > 0
 
@@ -798,14 +795,12 @@
   register: ui_route_info
   when:
     - openshift_cluster|bool
-    - feature_auth_required|bool
 
 - name: "Set Hub OIDC issuer URL from UI Route"
   set_fact:
     hub_oidc_issuer: "https://{{ ui_route_info.resources[0].spec.host }}/oidc"
   when:
     - openshift_cluster|bool
-    - feature_auth_required|bool
     - ui_route_info.resources | length > 0
 
 - name: "Get UI Ingress hostname for Hub OIDC issuer"
@@ -817,14 +812,12 @@
   register: ui_ingress_info
   when:
     - not openshift_cluster|bool
-    - feature_auth_required|bool
 
 - name: "Set Hub OIDC issuer URL from Ingress"
   set_fact:
     hub_oidc_issuer: "https://{{ ui_ingress_info.resources[0].spec.rules[0].host }}/oidc"
   when:
     - not openshift_cluster|bool
-    - feature_auth_required|bool
     - ui_ingress_info.resources | length > 0
 
 - name: "Check if Cache PersistentVolumeClaim exists"
