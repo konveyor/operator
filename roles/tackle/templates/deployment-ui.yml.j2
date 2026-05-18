@@ -98,24 +98,12 @@ spec:
             - name: KAI_LLM_PROXY_URL 
               value: "{{ kai_llm_proxy_url }}"
 {% endif %}
-{% if feature_auth_required|bool and feature_auth_type == "keycloak" %}
             - name: AUTH_REQUIRED
-              value: "true"
-            - name: KEYCLOAK_REALM
-              value: {{ keycloak_sso_realm }}
-            - name: KEYCLOAK_CLIENT_ID
-              value: {{ keycloak_sso_client_id }}
-{% if app_profile == 'mta' %}
-            - name: KEYCLOAK_SERVER_URL
-              value: {{ rhbk_url }}
-{% else %}
-            - name: KEYCLOAK_SERVER_URL
-              value: {{ keycloak_sso_url }}
-{% endif %}
-{% else %}
-            - name: AUTH_REQUIRED
-              value: "false"
-{% endif %}
+              value: "{{ feature_auth_required | string | lower }}"
+            - name: OIDC_ISSUER
+              value: "{{ hub_oidc_issuer }}"
+            - name: OIDC_CLIENT_ID
+              value: "{{ ui_oidc_client_id }}"
             - name: NODE_EXTRA_CA_CERTS
               value: {{ ui_node_extra_ca_certs }}
 {% if ui_tls_enabled|bool %}

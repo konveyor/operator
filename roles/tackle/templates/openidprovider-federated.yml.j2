@@ -1,0 +1,21 @@
+---
+apiVersion: tackle.konveyor.io/v1alpha1
+kind: OpenidProvider
+metadata:
+  name: {{ app_name }}-federated-idp
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/name: {{ app_name }}-federated-idp
+    app.kubernetes.io/component: openidprovider
+    app.kubernetes.io/part-of: {{ app_name }}
+    app: {{ app_name }}
+spec:
+  name: federated-idp
+  issuer: "{{ federated_idp_issuer }}"
+  clientId: "{{ federated_idp_client_id }}"
+  # No clientSecret - uses PKCE flow (existing tackle-ui client is public)
+  redirectURI: "{{ hub_oidc_issuer }}/callback"
+  scopes:
+    - openid
+    - profile
+    - email
