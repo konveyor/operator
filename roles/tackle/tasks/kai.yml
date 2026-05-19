@@ -80,11 +80,19 @@
     state: "{{ kai_llm_proxy_state }}"
     template: kai/llm-proxy-service.yaml.j2
 
+- name: Check if LLM Proxy Client ConfigMap exists
+  k8s_info:
+    api_version: v1
+    kind: ConfigMap
+    name: "{{ kai_llm_proxy_client_config_name }}"
+    namespace: "{{ app_namespace }}"
+  register: llm_proxy_client_configmap_status
+
 - name: Create LLM Proxy Client Configuration
   k8s:
     state: present
     template: kai/llm-proxy-client-configmap.yaml.j2
-  when: kai_llm_proxy_enabled | bool
+  when: kai_llm_proxy_enabled | bool or (llm_proxy_client_configmap_status.resources | length) > 0
 
 - name: Create Kai API deployment
   k8s:
