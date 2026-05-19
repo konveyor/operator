@@ -12,5 +12,6 @@ metadata:
 data:
   config.json: |
     {
-      "model": "{{ kai_llm_proxy_provider_id }}/{{ kai_llm_proxy_model_id }}"
+      "model": "{{ kai_llm_proxy_provider_id }}/{{ kai_llm_proxy_model_id }}",
+      "enabled": "{{ kai_llm_proxy_enabled | default(false) | bool | lower }}"
     }
