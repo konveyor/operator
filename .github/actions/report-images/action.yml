@@ -1,0 +1,81 @@
+name: Report Runtime Images
+description: |
+  Queries the live cluster to report all container images configured and running
+  for the Konveyor operator stack. Writes a markdown report to the GitHub Step
+  Summary and optionally uploads a JSON artifact.
+
+inputs:
+  namespace:
+    description: "Namespace where Konveyor is installed"
+    required: false
+    default: "konveyor-tackle"
+  upload_artifact:
+    description: "Upload the JSON report as a workflow artifact"
+    required: false
+    default: "false"
+  artifact_name:
+    description: "Name for the uploaded artifact"
+    required: false
+    default: "operator-runtime-image-report"
+  artifact_retention_days:
+    description: "Number of days to retain the artifact"
+    required: false
+    default: "90"
+
+outputs:
+  json:
+    description: "The full image report as a JSON string"
+    value: ${{ steps.report.outputs.json }}
+
+runs:
+  using: "composite"
+  steps:
+  - name: Ensure jq is available
+    shell: bash
+    run: |
+      if command -v jq &>/dev/null; then
+        echo "jq is already installed"
+        exit 0
+      fi
+      echo "::error::jq is required but not found in PATH"
+      exit 1
+
+  - name: Verify cluster access
+    shell: bash
+    run: |
+      KUBECTL="kubectl"
+      if ! command -v kubectl &>/dev/null; then
+        if command -v oc &>/dev/null; then
+          KUBECTL="oc"
+        else
+          echo "::error::Neither kubectl nor oc found in PATH"
+          exit 1
+        fi
+      fi
+      $KUBECTL get namespace "${{ inputs.namespace }}" >/dev/null
+
+  - name: Generate image report
+    id: report
+    shell: bash
+    working-directory: ${{ github.action_path }}/../../..
+    run: |
+      bash hack/report-images.sh -n "${{ inputs.namespace }}" >> "$GITHUB_STEP_SUMMARY"
+
+      JSON=$(bash hack/report-images.sh -n "${{ inputs.namespace }}" --json)
+      echo "$JSON" > "$RUNNER_TEMP/report-images.json"
+
+      # Make JSON available as an output (delimiter-based to handle multiline)
+      EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+      {
+        echo "json<<$EOF"
+        echo "$JSON"
+        echo "$EOF"
+      } >> "$GITHUB_OUTPUT"
+
+  - name: Upload JSON report
+    if: ${{ inputs.upload_artifact == 'true' }}
+    uses: actions/upload-artifact@v4
+    with:
+      name: ${{ inputs.artifact_name }}
+      path: ${{ runner.temp }}/report-images.json
+      retention-days: ${{ inputs.artifact_retention_days }}
