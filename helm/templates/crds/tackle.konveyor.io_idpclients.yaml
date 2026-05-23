@@ -11,6 +11,8 @@ spec:
     kind: IdpClient
     listKind: IdpClientList
     plural: idpclients
+    shortNames:
+    - client
     singular: idpclient
   scope: Namespaced
   versions:

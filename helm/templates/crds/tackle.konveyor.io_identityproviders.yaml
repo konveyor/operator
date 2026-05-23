@@ -11,6 +11,8 @@ spec:
     kind: IdentityProvider
     listKind: IdentityProviderList
     plural: identityproviders
+    shortNames:
+    - idp
     singular: identityprovider
   scope: Namespaced
   versions:
