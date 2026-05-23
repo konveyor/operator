@@ -93,7 +93,8 @@ keycloak_sso_url: ""  # Set explicitly for external Keycloak
 rhbk_url: ""  # Set explicitly for external RHBK
 
 # Hub OIDC configuration
-hub_oidc_issuer: ""  # Set at runtime from UI route hostname + /oidc (external public URL)
+app_base_url: ""  # Set at runtime from UI route/ingress hostname (external public URL)
+hub_oidc_issuer: ""  # Set at runtime from app_base_url + /oidc (external public URL)
 
 # UI OIDC client configuration
 ui_oidc_client_id: "web-ui"

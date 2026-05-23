@@ -637,11 +637,12 @@
 
           {% endif %}
 
-- name: "Create OpenidProvider CR for federated authentication"
+- name: "Create IdentityProvider CR for federated authentication"
   k8s:
     state: present
-    definition: "{{ lookup('template', 'openidprovider-federated.yml.j2') }}"
+    definition: "{{ lookup('template', 'customresource-idp.yml.j2') }}"
   when:
+    - feature_auth_required|bool
     - federated_idp_issuer is defined
     - federated_idp_issuer | length > 0
 
@@ -656,6 +657,7 @@
 
       NOTE: Ensure the existing '{{ federated_idp_client_id }}' client in the federated identity provider has the redirect URI '{{ hub_oidc_issuer }}/callback' configured.
   when:
+    - feature_auth_required|bool
     - federated_idp_issuer is defined
     - federated_idp_issuer | length > 0
 
@@ -796,9 +798,16 @@
   when:
     - openshift_cluster|bool
 
-- name: "Set Hub OIDC issuer URL from UI Route"
+- name: "Set app base URL from UI Route"
   set_fact:
-    hub_oidc_issuer: "https://{{ ui_route_info.resources[0].spec.host }}/oidc"
+    app_base_url: "https://{{ ui_route_info.resources[0].spec.host }}"
+  when:
+    - openshift_cluster|bool
+    - ui_route_info.resources | length > 0
+
+- name: "Set Hub OIDC issuer URL from app base URL"
+  set_fact:
+    hub_oidc_issuer: "{{ app_base_url }}/oidc"
   when:
     - openshift_cluster|bool
     - ui_route_info.resources | length > 0
@@ -813,12 +822,26 @@
   when:
     - not openshift_cluster|bool
 
-- name: "Set Hub OIDC issuer URL from Ingress"
+- name: "Set app base URL from UI Ingress"
   set_fact:
-    hub_oidc_issuer: "https://{{ ui_ingress_info.resources[0].spec.rules[0].host }}/oidc"
+    app_base_url: "https://{{ ui_ingress_info.resources[0].spec.rules[0].host }}"
   when:
     - not openshift_cluster|bool
     - ui_ingress_info.resources | length > 0
+
+- name: "Set Hub OIDC issuer URL from app base URL"
+  set_fact:
+    hub_oidc_issuer: "{{ app_base_url }}/oidc"
+  when:
+    - not openshift_cluster|bool
+    - ui_ingress_info.resources | length > 0
+
+- name: "Create IdpClient CRs"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'customresource-idpclient.yml.j2') }}"
+  when:
+    - feature_auth_required|bool
 
 - name: "Check if Cache PersistentVolumeClaim exists"
   kubernetes.core.k8s_info:

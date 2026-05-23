@@ -1,0 +1,82 @@
+---
+# web-ui client
+apiVersion: tackle.konveyor.io/v1alpha1
+kind: IdpClient
+metadata:
+  name: {{ app_name }}-web-ui
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/name: {{ app_name }}-web-ui
+    app.kubernetes.io/component: idpclient
+    app.kubernetes.io/part-of: {{ app_name }}
+    app: {{ app_name }}
+spec:
+  id: 1
+  clientId: web-ui
+  applicationType: web
+  grants:
+    - urn:ietf:params:oauth:grant-type:jwt-bearer
+    - authorization_code
+    - refresh_token
+  redirectURIs:
+    - {{ app_base_url }}
+  scopes:
+    - offline_access
+    - openid
+    - profile
+    - email
+
+---
+# kantra client (public client - no secret needed)
+apiVersion: tackle.konveyor.io/v1alpha1
+kind: IdpClient
+metadata:
+  name: {{ app_name }}-kantra
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/name: {{ app_name }}-kantra
+    app.kubernetes.io/component: idpclient
+    app.kubernetes.io/part-of: {{ app_name }}
+    app: {{ app_name }}
+spec:
+  id: 2
+  clientId: kantra
+  applicationType: native
+  grants:
+    - urn:ietf:params:oauth:grant-type:device_code
+    - authorization_code
+    - refresh_token
+  scopes:
+    - offline_access
+    - openid
+    - profile
+    - email
+
+---
+# kai-ide client (public client - no secret needed)
+apiVersion: tackle.konveyor.io/v1alpha1
+kind: IdpClient
+metadata:
+  name: {{ app_name }}-kai-ide
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/name: {{ app_name }}-kai-ide
+    app.kubernetes.io/component: idpclient
+    app.kubernetes.io/part-of: {{ app_name }}
+    app: {{ app_name }}
+spec:
+  id: 3
+  clientId: kai-ide
+  applicationType: native
+  grants:
+    - urn:ietf:params:oauth:grant-type:jwt-bearer
+    - authorization_code
+    - refresh_token
+  redirectURIs:
+    - vscode://konveyor.konveyor-core/auth
+    - http://127.0.0.1:*
+  scopes:
+    - offline_access
+    - openid
+    - profile
+    - email

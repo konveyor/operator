@@ -4,7 +4,7 @@ This document describes the authentication architecture and configuration variab
 
 ## Overview
 
-Starting with this release, the Hub acts as the primary OIDC (OpenID Connect) provider. The UI authenticates against Hub's built-in OIDC endpoints at `/oidc`. Optionally, Hub can federate authentication to an external identity provider (like Keycloak, RHSSO, or RHBK) via the `OpenidProvider` custom resource.
+Starting with this release, the Hub acts as the primary OIDC (OpenID Connect) provider. The UI authenticates against Hub's built-in OIDC endpoints at `/oidc`. Optionally, Hub can federate authentication to an external identity provider (like Keycloak, RHSSO, or RHBK) via the `IdentityProvider` custom resource.
 
 ### Architecture
 
@@ -17,7 +17,7 @@ Browser → UI Route (/oidc proxy) → Hub OIDC → Hub API
 ```
 Browser → UI Route (/oidc proxy) → Hub OIDC → [Federated IDP] → Hub API
                                        ↓
-                                   OpenidProvider CR
+                                   IdentityProvider CR
 ```
 
 ### Key Components
@@ -32,8 +32,8 @@ Browser → UI Route (/oidc proxy) → Hub OIDC → [Federated IDP] → Hub API
   - Browser accesses: `https://<ui-route-host>/oidc`
   - Proxies to: `http://<hub-service>:8080/oidc`
 
-- **OpenidProvider CR**: Configures Hub to federate authentication to external identity providers
-  - CRD: `tackle.konveyor.io/v1alpha1/OpenidProvider`
+- **IdentityProvider CR**: Configures Hub to federate authentication to external identity providers
+  - CRD: `tackle.konveyor.io/v1alpha1/IdentityProvider`
   - Hub reads these CRs from its namespace at startup/runtime
   - Used for Keycloak, RHSSO, RHBK, or any OIDC-compatible provider
 
@@ -129,7 +129,7 @@ spec:
 
 **Result:**
 - Hub OIDC provider enabled
-- No OpenidProvider CR created
+- No IdentityProvider CR created
 - Users authenticate directly against Hub
 - User accounts managed in Hub
 
@@ -152,7 +152,7 @@ spec:
 
 **Result:**
 - Hub OIDC provider enabled
-- OpenidProvider CR created pointing to external Keycloak
+- IdentityProvider CR created pointing to external Keycloak
 - Hub federates authentication to Keycloak
 - Users authenticate via Hub → Keycloak
 - User accounts managed in Keycloak
@@ -175,7 +175,7 @@ The operator automatically detects existing operator-deployed Keycloak instances
 
 **Result:**
 - Hub OIDC provider enabled
-- OpenidProvider CR created automatically pointing to existing Keycloak service
+- IdentityProvider CR created automatically pointing to existing Keycloak service
 - Hub federates authentication to existing Keycloak
 - Existing users continue to work
 - Keycloak instance is no longer managed by the operator (remains in place)
@@ -204,15 +204,15 @@ spec:
 
 ---
 
-## OpenidProvider Custom Resource
+## IdentityProvider Custom Resource
 
-The `OpenidProvider` CR configures Hub to federate authentication to an external OIDC-compatible identity provider.
+The `IdentityProvider` CR configures Hub to federate authentication to an external OIDC-compatible identity provider.
 
 ### Example
 
 ```yaml
 apiVersion: tackle.konveyor.io/v1alpha1
-kind: OpenidProvider
+kind: IdentityProvider
 metadata:
   name: tackle-federated-idp
   namespace: konveyor-tackle
@@ -225,6 +225,8 @@ spec:
     - openid
     - profile
     - email
+  tls:
+    insecure: true
 ```
 
 ### Fields
@@ -236,10 +238,11 @@ spec:
 - `scopes`: OIDC scopes to request from the external IDP
 
 **Notes:**
-- Hub reads all `OpenidProvider` CRs in its namespace
+- Hub reads all `IdentityProvider` CRs in its namespace
 - Multiple providers can be configured (Hub will use the first one found)
 - Client secret is **not required** - Hub uses PKCE flow with the existing public client
 - The operator creates this CR automatically based on federated IDP configuration
+- `tls.insecure: true` allows Hub to connect to identity providers using self-signed certificates
 
 ---
 
@@ -252,7 +255,7 @@ spec:
 The operator will:
 1. Detect your existing Keycloak deployment
 2. Stop managing/updating the Keycloak deployment (leaves it in place)
-3. Create an OpenidProvider CR pointing to your existing Keycloak service
+3. Create an IdentityProvider CR pointing to your existing Keycloak service
 4. Configure Hub as OIDC provider with federation to your Keycloak
 5. Update UI to use Hub OIDC
 
@@ -261,7 +264,7 @@ The operator will:
 2. Test authentication with an existing user
 3. (Optional) If you want to remove Keycloak:
    - Migrate users out of Keycloak (export/import or use LDAP)
-   - Delete the OpenidProvider CR
+   - Delete the IdentityProvider CR
    - Delete the Keycloak deployment manually
    - System transitions to pure Hub OIDC
 
@@ -299,9 +302,9 @@ kubectl get deployment tackle-ui -n konveyor-tackle -o jsonpath='{.spec.template
 
 ### Federated authentication not working
 
-**Check OpenidProvider CR exists:**
+**Check IdentityProvider CR exists:**
 ```bash
-kubectl get openidprovider -n konveyor-tackle
+kubectl get identityprovider -n konveyor-tackle
 ```
 
 **Check Hub logs for federation errors:**
@@ -350,11 +353,11 @@ All endpoints are relative to the UI route (proxied to Hub service):
 | `POST /oidc/token` | OAuth 2.0 token endpoint |
 | `GET /oidc/callback` | Callback endpoint for federated authentication |
 
-### OpenidProvider CRD
+### IdentityProvider CRD
 
 **API Group:** `tackle.konveyor.io/v1alpha1`
 
-**Kind:** `OpenidProvider`
+**Kind:** `IdentityProvider`
 
 **Spec Fields:**
 - `name` (string): Provider identifier
@@ -362,3 +365,6 @@ All endpoints are relative to the UI route (proxied to Hub service):
 - `clientId` (string): Client ID in the external IDP
 - `redirectURI` (string): Callback URL
 - `scopes` ([]string): OIDC scopes to request
+- `tls` (object): TLS connection settings
+  - `insecure` (boolean): Skip certificate verification (for self-signed certs)
+  - `ca` (string): PEM-encoded CA certificate for custom CAs
