@@ -169,6 +169,10 @@ spec:
 {% endif %}
             - name: KAI_URL
               value: "{{ kai_url }}"
+{% if kai_llm_proxy_enabled|bool %}
+            - name: LLM_PROXY_URL
+              value: "{{ kai_llm_proxy_internal_url }}"
+{% endif %}
           ports:
             - containerPort: {{ hub_port }}
               protocol: TCP
