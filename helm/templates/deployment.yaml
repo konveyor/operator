@@ -35,8 +35,6 @@ spec:
           value: konveyor
         - name: VERSION
           value: {{ .Values.version }}
-        - name: RELATED_IMAGE_OAUTH_PROXY
-          value: {{ .Values.images.oauth_proxy }}
         - name: RELATED_IMAGE_TACKLE_HUB
           value: {{ .Values.images.tackle_hub }}
         - name: RELATED_IMAGE_TACKLE_POSTGRES

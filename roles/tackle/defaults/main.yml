@@ -9,7 +9,6 @@ app_version: "{{ lookup('env', 'VERSION') }}"
 
 # Feature defaults
 feature_auth_required: "{{ false if app_profile == 'konveyor' else true }}"
-feature_auth_type: keycloak
 feature_isolate_namespace: true
 feature_analysis_archiver: true
 feature_discovery: true
@@ -131,13 +130,6 @@ ui_route_tls_insecure_termination_policy: "Redirect"
 # ui_ingress_path_type should only be defined if you need to override
 # the default value for the ingress controller you are using
 # ui_ingress_path_type:
-
-
-oauth_provider: openshift
-oauth_default_openshift_sar: --openshift-sar={"namespace":"{{ app_namespace }}","resource":"services","resourceName":"{{ ui_service_name }}","verb":"get"}
-oauth_access_rule: "{{ oauth_default_openshift_sar if oauth_provider == 'openshift' }}"
-oauth_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_OAUTH_PROXY') }}"
-oauth_ssl_port: 8443
 
 admin_name: "admin"
 

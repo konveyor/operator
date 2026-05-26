@@ -53,54 +53,6 @@
             state: present
             definition: "{{ lookup('template', 'configmap-trusted-ca.yml.j2') }}"
 
-- when:
-    - feature_auth_required|bool
-    - feature_auth_type == "oauth"
-  block:
-    - name: "Check if Cookie Secret already exists"
-      k8s_info:
-        api_version: v1
-        kind: Secret
-        name: cookie-secret
-        namespace: "{{ app_namespace }}"
-      register: cookie_secret
-
-    - name: "Generate Cookie Secret"
-      set_fact:
-        new_cookie_secret: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=32') }}"
-      when: (cookie_secret.resources | length) == 0
-
-    - name: "Create Cookie Secret"
-      k8s:
-        state: present
-        definition: "{{ lookup('template', 'secret-cookie-secret.yml.j2') }}"
-      when: (cookie_secret.resources | length) == 0
-
-    - name: "Retrieve Cookie Secret"
-      k8s_info:
-        api_version: v1
-        kind: Secret
-        name: cookie-secret
-        namespace: "{{ app_namespace }}"
-      register: cookie_secret
-
-    - name: "Set Cookie Secret"
-      set_fact:
-        cookie_secret_data: "{{ cookie_secret.resources[0].data['cookie-secret'] | b64decode }}"
-
-    - name: "Retrieve Oauth Client Secret if it exists"
-      k8s_info:
-        api_version: v1
-        kind: Secret
-        name: oauth-client-secret
-        namespace: "{{ app_namespace }}"
-      register: oauth_client_secret_status
-
-    - name: "Set Oauth Client Secret"
-      set_fact:
-        oauth_client_secret: "{{ oauth_client_secret_status.resources[0].data['client-secret'] | b64decode }}"
-      when: (oauth_client_secret_status.resources | length) > 0
-
 # Keycloak deployment is disabled - operator no longer deploys or maintains Keycloak
 # Users should configure federated_idp_issuer to point to their Keycloak if needed
 - when: false
@@ -840,12 +792,25 @@
     - hub_oidc_issuer is defined
     - hub_oidc_issuer | length > 0
 
+- name: "Verify app_base_url is available for IdpClient CRs"
+  fail:
+    msg: |
+      Cannot create IdpClient CRs: app_base_url is not set.
+      The UI Route (OpenShift) or Ingress (Kubernetes) must be created and available
+      before IdpClient custom resources can be generated with valid redirect URIs.
+      Check that the UI deployment succeeded and the Route/Ingress exists.
+  when:
+    - feature_auth_required|bool
+    - (app_base_url is not defined or app_base_url | length == 0)
+
 - name: "Create IdpClient CRs"
   k8s:
     state: present
     definition: "{{ lookup('template', 'customresource-idpclient.yml.j2') }}"
   when:
     - feature_auth_required|bool
+    - app_base_url is defined
+    - app_base_url | length > 0
 
 - name: "Check if Cache PersistentVolumeClaim exists"
   kubernetes.core.k8s_info:
@@ -899,7 +864,7 @@
   when: feature_isolate_namespace|bool
 
 - when:
-    - not(feature_auth_required|bool) or not(feature_auth_type == "keycloak")
+    - not(feature_auth_required|bool)
   block:
 
     - name: "Deprovision RHSSO Keycloak CR"

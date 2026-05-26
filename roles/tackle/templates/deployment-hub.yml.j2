@@ -8,17 +8,6 @@ metadata:
     app.kubernetes.io/name: {{ hub_service_name }}
     app.kubernetes.io/component: {{ hub_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
-  annotations:
-    app.openshift.io/connects-to: >-
-      [
-{% if feature_auth_required|bool and feature_auth_type == "keycloak" %}
-{% if app_profile == 'konveyor' %}
-        { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ keycloak_sso_deployment_name }}" },
-{% elif app_profile == 'mta' %}
-        { "apiVersion": "apps/v1", "kind": "StatefulSet", "name": "keycloak" },
-{% endif %}
-{% endif %}
-      ]
 spec:
   replicas: {{ hub_deployment_replicas }}
   selector:
