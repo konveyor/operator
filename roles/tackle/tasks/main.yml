@@ -637,30 +637,6 @@
 
           {% endif %}
 
-- name: "Create IdentityProvider CR for federated authentication"
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'customresource-idp.yml.j2') }}"
-  when:
-    - feature_auth_required|bool
-    - federated_idp_issuer is defined
-    - federated_idp_issuer | length > 0
-
-- name: "Notify about federated identity provider configuration"
-  debug:
-    msg: |
-      Hub OIDC is now configured to federate authentication to an external identity provider.
-      Federated IDP Issuer: {{ federated_idp_issuer }}
-      Using existing client: {{ federated_idp_client_id }}
-      Hub OIDC Issuer: {{ hub_oidc_issuer }}
-      Redirect URI: {{ hub_oidc_issuer }}/callback
-
-      NOTE: Ensure the existing '{{ federated_idp_client_id }}' client in the federated identity provider has the redirect URI '{{ hub_oidc_issuer }}/callback' configured.
-  when:
-    - feature_auth_required|bool
-    - federated_idp_issuer is defined
-    - federated_idp_issuer | length > 0
-
 - name: "Set Hub secrets from existing secret or generate new ones"
   set_fact:
     hub_aes_passphrase: "{{ hub_secret_status.resources[0].data.passphrase | b64decode if (hub_secret_status.resources | length) > 0 else lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=32') }}"
@@ -835,6 +811,34 @@
   when:
     - not openshift_cluster|bool
     - ui_ingress_info.resources | length > 0
+
+- name: "Create IdentityProvider CR for federated authentication"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'customresource-idp.yml.j2') }}"
+  when:
+    - feature_auth_required|bool
+    - federated_idp_issuer is defined
+    - federated_idp_issuer | length > 0
+    - hub_oidc_issuer is defined
+    - hub_oidc_issuer | length > 0
+
+- name: "Notify about federated identity provider configuration"
+  debug:
+    msg: |
+      Hub OIDC is now configured to federate authentication to an external identity provider.
+      Federated IDP Issuer: {{ federated_idp_issuer }}
+      Using existing client: {{ federated_idp_client_id }}
+      Hub OIDC Issuer: {{ hub_oidc_issuer }}
+      Redirect URI: {{ hub_oidc_issuer }}/callback
+
+      NOTE: Ensure the existing '{{ federated_idp_client_id }}' client in the federated identity provider has the redirect URI '{{ hub_oidc_issuer }}/callback' configured.
+  when:
+    - feature_auth_required|bool
+    - federated_idp_issuer is defined
+    - federated_idp_issuer | length > 0
+    - hub_oidc_issuer is defined
+    - hub_oidc_issuer | length > 0
 
 - name: "Create IdpClient CRs"
   k8s:
