@@ -507,6 +507,9 @@ spec:
           - tackles/finalizers
           - addons
           - extensions
+          - identityproviders
+          - idpclients
+          - ldapproviders
           - tasks
           - schemas
           verbs:
