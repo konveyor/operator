@@ -287,8 +287,10 @@ kai_database_address: kai-db.{{ app_namespace }}.svc
 kai_llm_proxy_enabled: false
 kai_llm_proxy_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_LIGHTSPEED_STACK') | default('quay.io/lightspeed-core/lightspeed-stack:latest', true) }}"
 
-# Internal URL for the LLM proxy service (used by UI reverse proxy)
-kai_llm_proxy_url: "http://llm-proxy.{{ app_namespace }}.svc.cluster.local:8321"
+# Internal URL the hub uses to reach llm-proxy. The hub exposes it externally
+# via /services/llm-proxy after authenticating the bearer token; only the hub
+# should call this URL directly.
+kai_llm_proxy_internal_url: "http://llm-proxy.{{ app_namespace }}.svc:8321"
 
 # Client configuration ConfigMap name
 kai_llm_proxy_client_config_name: "llm-proxy-client"

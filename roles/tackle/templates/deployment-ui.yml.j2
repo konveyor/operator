@@ -44,10 +44,6 @@ spec:
               value: '{{ui_ingress_proxy_body_size}}'
             - name: TACKLE_HUB_URL
               value: "{{ hub_url }}"
-{% if kai_llm_proxy_enabled|bool %}
-            - name: KAI_LLM_PROXY_URL
-              value: "{{ kai_llm_proxy_url }}"
-{% endif %}
             - name: AUTH_REQUIRED
               value: "{{ feature_auth_required | string | lower }}"
             - name: OIDC_ISSUER
