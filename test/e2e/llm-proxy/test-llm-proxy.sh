@@ -63,14 +63,16 @@ echo "Testing LLM proxy endpoint with sequential responses..."
 for i in "${!EXPECTED_RESPONSES[@]}"; do
     echo "  Test $((i+1))/3: Verifying response sequence..."
 
-    PROXY_RESPONSE=$(curl -s -X POST "${HUB_URL}/services/llm-proxy/v1/chat/completions" \
+    HTTP_RESPONSE=$(curl -s -w $'\n%{http_code}' -X POST "${HUB_URL}/services/llm-proxy/v1/chat/completions" \
       -H "$AUTH_HEADER" \
       -H "Content-Type: application/json" \
       -d "{
         \"model\": \"$MODEL_ID\",
         \"messages\": [{\"role\": \"user\", \"content\": \"Test message $((i+1))\"}],
         \"max_tokens\": 100
-      }" 2>&1)
+      }")
+    HTTP_CODE=$(printf '%s' "$HTTP_RESPONSE" | tail -n1)
+    PROXY_RESPONSE=$(printf '%s' "$HTTP_RESPONSE" | sed '$d')
 
     if echo "$PROXY_RESPONSE" | grep -q "choices"; then
         CONTENT=$(echo "$PROXY_RESPONSE" | jq -r '.choices[0].message.content // empty' 2>/dev/null)
@@ -84,8 +86,8 @@ for i in "${!EXPECTED_RESPONSES[@]}"; do
             TEST_FAILED=true
         fi
     else
-        echo "    ✗ Response $((i+1)) failed - invalid response structure"
-        echo "      Response: $(echo "$PROXY_RESPONSE" | head -1)"
+        echo "    ✗ Response $((i+1)) failed (HTTP $HTTP_CODE)"
+        echo "      Body: $(printf '%s' "$PROXY_RESPONSE" | head -c 400)"
         TEST_FAILED=true
     fi
 done
