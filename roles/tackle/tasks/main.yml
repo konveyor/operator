@@ -763,8 +763,17 @@
     hub_oidc_issuer: "{{ app_base_url }}/oidc"
   when:
     - not openshift_cluster|bool
-    - ui_ingress_info.resources | length > 0
-    - ui_ingress_info.resources[0].spec.rules[0].host is defined
+    - app_base_url | length > 0
+
+# The Hub Deployment is created earlier in the play, before the UI Route/Ingress
+# exist, so hub_oidc_issuer is still empty at that point. Re-apply it now that
+# the issuer has been derived; the hub's builtin OIDC provider refuses to start
+# without an issuer (internal/auth.NewBuiltin -> "missing issuer").
+- name: "Re-apply Hub API Deployment with the derived OIDC issuer"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'deployment-hub.yml.j2') }}"
+  when: hub_oidc_issuer | length > 0
 
 - name: "Create IdentityProvider CR for federated authentication"
   k8s:
