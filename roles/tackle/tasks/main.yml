@@ -756,6 +756,7 @@
   when:
     - not openshift_cluster|bool
     - ui_ingress_info.resources | length > 0
+    - ui_ingress_info.resources[0].spec.rules[0].host is defined
 
 - name: "Set Hub OIDC issuer URL from app base URL"
   set_fact:
@@ -763,6 +764,7 @@
   when:
     - not openshift_cluster|bool
     - ui_ingress_info.resources | length > 0
+    - ui_ingress_info.resources[0].spec.rules[0].host is defined
 
 - name: "Create IdentityProvider CR for federated authentication"
   k8s:
