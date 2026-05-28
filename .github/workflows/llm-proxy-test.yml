@@ -42,6 +42,14 @@ jobs:
         # Deploy llemulator BEFORE Konveyor so llm-proxy can connect to it
         ./test/e2e/llm-proxy/setup-llemulator.sh
 
+    # The hub's builtin OIDC provider needs an issuer URL, which the operator
+    # derives from the externally-reachable app base URL (UI Route on OpenShift,
+    # Ingress host on k8s). minikube's Ingress is host-less, so supply the base
+    # URL explicitly from the minikube IP.
+    - name: Determine app base URL
+      id: appurl
+      run: echo "url=https://$(minikube ip)" >> "$GITHUB_OUTPUT"
+
     - name: Install Konveyor
       uses: ./.github/actions/install-konveyor
       with:
@@ -54,6 +62,7 @@ jobs:
             name: tackle
           spec:
             feature_auth_required: true
+            app_base_url: ${{ steps.appurl.outputs.url }}
             kai_solution_server_enabled: false
             kai_llm_proxy_enabled: true
             kai_llm_model: gpt-4o

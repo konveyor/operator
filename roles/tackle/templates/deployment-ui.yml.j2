@@ -65,6 +65,14 @@ spec:
 {% endif %}
             - name: RWX_SUPPORTED
               value: "{{ rwx_supported | string | lower }}"
+{% if kai_llm_proxy_enabled|bool %}
+            # TODO(llm-proxy): remove once a UI image is published that routes
+            # /llm-proxy through the hub (/services/llm-proxy). The current UI
+            # image still proxies /llm-proxy directly to this URL and fails to
+            # start without it. The hub itself reaches llm-proxy via LLM_PROXY_URL.
+            - name: KAI_LLM_PROXY_URL
+              value: "{{ kai_llm_proxy_internal_url }}"
+{% endif %}
           ports:
             - containerPort: {{ ui_port }}
               protocol: TCP
