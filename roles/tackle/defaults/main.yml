@@ -277,7 +277,10 @@ kai_llm_params_proxy:
     base_url: "http://llm-proxy.{{ app_namespace }}.svc.cluster.local:8321/v1"
     kwargs: "{{ kai_llm_model_specific_kwargs }}"
 
-kai_database_image_fqin: "{{ keycloak_database_image_fqin }}"
+# Reuse the shared postgres image for the llm-proxy / kai DB. This used to
+# alias keycloak_database_image_fqin; 562 removed that var, so source the same
+# image (RELATED_IMAGE_TACKLE_POSTGRES) directly.
+kai_database_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_TACKLE_POSTGRES') }}"
 kai_database_secret_name: kai-db-secret
 kai_database_volume_size: "5Gi"
 kai_database_volume_claim_name: "{{ hub_service_name }}-kai-database-volume-claim"
