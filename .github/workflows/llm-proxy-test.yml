@@ -63,6 +63,10 @@ jobs:
           spec:
             feature_auth_required: true
             app_base_url: ${{ steps.appurl.outputs.url }}
+            # The llm-proxy test reaches the hub directly and does not use the
+            # UI. Run the UI at 0 replicas so the install's deployment-readiness
+            # gate isn't blocked by the (separately-tracked) UI OIDC image.
+            ui_deployment_replicas: 0
             kai_solution_server_enabled: false
             kai_llm_proxy_enabled: true
             kai_llm_model: gpt-4o
