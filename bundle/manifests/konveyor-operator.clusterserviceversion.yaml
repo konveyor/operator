@@ -341,13 +341,13 @@ spec:
                 - name: VERSION
                   value: 99.0.0
                 - name: RELATED_IMAGE_TACKLE_HUB
-                  value: quay.io/konveyor/tackle2-hub:latest
+                  value: quay.io/jortel/tackle2-hub:oidc
                 - name: RELATED_IMAGE_TACKLE_POSTGRES
                   value: quay.io/sclorg/postgresql-15-c9s:latest
                 - name: RELATED_IMAGE_KEYCLOAK_SSO
                   value: quay.io/keycloak/keycloak:26.1
                 - name: RELATED_IMAGE_TACKLE_UI
-                  value: quay.io/konveyor/tackle2-ui:latest
+                  value: quay.io/jortel/tackle2-ui:oidc
                 - name: RELATED_IMAGE_ADDON_ANALYZER
                   value: quay.io/konveyor/tackle2-addon-analyzer:latest
                 - name: RELATED_IMAGE_ADDON_DISCOVERY
@@ -548,13 +548,13 @@ spec:
     name: Konveyor
     url: https://www.konveyor.io
   relatedImages:
-  - image: quay.io/konveyor/tackle2-hub:latest
+  - image: quay.io/jortel/tackle2-hub:oidc
     name: tackle-hub
   - image: quay.io/sclorg/postgresql-15-c9s:latest
     name: tackle-postgres
   - image: quay.io/keycloak/keycloak:26.1
     name: keycloak-sso
-  - image: quay.io/konveyor/tackle2-ui:latest
+  - image: quay.io/jortel/tackle2-ui:oidc
     name: tackle-ui
   - image: quay.io/konveyor/tackle2-addon-analyzer:latest
     name: addon-analyzer
