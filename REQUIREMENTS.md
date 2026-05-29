@@ -226,17 +226,28 @@ When Tackle CR has variables pointing to external Keycloak (outside namespace):
 - `feature_auth_required` flag SHALL be preserved (default: `false`)
 - `AUTH_REQUIRED` environment variable SHALL be preserved in Hub and UI
 - Purpose: Support development/testing environments without authentication
-- When `false`: Hub runs without authentication requirements
+- When `false`: 
+  - Hub runs without authentication requirements
+  - IdpClient CR still created (for consistency)
+  - Operator SHALL delete any operator-deployed Keycloak/RHSSO/RHBK resources detected in namespace
+  - Deletion via resource discovery (not variable-based, no keycloak_* vars needed)
 
 **REQ-5**: The operator SHALL auto-create IdpClient CR:
 - IdpClient CR for UI SHALL always be created by operator
-- Name: `web-ui` (matches `OIDC_CLIENT_ID` in REQ-11)
+- Name: `web-ui` (matches `OIDC_CLIENT_ID` in REQ-12)
 - Purpose: UI can authenticate to Hub's OIDC provider
 - IdentityProvider/LdapProvider CRs: Created by operator on upgrade (see upgrade section), or manually by user
+- **Error handling**: IdpClient creation failure SHALL fail reconciliation
 
 ### 2.2 Component Changes
 
 **REQ-6**: OAuth proxy sidecar pattern SHALL be removed from UI deployment.
+
+**REQ-6a**: Topology annotations SHALL be conditional on detected Keycloak:
+- Hub deployment annotation `app.openshift.io/connects-to`: Include Keycloak only if detected
+- UI deployment annotation `app.openshift.io/connects-to`: Include Keycloak only if detected
+- Purpose: Shows actual topology in OpenShift console when Keycloak exists
+- Implementation: Use same detection logic as REQ-8b (resource discovery)
 
 **REQ-7**: The following templates SHALL be removed:
 - All Keycloak deployment/service/secret templates (see CURRENT.md §4)
@@ -250,6 +261,12 @@ When Tackle CR has variables pointing to external Keycloak (outside namespace):
 - RHBK setup (CURRENT.md §5, Phase 6)
 - OAuth secret generation (CURRENT.md §5, Phase 2)
 - Keycloak deprovisioning (CURRENT.md §5, Phase 10)
+- RHSSO Operator cleanup (CURRENT.md §5, Phase 11 - lines 932-946)
+
+**REQ-8-NOTE**: Tasks removed because:
+- No longer deploying Keycloak/RHBK/RHSSO
+- No longer migrating PostgreSQL
+- No longer deprovisioning (handled by REQ-4 via resource discovery)
 
 **REQ-8a**: Existing Keycloak resources SHALL be preserved on upgrade:
 - **Keycloak admin password Secret**: `{{ app_name }}-keycloak-sso`
@@ -263,22 +280,29 @@ When Tackle CR has variables pointing to external Keycloak (outside namespace):
 - Operator SHALL NOT delete any existing Keycloak resources
 - User performs cleanup when ready to remove Keycloak
 
-**REQ-8b**: Keycloak detection on upgrade SHALL use resource discovery:
-- Detection method: Query namespace for Keycloak resources
-- Konveyor profile: Check for Deployment `{{ app_name }}-keycloak-sso`
-- MTA profile: Check for StatefulSet `keycloak` (RHBK-managed)
-- Alternative: Use label selectors on resources (e.g., `app.kubernetes.io/component=sso`)
-- Detection triggers: IdentityProvider CR creation, KEYCLOAK_SERVER_URL env var, `/auth` routing
+**REQ-8b**: Keycloak detection SHALL use resource discovery (no variables):
+- **Detection method**: Query namespace for Keycloak resources by name/labels
+- **Konveyor profile**: Check for Deployment `{{ app_name }}-keycloak-sso`
+- **MTA profile**: Check for StatefulSet `keycloak` (RHBK-managed)
+- **Alternative**: Use label selectors (e.g., `app.kubernetes.io/component=sso`)
+- **Detection triggers**:
+  - On upgrade with auth enabled: Create IdentityProvider CR, set KEYCLOAK_SERVER_URL, add `/auth` routing
+  - On no-auth mode (REQ-4): Delete detected Keycloak/RHSSO/RHBK resources
+- **No keycloak_* variables needed**: All detection via k8s_info queries
 
 **REQ-9**: Hub deployment SHALL remove Keycloak admin credentials environment variables:
 - `KEYCLOAK_ADMIN_USER`
 - `KEYCLOAK_ADMIN_PASS`
 - `KEYCLOAK_REQ_PASS_UPDATE`
 
-**REQ-10**: Hub deployment SHALL have the following OIDC environment variables:
-- `OIDC_ISSUER`: Hub's OIDC issuer URL (ingress/route base URL + `/oidc`)
+**REQ-10**: Hub deployment OIDC issuer derivation:
+- Hub SHALL NOT have `OIDC_ISSUER` environment variable
+- Hub SHALL derive OIDC issuer URL dynamically from incoming request headers:
+  - Uses `X-Forwarded-Host` and `X-Forwarded-Proto` headers from proxy/ingress
+  - Constructs issuer: `{X-Forwarded-Proto}://{X-Forwarded-Host}/oidc`
   - Example: `https://tackle-ui.apps.cluster.example.com/oidc`
-  - Derived from: UI ingress hostname (Kubernetes) or route hostname (OpenShift)
+- Hub SHALL set JWT "iss" claim to match external URL seen by browser
+- Purpose: Eliminates need to discover/configure external hostname
 
 **REQ-10a**: Hub deployment SHALL have API key secret environment variable:
 - `APIKEY_SECRET`: Mounted from operator-generated secret
@@ -289,9 +313,11 @@ When Tackle CR has variables pointing to external Keycloak (outside namespace):
   - Secret persistence: Preserved across reconciliations (like hub AES passphrase)
 
 **REQ-11**: UI deployment SHALL have the following OIDC environment variables:
-- `OIDC_ISSUER`: Hub's OIDC issuer URL (same as Hub - ingress/route base URL + `/oidc`)
-  - Example: `https://tackle-ui.apps.cluster.example.com/oidc`
-  - Purpose: UI discovers Hub's OIDC endpoints (.well-known/openid-configuration)
+- `OIDC_ISSUER`: Hub's internal service URL + `/oidc`
+  - Example: `http://tackle-hub.konveyor-tackle.svc:8080/oidc`
+  - Derived from: `{{ hub_url }}/oidc` (internal service URL)
+  - Purpose: UI server-side discovers Hub's OIDC configuration
+  - Note: UI redirects browser to authorization endpoint; Hub returns external URLs via X-Forwarded-Host
 - `OIDC_CLIENT_ID`: Must be `"web-ui"`
   - Purpose: UI identifies itself to Hub's OIDC provider
   - Value matches IdpClient CR name created by operator
@@ -377,6 +403,8 @@ When Tackle CR has variables pointing to external Keycloak (outside namespace):
 **NON-REQ-4**: The operator will NOT support RHSSO or legacy Keycloak operator CRs.
 
 **NON-REQ-5**: The operator will NOT maintain backward compatibility for removed feature flags (`feature_auth_type`).
+
+**NON-REQ-6**: The operator will NOT provide rollback strategy after upgrade.
 
 ---
 
