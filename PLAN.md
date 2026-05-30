@@ -459,28 +459,40 @@ spec:
 
 **File**: `roles/tackle/templates/customresource-identityprovider.yml.j2`
 
+**Reference**: 
+- CRD: `../tackle2-hub/internal/generated/crd/tackle.konveyor.io_identityproviders.yaml`
+- Sample: `~/openshift/tackle/oidc/idp.yaml`
+
 ```yaml
 ---
 apiVersion: tackle.konveyor.io/v1alpha1
 kind: IdentityProvider
 metadata:
-  name: keycloak-{{ app_name }}
+  name: keycloak
   namespace: {{ app_namespace }}
   labels:
-    app.kubernetes.io/name: keycloak-{{ app_name }}
+    app.kubernetes.io/name: keycloak
     app.kubernetes.io/component: identity-provider
     app.kubernetes.io/part-of: {{ app_name }}
 spec:
-  # Fields to be defined based on Hub's CRD schema
-  # Likely includes:
-  # - issuer: "{{ keycloak_service_url }}/auth/realms/{{ app_name }}"
-  # - authorizationURL: "{{ keycloak_service_url }}/auth/realms/{{ app_name }}/protocol/openid-connect/auth"
-  # - tokenURL: "{{ keycloak_service_url }}/auth/realms/{{ app_name }}/protocol/openid-connect/token"
-  # - clientId: "{{ app_name }}-ui"
-  # - clientSecret: (from existing secret?)
+  name: keycloak
+  issuer: {{ keycloak_service_url }}/auth/realms/{{ app_name }}
+  tls:
+    insecure: true
+  clientId: {{ app_name }}-ui
+  redirectURI: {{ hub_url }}/oidc/idp/callback
+  scopes:
+  - openid
+  - profile
+  - email
 ```
 
-**Note**: Schema depends on Hub CRD - update after copying
+**Notes**: 
+- Uses PKCE flow (no clientSecret needed) - Hub handles federation without Keycloak client secret
+- `issuer`: Keycloak realm issuer URL
+- `redirectURI`: Hub's internal callback endpoint (service URL, not external)
+- `tls.insecure: true`: Skip TLS verification for self-signed certs (same as current implementation)
+- Hub discovers OIDC endpoints via issuer `.well-known/openid-configuration`
 
 ### 6.2 Add Upgrade Logic Task
 
@@ -906,20 +918,24 @@ Implementation is complete when:
    - **RESOLVED**: Hub now supports wildcard `"*"` in redirectURIs
    - **ACTION**: Use `redirectURIs: ["*"]` in template
    
-3. **IdentityProvider CR schema**: What fields are required?
-   - **Action**: Check `~/openshift/tackle/oidc/` for IdentityProvider examples
+3. ~~**IdentityProvider CR schema**: What fields are required?~~
+   - **RESOLVED**: 
+     - CRD: `../tackle2-hub/internal/generated/crd/tackle.konveyor.io_identityproviders.yaml`
+     - Sample: `~/openshift/tackle/oidc/idp.yaml`
+     - Uses PKCE flow, no clientSecret needed
    
-4. **Keycloak client secret**: Does IdentityProvider CR need client secret? Where to get it?
-   - **Action**: Check if secret exists, reference in CR
+4. ~~**Keycloak client secret**: Does IdentityProvider CR need client secret?~~
+   - **RESOLVED**: No - Hub uses PKCE-only client for federation to existing Keycloak
+   - Existing Keycloak deployment left untouched
+
+5. ~~**Route `/auth` routing**: Does Route need updates?~~
+   - **RESOLVED**: No - UI `KEYCLOAK_SERVER_URL` env var is sufficient, UI proxy handles routing
    
-5. **Route `/auth` routing**: Does Route need updates like Ingress?
-   - **Action**: Test Route behavior with `/auth` path
-   
-6. **RBAC for CRs**: Do we need ClusterRole updates for IdpClient/IdentityProvider?
-   - **Action**: Check if operator ServiceAccount can create these CRs
+6. **RBAC for CRDs**: Do we need ClusterRole updates for IdpClient/IdentityProvider/LdapProvider?
+   - **Action**: Review operator ClusterRole, add rules if needed
 
 7. **Error recovery**: If IdentityProvider creation fails on upgrade, how to recover?
-   - **Action**: Add retry logic? Fail reconciliation?
+   - **Action**: Fail reconciliation (per REQ-5 pattern)
 
 These questions should be answered during Phase 1 (Preparation).
 
