@@ -69,6 +69,7 @@ User → UI → Hub (OIDC provider) → LDAP server (validates user) → Hub iss
 - Hub's ability to federate to external IdPs
 - Hub's ability to issue and validate JWT tokens
 - UI's ability to authenticate users (via Hub's OIDC)
+- Hub reverse proxy for llm-proxy with token validation and user identity forwarding
 
 ### What We Want to Remove
 
@@ -338,8 +339,19 @@ When Tackle CR has variables pointing to external Keycloak (outside namespace):
 
 **REQ-13**: LLM Proxy authentication SHALL be handled via Hub routing:
 - LLM Proxy will no longer validate tokens directly
-- Authentication handled by routing through Hub (see `~/llm-proxy-routing.patch`)
-- Details: To be clarified based on llm-proxy routing implementation
+- LLM Proxy accessed only through Hub's `/services/llm-proxy` reverse proxy
+- Hub validates bearer token, enforces RBAC scope, forwards user identity via `X-Hub-User` headers
+- **Hub environment variable**: `LLM_PROXY_URL` (when `kai_llm_proxy_enabled: true`)
+  - Value: `{{ kai_llm_proxy_internal_url }}` (e.g., `http://llm-proxy.konveyor-tackle.svc:8321`)
+  - Purpose: Hub uses this to register llm-proxy in its service routes
+- **UI changes**: Remove `KAI_LLM_PROXY_URL` environment variable
+  - UI no longer connects directly to llm-proxy
+  - UI server-side proxy retargets `/llm-proxy` → Hub `/services/llm-proxy`
+- **llm-proxy ConfigMap**: Remove OAuth2 token auth configuration block
+  - llm-proxy does no token validation
+  - NetworkPolicy is only barrier against in-namespace bypass (same trust as kai-solution-server)
+- **Variable rename**: `kai_llm_proxy_url` → `kai_llm_proxy_internal_url`
+- Based on: `~/llm-proxy-routing.patch` (commit 6cf0d71)
 
 ### 2.3 Variable Cleanup
 
