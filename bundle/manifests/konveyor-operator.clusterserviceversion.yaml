@@ -214,6 +214,21 @@ spec:
       kind: Task
       name: tasks.tackle.konveyor.io
       version: v1alpha1
+    - description: OIDC Identity Provider Client
+      displayName: IdpClient
+      kind: IdpClient
+      name: idpclients.tackle.konveyor.io
+      version: v1alpha1
+    - description: External Identity Provider for Federation
+      displayName: IdentityProvider
+      kind: IdentityProvider
+      name: identityproviders.tackle.konveyor.io
+      version: v1alpha1
+    - description: LDAP Provider for Authentication
+      displayName: LdapProvider
+      kind: LdapProvider
+      name: ldapproviders.tackle.konveyor.io
+      version: v1alpha1
   description: |
     Konveyor is an open-source application modernization platform that helps organizations safely and predictably modernize applications to new technologies, with an initial focus on accelerating the adoption of legacy applications to Kubernetes.
 
@@ -500,6 +515,9 @@ spec:
           - extensions
           - tasks
           - schemas
+          - idpclients
+          - identityproviders
+          - ldapproviders
           verbs:
           - create
           - delete

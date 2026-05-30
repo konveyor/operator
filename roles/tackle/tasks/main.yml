@@ -36,6 +36,51 @@
     openshift_cluster: true
   when: "'route.openshift.io' in api_groups"
 
+- name: "Create IdpClient CRs (web-ui, kantra, kai-ide)"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'customresource-idpclients.yml.j2') }}"
+  register: idpclients_result
+  failed_when: idpclients_result.failed
+
+- name: "Detect existing Keycloak deployment"
+  block:
+    - name: "Check for Keycloak SSO Deployment (konveyor)"
+      k8s_info:
+        api_version: apps/v1
+        kind: Deployment
+        name: "{{ app_name }}-keycloak-sso"
+        namespace: "{{ app_namespace }}"
+      register: keycloak_sso_deployment
+
+    - name: "Check for RHBK StatefulSet (mta)"
+      k8s_info:
+        api_version: apps/v1
+        kind: StatefulSet
+        name: "keycloak"
+        namespace: "{{ app_namespace }}"
+      register: rhbk_statefulset
+
+    - name: "Set Keycloak detection flags"
+      set_fact:
+        keycloak_detected: "{{ (keycloak_sso_deployment.resources | length > 0) or (rhbk_statefulset.resources | length > 0) }}"
+        keycloak_is_rhbk: "{{ rhbk_statefulset.resources | length > 0 }}"
+
+    - name: "Get Keycloak service details when detected"
+      set_fact:
+        keycloak_service_name: "{{ app_name + '-rhbk-service' if keycloak_is_rhbk else app_name + '-keycloak-sso' }}"
+        keycloak_service_port: "{{ 8443 if keycloak_is_rhbk else 8080 }}"
+        keycloak_service_url: "{{ 'https://' + app_name + '-rhbk-service.' + app_namespace + '.svc:8443' if keycloak_is_rhbk else 'http://' + app_name + '-keycloak-sso.' + app_namespace + '.svc:8080' }}"
+      when: keycloak_detected|bool
+
+- name: "Create IdentityProvider CR for detected Keycloak"
+  when:
+    - feature_auth_required|bool
+    - keycloak_detected|bool
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'customresource-identityprovider.yml.j2') }}"
+
 - when: openshift_cluster|bool
   block:
     - name: "Get OpenShift cluster Proxy object"
@@ -52,510 +97,6 @@
           k8s:
             state: present
             definition: "{{ lookup('template', 'configmap-trusted-ca.yml.j2') }}"
-
-- when:
-    - feature_auth_required|bool
-    - feature_auth_type == "oauth"
-  block:
-    - name: "Check if Cookie Secret already exists"
-      k8s_info:
-        api_version: v1
-        kind: Secret
-        name: cookie-secret
-        namespace: "{{ app_namespace }}"
-      register: cookie_secret
-
-    - name: "Generate Cookie Secret"
-      set_fact:
-        new_cookie_secret: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=32') }}"
-      when: (cookie_secret.resources | length) == 0
-
-    - name: "Create Cookie Secret"
-      k8s:
-        state: present
-        definition: "{{ lookup('template', 'secret-cookie-secret.yml.j2') }}"
-      when: (cookie_secret.resources | length) == 0
-
-    - name: "Retrieve Cookie Secret"
-      k8s_info:
-        api_version: v1
-        kind: Secret
-        name: cookie-secret
-        namespace: "{{ app_namespace }}"
-      register: cookie_secret
-
-    - name: "Set Cookie Secret"
-      set_fact:
-        cookie_secret_data: "{{ cookie_secret.resources[0].data['cookie-secret'] | b64decode }}"
-
-    - name: "Retrieve Oauth Client Secret if it exists"
-      k8s_info:
-        api_version: v1
-        kind: Secret
-        name: oauth-client-secret
-        namespace: "{{ app_namespace }}"
-      register: oauth_client_secret_status
-
-    - name: "Set Oauth Client Secret"
-      set_fact:
-        oauth_client_secret: "{{ oauth_client_secret_status.resources[0].data['client-secret'] | b64decode }}"
-      when: (oauth_client_secret_status.resources | length) > 0
-
-- when:
-    - feature_auth_required|bool
-    - feature_auth_type == "keycloak"
-  block:
-    - name: "Setup Keycloak PostgreSQL PersistentVolumeClaim"
-      k8s:
-        state: present
-        definition: "{{ lookup('template', 'persistentvolumeclaim-keycloak-postgresql.yml.j2') }}"
-
-    - name: "Check if Keycloak PostgreSQL Secret exists already so we don't update it"
-      k8s_info:
-        api_version: v1
-        kind: Secret
-        name: "{{ keycloak_database_secret_name }}"
-        namespace: "{{ app_namespace }}"
-      register: keycloak_database_secret_status
-
-    - when: (keycloak_database_secret_status.resources | length) == 0
-      block:
-        - name: "Generate random values for Keycloak PostgreSQL credentials"
-          set_fact:
-            keycloak_database_db_username: "user-{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=4') }}"
-            keycloak_database_db_password: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=16') }}"
-
-        - name: "Encode Keycloak PostgreSQL credentials"
-          set_fact:
-            keycloak_database_db_username_b64: "{{ keycloak_database_db_username | b64encode }}"
-            keycloak_database_db_password_b64: "{{ keycloak_database_db_password | b64encode }}"
-
-        - name: "Setup Keycloak PostgreSQL Secret"
-          k8s:
-            state: present
-            definition: "{{ lookup('template', 'secret-keycloak-postgresql.yml.j2') }}"
-
-    - name: "Delete old Keycloak PostgreSQL Service"
-      k8s:
-        state: absent
-        kind: Service
-        api_version: v1
-        name: "{{ keycloak_database_service_name }}"
-        namespace: "{{ app_namespace }}"
-
-    - name: "Setup Keycloak PostgreSQL Deployment"
-      k8s:
-        state: present
-        definition: "{{ lookup('template', 'deployment-keycloak-postgresql.yml.j2') }}"
-
-    - name: "Check status of Keycloak PostgreSQL"
-      kubernetes.core.k8s_info:
-        api_version: v1
-        kind: Pod
-        namespace: "{{ app_namespace }}"
-        label_selectors:
-          - app.kubernetes.io/name = {{ keycloak_database_service_name }}-{{ keycloak_database_db_version }}
-        wait: true
-        wait_condition:
-          type: "Ready"
-          status: "True"
-        wait_timeout: 240
-
-    - name: "Check for old postgresql version deployment"
-      k8s_info:
-        api_version: v1
-        kind: Deployment
-        name: "{{ keycloak_database_service_name }}"
-        namespace: "{{ app_namespace }}"
-      register: pgsql_old_deployment
-
-    - when: ( pgsql_old_deployment.resources | length ) > 0
-      block:
-        - name: Set up the temporary migration service
-          k8s:
-            state: present
-            definition: "{{ lookup('template', 'service-keycloak-postgresql-migration.yml.j2') }}"
-
-        - name: Scale down RHSSO
-          when:
-            - app_name == "mta"
-            - rhsso_api_version in cluster_info.apis
-            - '"Keycloak" in cluster_info.apis[rhsso_api_version]'
-          k8s:
-            state: present
-            definition: "{{ lookup('template', 'customresource-rhsso-keycloak.yml.j2') }}"
-          vars:
-            rhsso_instances: 0
-
-        - name: Scale down Keycloak
-          when: app_name == "tackle"
-          k8s:
-            state: present
-            definition: "{{ lookup('template', 'deployment-keycloak-sso.yml.j2') }}"
-          vars:
-            keycloak_sso_deployment_replicas: 0
-
-        - when: app_profile == "mta"
-          block:
-            - name: "Get PostgreSQL Keycloak Secret"
-              k8s_info:
-                api_version: v1
-                kind: Secret
-                name: "{{ keycloak_database_secret_name }}"
-                namespace: "{{ app_namespace }}"
-              register: keycloak_database_secret
-
-            - name: "Get DNS operator CR"
-              k8s_info:
-                api_version: operator.openshift.io/v1
-                kind: DNS
-                name: default
-              register: default_dns_operator
-
-            - name: "Collect service name components"
-              set_fact:
-                pgsql_svc_fqdn_parts:
-                  - "{{ keycloak_database_service_k8s_resource_name }}"
-                  - "{{ app_namespace }}"
-                  - "svc"
-                  - "{{ default_dns_operator.resources[0].status.clusterDomain }}"
-
-            - name: "Assemble service name"
-              set_fact:
-                pgsql_svc_fqdn: "{{ pgsql_svc_fqdn_parts | join('.') }}"
-
-            - name: "Collect database coordinates"
-              set_fact:
-                rhsso_db_pass_b64: "{{ keycloak_database_secret.resources[0].data['database-password'] }}"
-                rhsso_db_user_b64: "{{ keycloak_database_secret.resources[0].data['database-user'] }}"
-                rhsso_db_host_b64: "{{ pgsql_svc_fqdn | b64encode }}"
-                rhsso_db_name_b64: "{{ keycloak_database_secret.resources[0].data['database-name'] }}"
-
-            - name: "Look up Keycloak DB Secret for Hashing"
-              set_fact:
-                keycloak_db_secret:
-                  env: "{{ lookup('template', 'secret-keycloak-db.yml.j2') | from_yaml }}"
-
-        - name: Scale down Hub
-          k8s:
-            state: present
-            definition: "{{ lookup('template', 'deployment-hub.yml.j2') }}"
-            merge_type: merge
-          vars:
-            hub_deployment_replicas: 0
-
-        - name: "Get the keycloak DB secret"
-          k8s_info:
-            api_version: v1
-            kind: Secret
-            name: "{{ app_name }}-keycloak-postgresql"
-            namespace: "{{ app_namespace }}"
-          register: pgsql_secret
-
-        - name: "Set the keycloak DB credentials"
-          set_fact:
-            dbm_user: "{{ pgsql_secret.resources[0].data['database-user'] | b64decode }}"
-            dbm_pass: "{{ pgsql_secret.resources[0].data['database-password'] | b64decode }}"
-
-        - name: Ping source database
-          postgresql_ping:
-            db: "{{ keycloak_database_db_name }}"
-            login_host: "{{ keycloak_database_service_k8s_resource_name }}"
-            login_user: "{{ dbm_user }}"
-            login_password: "{{ dbm_pass }}"
-          register: src_ping
-          retries: 12
-          until: src_ping.is_available and src_ping.server_version.major == 12
-          delay: 10
-
-        - name: Ping destination database
-          postgresql_ping:
-            db: "{{ keycloak_database_db_name }}"
-            login_host: "{{ keycloak_database_service_k8s_resource_name }}-migration"
-            login_user: "{{ dbm_user }}"
-            login_password: "{{ dbm_pass }}"
-          register: dst_ping
-          retries: 12
-          until: dst_ping.is_available and dst_ping.server_version.major == 15
-          delay: 10
-
-        - name: Generate keycloak random string
-          set_fact:
-            keycloak_random: "{{ lookup('community.general.random_string', special=false) }}"
-
-        - name: Dump database
-          postgresql_db:
-            state: dump
-            name: "{{ keycloak_database_db_name }}"
-            target: /tmp/keycloak_{{ keycloak_random }}.sql
-            login_host: "{{ keycloak_database_service_k8s_resource_name }}"
-            login_user: "{{ dbm_user }}"
-            login_password: "{{ dbm_pass }}"
-
-        - name: Restore database
-          postgresql_db:
-            state: restore
-            name: "{{ keycloak_database_db_name }}"
-            target: /tmp/keycloak_{{ keycloak_random }}.sql
-            login_host: "{{ keycloak_database_service_k8s_resource_name }}-migration"
-            login_user: "{{ dbm_user }}"
-            login_password: "{{ dbm_pass }}"
-
-        - name: Clean up database dump file
-          file:
-            state: absent
-            path: /tmp/keycloak_{{ keycloak_random }}.sql
-
-        - name: "Remove the temporary migration service"
-          k8s:
-            state: absent
-            definition: "{{ lookup('template', 'service-keycloak-postgresql-migration.yml.j2') }}"
-
-        - name: "Remove the old deployment"
-          k8s:
-            state: absent
-            api_version: v1
-            kind: Deployment
-            name: "{{ keycloak_database_service_name }}"
-            namespace: "{{ app_namespace }}"
-
-        - name: "Remove the service so it can be recreated"
-          k8s:
-            state: absent
-            definition: "{{ lookup('template', 'service-keycloak-postgresql.yml.j2') }}"
-
-    - name: "Setup Keycloak PostgreSQL Service"
-      k8s:
-        state: present
-        definition: "{{ lookup('template', 'service-keycloak-postgresql.yml.j2') }}"
-
-    - name: "Check if Keycloak SSO Credential Secret exists"
-      k8s_info:
-        api_version: v1
-        kind: Secret
-        name: "{{ rhsso_secret_name }}"
-        namespace: "{{ app_namespace }}"
-      register: keycloak_sso_credential_secret_status
-
-    - name: "Check if Keycloak SSO Secret exists"
-      k8s_info:
-        api_version: v1
-        kind: Secret
-        name: "{{ keycloak_sso_secret_name }}"
-        namespace: "{{ app_namespace }}"
-      register: keycloak_sso_secret_status
-
-    - when:
-        - (keycloak_sso_secret_status.resources | length) == 0
-        - (keycloak_sso_credential_secret_status.resources | length) == 1
-      block:
-        - name: "Lookup RHSSO username and password"
-          set_fact:
-            keycloak_sso_admin_username_b64: "{{ keycloak_sso_credential_secret_status.resources[0].data.ADMIN_USERNAME }}"
-            keycloak_sso_admin_password_b64: "{{ keycloak_sso_credential_secret_status.resources[0].data.ADMIN_PASSWORD }}"
-
-        - name: Move RHSSO credentials to RHBK location
-          k8s:
-            state: present
-            definition: "{{ lookup('template', 'secret-keycloak-sso.yml.j2') }}"
-
-    - name: "Check if Keycloak SSO Secret exists already so we don't update it"
-      k8s_info:
-        api_version: v1
-        kind: Secret
-        name: "{{ keycloak_sso_secret_name }}"
-        namespace: "{{ app_namespace }}"
-      register: keycloak_sso_secret_status
-
-    - when:
-        - keycloak_sso_secret_status.resources | length == 1
-        - keycloak_sso_secret_status.resources[0].data['admin-username'] is defined
-        - keycloak_sso_secret_status.resources[0].data['admin-password'] is defined
-        - keycloak_sso_secret_status.resources[0].data.username is not defined
-        - keycloak_sso_secret_status.resources[0].data.password is not defined
-      block:
-        - name: Get values from old key names
-          set_fact:
-            keycloak_sso_admin_username_b64: "{{ keycloak_sso_secret_status.resources[0].data['admin-username'] }}"
-            keycloak_sso_admin_password_b64: "{{ keycloak_sso_secret_status.resources[0].data['admin-password'] }}"
-
-        - name: Update values for new key mames
-          k8s:
-            state: present
-            definition: "{{ lookup('template', 'secret-keycloak-sso.yml.j2') }}"
-
-    - when: (keycloak_sso_secret_status.resources | length) == 0
-      block:
-        - name: "Generate random values for Keycloak SSO credentials"
-          set_fact:
-            keycloak_sso_admin_password: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=16') }}"
-
-        - name: "Encode Keycloak SSO credentials"
-          set_fact:
-            keycloak_sso_admin_password_b64: "{{ keycloak_sso_admin_password | b64encode }}"
-
-        - name: "Setup Keycloak SSO Secret"
-          k8s:
-            state: present
-            definition: "{{ lookup('template', 'secret-keycloak-sso.yml.j2') }}"
-
-    - when:
-        - app_profile == "konveyor"
-      block:
-        - name: "Setup Keycloak SSO Service"
-          k8s:
-            state: present
-            definition: "{{ lookup('template', 'service-keycloak-sso.yml.j2') }}"
-
-        - name: "Setup Keycloak SSO Deployment"
-          k8s:
-            state: present
-            definition: "{{ lookup('template', 'deployment-keycloak-sso.yml.j2') }}"
-
-- when:
-    - feature_auth_required|bool
-    - feature_auth_type == "keycloak"
-    - app_profile == "mta"
-  block:
-    - name: "Check for existing RHSSO Keycloak CR"
-      k8s_info:
-        api_version: "{{ rhsso_api_version }}"
-        kind: Keycloak
-        namespace: "{{ app_namespace }}"
-        label_selectors:
-          - app = {{ rhsso_service_name }}
-      register: rhsso_keycloak
-      when:
-        - rhsso_api_version in cluster_info.apis
-        - '"Keycloak" in cluster_info.apis[rhsso_api_version]'
-
-    - name: "Delete old RHSSO Keycloak"
-      k8s:
-        state: absent
-        api_version: "{{ rhsso_api_version }}"
-        kind: Keycloak
-        name: "{{ rhsso_service_name }}"
-        namespace: "{{ app_namespace }}"
-      when:
-        - rhsso_api_version in cluster_info.apis
-        - '"Keycloak" in cluster_info.apis[rhsso_api_version]'
-        - rhsso_keycloak.resources | length > 0
-        - rhsso_keycloak.resources[0].status.secondaryResources.Deployment is defined
-        - '"keycloak-postgresql" in rhsso_keycloak.resources[0].status.secondaryResources.Deployment'
-
-    - name: "Get PostgreSQL Keycloak Secret"
-      k8s_info:
-        api_version: v1
-        kind: Secret
-        name: "{{ keycloak_database_secret_name }}"
-        namespace: "{{ app_namespace }}"
-      register: keycloak_database_secret
-
-    - name: "Get DNS operator CR"
-      k8s_info:
-        api_version: operator.openshift.io/v1
-        kind: DNS
-        name: default
-      register: default_dns_operator
-
-    - name: "Collect service name components"
-      set_fact:
-        pgsql_svc_fqdn_parts:
-          - "{{ keycloak_database_service_k8s_resource_name }}"
-          - "{{ app_namespace }}"
-          - "svc"
-          - "{{ default_dns_operator.resources[0].status.clusterDomain }}"
-
-    - name: "Assemble service name"
-      set_fact:
-        pgsql_svc_fqdn: "{{ pgsql_svc_fqdn_parts | join('.') }}"
-
-    - name: "Collect database coordinates"
-      set_fact:
-        rhsso_db_pass_b64: "{{ keycloak_database_secret.resources[0].data['database-password'] }}"
-        rhsso_db_user_b64: "{{ keycloak_database_secret.resources[0].data['database-user'] }}"
-        rhsso_db_host_b64: "{{ pgsql_svc_fqdn | b64encode }}"
-        rhsso_db_name_b64: "{{ keycloak_database_secret.resources[0].data['database-name'] }}"
-
-    - name: "Setup Keycloak SSO Deployment"
-      k8s:
-        state: present
-        definition: "{{ lookup('template', 'secret-keycloak-db.yml.j2') }}"
-        merge_type: merge
-
-    - name: "Delete RHSSO Keycloak CR"
-      k8s:
-        state: absent
-        definition: "{{ lookup('template', 'customresource-rhsso-keycloak.yml.j2') }}"
-      when:
-        - rhsso_api_version in cluster_info.apis
-        - '"Keycloak" in cluster_info.apis[rhsso_api_version]'
-
-    - name: "Check RHBK for CR"
-      k8s_info:
-        api_version: "{{ rhbk_api_version }}"
-        kind: Keycloak
-        name: "{{ app_name }}-{{ rhbk_name }}"
-        namespace: "{{ app_namespace }}"
-      register: rhbk_cr
-
-    - name: "Set number of RHBK instances to 0 to prepare secret resources"
-      set_fact:
-        rhbk_instances: 0
-      when: rhbk_cr.resources|length == 0
-
-    - name: "Create RHBK Keycloak CR"
-      k8s:
-        state: present
-        definition: "{{ lookup('template', 'customresource-rhbk-keycloak.yml.j2') }}"
-      when: rhbk_cr.resources|length == 0
-
-    - name: "Check for RHBK service"
-      k8s_info:
-        api_version: v1
-        kind: Service
-        name: "{{ rhbk_service_name }}-service"
-        namespace: "{{ app_namespace }}"
-      register: rhbk_service
-      until: rhbk_service.resources|length > 0
-      retries: 30
-      delay: 5
-
-    - name: "Annotate the service to create SSL cert"
-      k8s:
-        state: present
-        definition: "{{ lookup('template', 'service-keycloak-rhbk.yml.j2') }}"
-
-    - name: "Check for RHBK Cert Secret"
-      k8s_info:
-        api_version: v1
-        kind: Secret
-        name: "{{ rhbk_tls_secret_name }}"
-        namespace: "{{ app_namespace }}"
-      register: rhbk_secret
-      until: rhbk_secret.resources|length > 0
-      retries: 30
-      delay: 5
-
-    - name: "Set number of RHBK instances to 1"
-      set_fact:
-        rhbk_instances: 1
-
-    - name: "Update RHBK Keycloak CR"
-      k8s:
-        state: present
-        definition: "{{ lookup('template', 'customresource-rhbk-keycloak.yml.j2') }}"
-
-    - name: "Check RHBK for readiness"
-      k8s_info:
-        api_version: "{{ rhbk_api_version }}"
-        kind: Keycloak
-        name: "{{ app_name }}-{{ rhbk_name }}"
-        namespace: "{{ app_namespace }}"
-      register: cr
-      until: cr | json_query('resources[].status.conditions[?type==`Ready`].status') | first | first | bool
-      retries: 30
-      delay: 5
 
 - name: "Setup Hub API Database PersistentVolumeClaim"
   k8s:
@@ -606,19 +147,18 @@
       set_fact:
         hub_addon_token_b64: "{{ hub_addon_token | b64encode }}"
 
+    - name: "Generate Hub API key secret"
+      set_fact:
+        hub_apikey_secret: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=32') }}"
+
+    - name: "Encode Hub API key secret"
+      set_fact:
+        hub_apikey_secret_b64: "{{ hub_apikey_secret | b64encode }}"
+
     - name: "Setup Hub Secret"
       k8s:
         state: present
         definition: "{{ lookup('template', 'secret-hub.yml.j2') }}"
-
-- name: "Look up Keycloak DB Secret for Hashing"
-  set_fact:
-    keycloak_db_secret:
-      env: "{{ lookup('template', 'secret-keycloak-db.yml.j2') | from_yaml }}"
-  when:
-    - feature_auth_required|bool
-    - feature_auth_type == "keycloak"
-    - app_profile == "mta"
 
 # Create all the neccessary CR's before the hub deployment is created
 - name: "Remove Admin Addon CR"
@@ -780,37 +320,6 @@
     state: present
     definition: "{{ lookup('template', 'networkpolicy.yml.j2') }}"
   when: feature_isolate_namespace|bool
-
-- when:
-    - not(feature_auth_required|bool) or not(feature_auth_type == "keycloak")
-  block:
-
-    - name: "Deprovision RHSSO Keycloak CR"
-      k8s:
-        state: absent
-        kind: Keycloak
-        api_version: "{{ rhsso_api_version }}"
-        name: "{{ rhsso_service_name }}"
-        namespace: "{{ app_namespace }}"
-      when:
-        - rhsso_api_version in cluster_info.apis
-        - '"Keycloak" in cluster_info.apis[rhsso_api_version]'
-
-    - name: "Deprovision RHSSO Keycloak Deployment"
-      k8s:
-        state: absent
-        kind: Deployment
-        api_version: apps/v1
-        name: "{{ keycloak_database_deployment_name }}"
-        namespace: "{{ app_namespace }}"
-
-    - name: "Deprovision RHSSO Keycloak Postgres"
-      k8s:
-        state: absent
-        kind: Deployment
-        api_version: apps/v1
-        name: "{{ keycloak_sso_deployment_name }}"
-        namespace: "{{ app_namespace }}"
 
 - name: "Create Hub ServiceMonitor"
   k8s:

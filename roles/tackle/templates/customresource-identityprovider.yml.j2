@@ -1,0 +1,21 @@
+---
+apiVersion: tackle.konveyor.io/v1alpha1
+kind: IdentityProvider
+metadata:
+  name: keycloak
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/name: keycloak
+    app.kubernetes.io/component: identity-provider
+    app.kubernetes.io/part-of: {{ app_name }}
+spec:
+  name: keycloak
+  issuer: {{ keycloak_service_url }}/auth/realms/{{ app_name }}
+  tls:
+    insecure: true
+  clientId: {{ app_name }}-ui
+  redirectURI: {{ hub_url }}/oidc/idp/callback
+  scopes:
+  - openid
+  - profile
+  - email

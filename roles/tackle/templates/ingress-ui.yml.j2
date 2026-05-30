@@ -5,9 +5,6 @@ metadata:
   annotations:
 {% if ui_ingress_class_name == 'nginx' %}
     nginx.ingress.kubernetes.io/proxy-body-size: {{ ui_ingress_proxy_body_size }}
-{% if feature_auth_required|bool and feature_auth_type == "keycloak" %}
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-{% endif %}
 {% elif ui_ingress_class_name == 'alb' %}
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/scheme: internet-facing
@@ -27,14 +24,14 @@ spec:
   rules:
     - http:
         paths:
-{% if feature_auth_required|bool and feature_auth_type == "keycloak" %}
+{% if keycloak_detected|bool %}
           - path: /auth
             pathType: Prefix
             backend:
               service:
-                name: {{ keycloak_sso_service_name }}
+                name: {{ keycloak_service_name }}
                 port:
-                  number: {{ keycloak_sso_port }}
+                  number: {{ keycloak_service_port }}
 {% endif %}
           - path: /
 {% if ui_ingress_path_type is defined %}
