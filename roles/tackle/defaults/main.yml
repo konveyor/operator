@@ -111,12 +111,6 @@ ui_route_tls_insecure_termination_policy: "Redirect"
 # ui_ingress_path_type:
 
 
-oauth_provider: openshift
-oauth_default_openshift_sar: --openshift-sar={"namespace":"{{ app_namespace }}","resource":"services","resourceName":"{{ ui_service_name }}","verb":"get"}
-oauth_access_rule: "{{ oauth_default_openshift_sar if oauth_provider == 'openshift' }}"
-oauth_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_OAUTH_PROXY') }}"
-oauth_ssl_port: 8443
-
 admin_name: "admin"
 
 analyzer_fqin: "{{ lookup('env', 'RELATED_IMAGE_ADDON_ANALYZER') }}"
@@ -263,7 +257,7 @@ kai_llm_params_proxy:
     base_url: "http://llm-proxy.{{ app_namespace }}.svc.cluster.local:8321/v1"
     kwargs: "{{ kai_llm_model_specific_kwargs }}"
 
-kai_database_image_fqin: "{{ keycloak_database_image_fqin }}"
+kai_database_image_fqin: "{{ lookup('env', 'RELATED_IMAGE_TACKLE_POSTGRES') }}"
 kai_database_secret_name: kai-db-secret
 kai_database_volume_size: "5Gi"
 kai_database_volume_claim_name: "{{ hub_service_name }}-kai-database-volume-claim"
