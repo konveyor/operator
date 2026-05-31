@@ -148,7 +148,7 @@ metadata:
     categories: Modernization & Migration
     certified: "false"
     containerImage: quay.io/konveyor/tackle2-operator:latest
-    createdAt: "2026-04-29T10:07:56Z"
+    createdAt: "2026-05-31T16:18:11Z"
     description: Konveyor is an open-source application modernization platform that
       helps organizations safely and predictably modernize applications to Kubernetes
       at scale.
@@ -201,6 +201,15 @@ spec:
       kind: Extension
       name: extensions.tackle.konveyor.io
       version: v1alpha1
+    - kind: IdentityProvider
+      name: identityproviders.tackle.konveyor.io
+      version: v1alpha1
+    - kind: IdpClient
+      name: idpclients.tackle.konveyor.io
+      version: v1alpha1
+    - kind: LdapProvider
+      name: ldapproviders.tackle.konveyor.io
+      version: v1alpha1
     - kind: Schema
       name: schemas.tackle.konveyor.io
       version: v1alpha1
@@ -213,21 +222,6 @@ spec:
       displayName: Task
       kind: Task
       name: tasks.tackle.konveyor.io
-      version: v1alpha1
-    - description: OIDC Identity Provider Client
-      displayName: IdpClient
-      kind: IdpClient
-      name: idpclients.tackle.konveyor.io
-      version: v1alpha1
-    - description: External Identity Provider for Federation
-      displayName: IdentityProvider
-      kind: IdentityProvider
-      name: identityproviders.tackle.konveyor.io
-      version: v1alpha1
-    - description: LDAP Provider for Authentication
-      displayName: LdapProvider
-      kind: LdapProvider
-      name: ldapproviders.tackle.konveyor.io
       version: v1alpha1
   description: |
     Konveyor is an open-source application modernization platform that helps organizations safely and predictably modernize applications to new technologies, with an initial focus on accelerating the adoption of legacy applications to Kubernetes.
@@ -515,9 +509,6 @@ spec:
           - extensions
           - tasks
           - schemas
-          - idpclients
-          - identityproviders
-          - ldapproviders
           verbs:
           - create
           - delete

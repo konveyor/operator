@@ -1,25 +1,25 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.0
-  creationTimestamp: null
-  name: identityproviders.tackle.konveyor.io
+  name: idpclients.tackle.konveyor.io
 spec:
   group: tackle.konveyor.io
   names:
-    kind: IdentityProvider
-    listKind: IdentityProviderList
-    plural: identityproviders
+    kind: IdpClient
+    listKind: IdpClientList
+    plural: idpclients
     shortNames:
-    - idp
-    singular: identityprovider
+    - client
+    singular: idpclient
   scope: Namespaced
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: IdentityProvider defines external IDP federation settings.
+        description: IdpClient defines an OIDC client configuration.
         properties:
           apiVersion:
             description: |-
@@ -41,11 +41,20 @@ spec:
           spec:
             description: Spec defines the desired state of the resource.
             properties:
+              applicationType:
+                description: ApplicationType is the OAuth application type (e.g.,
+                  "web", "native").
+                type: string
               clientId:
-                description: Client ID.
+                description: |-
+                  ClientId is the OAuth client identifier (e.g., "web-ui", "kantra").
+                  This is used as the natural key for reconciliation.
                 type: string
               clientSecret:
-                description: Client secret reference (optional for public clients).
+                description: |-
+                  ClientSecret references a Kubernetes Secret containing the OAuth client secret.
+                  The Secret must have a key named "clientSecret".
+                  This is optional - public clients (e.g., native apps) may not require a secret.
                 properties:
                   apiVersion:
                     description: API version of the referent.
@@ -87,40 +96,34 @@ spec:
                     type: string
                 type: object
                 x-kubernetes-map-type: atomic
-              issuer:
-                description: Issuer URL.
-                type: string
-              name:
-                description: Provider name.
-                type: string
-              redirectURI:
-                description: Redirect URI.
-                type: string
-              scopes:
-                description: OAuth scopes (optional, provider injects defaults if
-                  empty).
+              grants:
+                description: Grants are the OAuth grant types supported by this client.
                 items:
                   type: string
                 type: array
-              tls:
-                description: TLS connection settings.
-                properties:
-                  ca:
-                    description: |-
-                      CA is a PEM-encoded CA certificate for validating the server certificate.
-                      Use when the server uses a certificate signed by an internal/private CA.
-                    type: string
-                  insecure:
-                    description: |-
-                      Insecure skips server certificate verification.
-                      Use only for development/testing with self-signed certificates.
-                    type: boolean
-                type: object
+              id:
+                description: |-
+                  ID is the database ID for the seeded client.
+                  Must be less than 1000 (reserved range for seeded clients).
+                maximum: 999
+                minimum: 1
+                type: integer
+              redirectURIs:
+                description: RedirectURIs are the redirect URIs for OAuth flows.
+                items:
+                  type: string
+                type: array
+              scopes:
+                description: Scopes are the OAuth scopes requested by this client.
+                items:
+                  type: string
+                type: array
             required:
+            - applicationType
             - clientId
-            - issuer
-            - name
-            - redirectURI
+            - grants
+            - id
+            - scopes
             type: object
           status:
             description: Status defines the observed state of the resource.
@@ -194,9 +197,3 @@ spec:
     storage: true
     subresources:
       status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: null
-  storedVersions: null
