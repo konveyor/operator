@@ -31,35 +31,38 @@ wait_for_deployment() {
 }
 
 wait_for_deployment tackle-hub
+wait_for_deployment tackle-ui
 wait_for_deployment llm-proxy
 wait_for_deployment llemulator
 
-# Hub is reached via the UI ingress's /hub proxy, which strips the prefix and
-# forwards to the hub service. We hit /hub/services/llm-proxy/* so that the
-# hub's auth + reverse proxy handle the request; this avoids depending on
-# UI-image changes that retarget /llm-proxy at /services/llm-proxy.
-HUB_URL=""
-if kubectl get ingress tackle -n "$NAMESPACE" &>/dev/null; then
-    INGRESS_HOST=$(kubectl get ingress tackle -n "$NAMESPACE" -o jsonpath='{.spec.rules[0].host}' 2>/dev/null || echo "")
-    if [ -n "$INGRESS_HOST" ]; then
-        HUB_URL="http://$INGRESS_HOST"
-    fi
-fi
-
-if [ -z "$HUB_URL" ]; then
-    echo "Using port-forward for UI access..."
-    kubectl port-forward -n "$NAMESPACE" service/tackle-ui 8080:8080 &
-    PF_HUB_PID=$!
-    sleep 3
-    HUB_URL="http://localhost:8080"
-fi
+# Reach the hub through the UI's /hub reverse-proxy -- the same path real
+# clients use. Port-forward the UI Service, then everything goes through
+# /hub/...; the UI passes the Authorization header straight through to the hub.
+echo "Using port-forward to the UI service..."
+kubectl port-forward -n "$NAMESPACE" service/tackle-ui 8080:8080 &
+PF_HUB_PID=$!
+sleep 3
+HUB_URL="http://localhost:8080"
 
 echo "Hub URL: $HUB_URL"
 
-# Hub PR #1042 seeds a local 'admin' user (login=admin, password=admin) with
-# the admin role — see tackle2-hub/internal/auth/seed/users.yaml. Use HTTP
-# Basic Auth, which hub parses in internal/auth/request.go.
-AUTH_HEADER="Authorization: Basic $(printf 'admin:admin' | base64)"
+# Authenticate as the seeded 'admin' user via HTTP Basic Auth and exchange that
+# for a long-lived API key (PAT) via POST /hub/auth/tokens. Use the API key as a
+# Bearer token for subsequent /hub/services/llm-proxy calls — this mirrors how
+# real clients are expected to use the hub: short-lived credential at the door,
+# API key for service calls.
+echo "Requesting API key from the hub..."
+APIKEY=$(curl -s -X POST "${HUB_URL}/hub/auth/tokens" \
+  -H "Authorization: Basic $(printf 'admin:admin' | base64)" \
+  -H "Content-Type: application/json" \
+  -d '{}' | jq -r '.token // empty')
+if [ -z "$APIKEY" ]; then
+    echo "FAIL: did not receive an API key from /hub/auth/tokens" >&2
+    if [ -n "$PF_HUB_PID" ]; then kill $PF_HUB_PID 2>/dev/null || true; fi
+    exit 1
+fi
+echo "Got API key (first 12 chars): ${APIKEY:0:12}..."
+AUTH_HEADER="Authorization: Bearer $APIKEY"
 
 MODEL_ID=$(kubectl get configmap llm-proxy-client -n "$NAMESPACE" -o jsonpath='{.data.config\.json}' 2>/dev/null | jq -r '.model' 2>/dev/null || echo "gpt-4o")
 
@@ -73,14 +76,16 @@ echo "Testing LLM proxy endpoint with sequential responses..."
 for i in "${!EXPECTED_RESPONSES[@]}"; do
     echo "  Test $((i+1))/3: Verifying response sequence..."
 
-    PROXY_RESPONSE=$(curl -s -X POST "${HUB_URL}/hub/services/llm-proxy/v1/chat/completions" \
+    HTTP_RESPONSE=$(curl -s -w $'\n%{http_code}' -X POST "${HUB_URL}/hub/services/llm-proxy/v1/chat/completions" \
       -H "$AUTH_HEADER" \
       -H "Content-Type: application/json" \
       -d "{
         \"model\": \"$MODEL_ID\",
         \"messages\": [{\"role\": \"user\", \"content\": \"Test message $((i+1))\"}],
         \"max_tokens\": 100
-      }" 2>&1)
+      }")
+    HTTP_CODE=$(printf '%s' "$HTTP_RESPONSE" | tail -n1)
+    PROXY_RESPONSE=$(printf '%s' "$HTTP_RESPONSE" | sed '$d')
 
     if echo "$PROXY_RESPONSE" | grep -q "choices"; then
         CONTENT=$(echo "$PROXY_RESPONSE" | jq -r '.choices[0].message.content // empty' 2>/dev/null)
@@ -94,8 +99,8 @@ for i in "${!EXPECTED_RESPONSES[@]}"; do
             TEST_FAILED=true
         fi
     else
-        echo "    ✗ Response $((i+1)) failed - invalid response structure"
-        echo "      Response: $(echo "$PROXY_RESPONSE" | head -1)"
+        echo "    ✗ Response $((i+1)) failed (HTTP $HTTP_CODE)"
+        echo "      Body: $(printf '%s' "$PROXY_RESPONSE" | head -c 400)"
         TEST_FAILED=true
     fi
 done
@@ -106,8 +111,16 @@ else
     echo "LLM proxy test: FAIL - Response verification failed"
 fi
 
-echo "Testing security (invalid credentials rejection)..."
-INVALID_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "${HUB_URL}/hub/services/llm-proxy/v1/chat/completions" \
+# Security check: hit the hub directly with an invalid Bearer token and assert
+# the hub itself rejects it with 401/403. We deliberately bypass the UI here —
+# the UI's /hub proxy can choose to 302 unrecognized tokens to its OIDC login
+# page (browser-UX), which is not the same as the hub refusing the request.
+# What we want to assert is the hub's own auth enforcement on /services/...
+echo "Testing security (invalid credentials rejection at the hub)..."
+kubectl port-forward -n "$NAMESPACE" service/tackle-hub 8089:8080 > /dev/null 2>&1 &
+PF_HUB_DIRECT_PID=$!
+sleep 3
+INVALID_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "http://localhost:8089/services/llm-proxy/v1/chat/completions" \
   -H "Authorization: Bearer invalid-token-12345" \
   -H "Content-Type: application/json" \
   -d "{
@@ -115,6 +128,7 @@ INVALID_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "${HUB_URL}/hub/
     \"messages\": [{\"role\": \"user\", \"content\": \"Test\"}],
     \"max_tokens\": 5
   }")
+kill $PF_HUB_DIRECT_PID 2>/dev/null || true
 
 if [ "$INVALID_STATUS" = "401" ] || [ "$INVALID_STATUS" = "403" ]; then
     echo "Security test: PASS (HTTP $INVALID_STATUS)"

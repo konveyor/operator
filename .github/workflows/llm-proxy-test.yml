@@ -75,6 +75,9 @@ jobs:
         echo "=== Recent Events ==="
         kubectl get events -n konveyor-tackle --sort-by='.lastTimestamp' | tail -20 | tee /tmp/llm-proxy-debug/events.txt
         echo ""
+        echo "=== Hub Logs ==="
+        kubectl logs -n konveyor-tackle deployment/tackle-hub --tail=200 | tee /tmp/llm-proxy-debug/hub.log || true
+        echo ""
         echo "=== LLM Proxy Logs ==="
         kubectl logs -n konveyor-tackle deployment/llm-proxy --tail=100 | tee /tmp/llm-proxy-debug/llm-proxy.log || true
         echo ""
