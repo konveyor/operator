@@ -34,25 +34,17 @@ wait_for_deployment tackle-hub
 wait_for_deployment llm-proxy
 wait_for_deployment llemulator
 
-# Hub is reached via the UI ingress's /hub proxy, which strips the prefix and
-# forwards to the hub service. We hit /hub/services/llm-proxy/* so that the
-# hub's auth + reverse proxy handle the request; this avoids depending on
-# UI-image changes that retarget /llm-proxy at /services/llm-proxy.
-HUB_URL=""
-if kubectl get ingress tackle -n "$NAMESPACE" &>/dev/null; then
-    INGRESS_HOST=$(kubectl get ingress tackle -n "$NAMESPACE" -o jsonpath='{.spec.rules[0].host}' 2>/dev/null || echo "")
-    if [ -n "$INGRESS_HOST" ]; then
-        HUB_URL="http://$INGRESS_HOST"
-    fi
-fi
-
-if [ -z "$HUB_URL" ]; then
-    echo "Using port-forward for UI access..."
-    kubectl port-forward -n "$NAMESPACE" service/tackle-ui 8080:8080 &
-    PF_HUB_PID=$!
-    sleep 3
-    HUB_URL="http://localhost:8080"
-fi
+# Hit the hub's /services/llm-proxy endpoint directly (port-forward to the hub
+# Service), rather than through the UI's /hub proxy. The OIDC UI redirects
+# unauthenticated requests to a login page (302), so a curl Basic Auth call
+# through the UI never reaches the hub. Port-forwarding to the hub bypasses
+# that and exercises what we actually want to test: hub auth + RBAC + reverse
+# proxy to llm-proxy.
+echo "Using port-forward to the hub service..."
+kubectl port-forward -n "$NAMESPACE" service/tackle-hub 8080:8080 &
+PF_HUB_PID=$!
+sleep 3
+HUB_URL="http://localhost:8080"
 
 echo "Hub URL: $HUB_URL"
 
@@ -73,14 +65,16 @@ echo "Testing LLM proxy endpoint with sequential responses..."
 for i in "${!EXPECTED_RESPONSES[@]}"; do
     echo "  Test $((i+1))/3: Verifying response sequence..."
 
-    PROXY_RESPONSE=$(curl -s -X POST "${HUB_URL}/hub/services/llm-proxy/v1/chat/completions" \
+    HTTP_RESPONSE=$(curl -s -w $'\n%{http_code}' -X POST "${HUB_URL}/services/llm-proxy/v1/chat/completions" \
       -H "$AUTH_HEADER" \
       -H "Content-Type: application/json" \
       -d "{
         \"model\": \"$MODEL_ID\",
         \"messages\": [{\"role\": \"user\", \"content\": \"Test message $((i+1))\"}],
         \"max_tokens\": 100
-      }" 2>&1)
+      }")
+    HTTP_CODE=$(printf '%s' "$HTTP_RESPONSE" | tail -n1)
+    PROXY_RESPONSE=$(printf '%s' "$HTTP_RESPONSE" | sed '$d')
 
     if echo "$PROXY_RESPONSE" | grep -q "choices"; then
         CONTENT=$(echo "$PROXY_RESPONSE" | jq -r '.choices[0].message.content // empty' 2>/dev/null)
@@ -94,8 +88,8 @@ for i in "${!EXPECTED_RESPONSES[@]}"; do
             TEST_FAILED=true
         fi
     else
-        echo "    ✗ Response $((i+1)) failed - invalid response structure"
-        echo "      Response: $(echo "$PROXY_RESPONSE" | head -1)"
+        echo "    ✗ Response $((i+1)) failed (HTTP $HTTP_CODE)"
+        echo "      Body: $(printf '%s' "$PROXY_RESPONSE" | head -c 400)"
         TEST_FAILED=true
     fi
 done
@@ -107,7 +101,7 @@ else
 fi
 
 echo "Testing security (invalid credentials rejection)..."
-INVALID_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "${HUB_URL}/hub/services/llm-proxy/v1/chat/completions" \
+INVALID_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "${HUB_URL}/services/llm-proxy/v1/chat/completions" \
   -H "Authorization: Bearer invalid-token-12345" \
   -H "Content-Type: application/json" \
   -d "{
