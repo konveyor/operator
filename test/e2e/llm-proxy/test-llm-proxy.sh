@@ -48,10 +48,23 @@ HUB_URL="http://localhost:8080"
 
 echo "Hub URL: $HUB_URL"
 
-# Hub PR #1042 seeds a local 'admin' user (login=admin, password=admin) with
-# the admin role — see tackle2-hub/internal/auth/seed/users.yaml. Use HTTP
-# Basic Auth, which hub parses in internal/auth/request.go.
-AUTH_HEADER="Authorization: Basic $(printf 'admin:admin' | base64)"
+# Authenticate as the seeded 'admin' user via HTTP Basic Auth and exchange that
+# for a long-lived API key (PAT) via POST /auth/tokens. Use the API key as a
+# Bearer token for subsequent /services/llm-proxy calls — this mirrors how
+# real clients are expected to use the hub: short-lived credential at the door,
+# API key for service calls.
+echo "Requesting API key from the hub..."
+APIKEY=$(curl -s -X POST "${HUB_URL}/auth/tokens" \
+  -H "Authorization: Basic $(printf 'admin:admin' | base64)" \
+  -H "Content-Type: application/json" \
+  -d '{}' | jq -r '.token // empty')
+if [ -z "$APIKEY" ]; then
+    echo "FAIL: did not receive an API key from /auth/tokens" >&2
+    if [ -n "$PF_HUB_PID" ]; then kill $PF_HUB_PID 2>/dev/null || true; fi
+    exit 1
+fi
+echo "Got API key (first 12 chars): ${APIKEY:0:12}..."
+AUTH_HEADER="Authorization: Bearer $APIKEY"
 
 MODEL_ID=$(kubectl get configmap llm-proxy-client -n "$NAMESPACE" -o jsonpath='{.data.config\.json}' 2>/dev/null | jq -r '.model' 2>/dev/null || echo "gpt-4o")
 
