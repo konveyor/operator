@@ -509,6 +509,9 @@ spec:
           - extensions
           - tasks
           - schemas
+          - idpclients
+          - identityproviders
+          - ldapproviders
           verbs:
           - create
           - delete
