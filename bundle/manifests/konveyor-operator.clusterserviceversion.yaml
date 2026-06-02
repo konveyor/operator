@@ -148,7 +148,7 @@ metadata:
     categories: Modernization & Migration
     certified: "false"
     containerImage: quay.io/konveyor/tackle2-operator:latest
-    createdAt: "2026-05-31T16:18:11Z"
+    createdAt: "2026-06-02T11:59:04Z"
     description: Konveyor is an open-source application modernization platform that
       helps organizations safely and predictably modernize applications to Kubernetes
       at scale.
@@ -343,13 +343,13 @@ spec:
                 - name: RELATED_IMAGE_OAUTH_PROXY
                   value: quay.io/openshift/origin-oauth-proxy:latest
                 - name: RELATED_IMAGE_TACKLE_HUB
-                  value: quay.io/konveyor/tackle2-hub:latest
+                  value: quay.io/jortel/tackle2-hub:oidc
                 - name: RELATED_IMAGE_TACKLE_POSTGRES
                   value: quay.io/sclorg/postgresql-15-c9s:latest
                 - name: RELATED_IMAGE_KEYCLOAK_SSO
                   value: quay.io/keycloak/keycloak:26.1
                 - name: RELATED_IMAGE_TACKLE_UI
-                  value: quay.io/konveyor/tackle2-ui:latest
+                  value: quay.io/jortel/tackle2-ui:oidc
                 - name: RELATED_IMAGE_ADDON_ANALYZER
                   value: quay.io/konveyor/tackle2-addon-analyzer:latest
                 - name: RELATED_IMAGE_ADDON_DISCOVERY
@@ -552,13 +552,13 @@ spec:
   relatedImages:
   - image: quay.io/openshift/origin-oauth-proxy:latest
     name: oauth-proxy
-  - image: quay.io/konveyor/tackle2-hub:latest
+  - image: quay.io/jortel/tackle2-hub:oidc
     name: tackle-hub
   - image: quay.io/sclorg/postgresql-15-c9s:latest
     name: tackle-postgres
   - image: quay.io/keycloak/keycloak:26.1
     name: keycloak-sso
-  - image: quay.io/konveyor/tackle2-ui:latest
+  - image: quay.io/jortel/tackle2-ui:oidc
     name: tackle-ui
   - image: quay.io/konveyor/tackle2-addon-analyzer:latest
     name: addon-analyzer
