@@ -13,10 +13,10 @@ csv:
 images:
   operator: quay.io/konveyor/tackle2-operator:latest
   oauth_proxy: quay.io/openshift/origin-oauth-proxy:latest
-  tackle_hub: quay.io/konveyor/tackle2-hub:latest
+  tackle_hub: quay.io/jortel/tackle2-hub:oidc
   tackle_postgres: quay.io/sclorg/postgresql-15-c9s:latest
   keycloak_sso: quay.io/keycloak/keycloak:26.1
-  tackle_ui: quay.io/konveyor/tackle2-ui:latest
+  tackle_ui: quay.io/jortel/tackle2-ui:oidc
   addon_analyzer: quay.io/konveyor/tackle2-addon-analyzer:latest
   addon_platform: quay.io/konveyor/tackle2-addon-platform:latest
   addon_discovery: quay.io/konveyor/tackle2-addon-discovery:latest
