@@ -93,6 +93,11 @@ spec:
               name:
                 description: Provider name.
                 type: string
+              primary:
+                description: |-
+                  Primary indicates this IdP is the primary authentication method.
+                  When true, users are automatically redirected to this IdP for authentication.
+                type: boolean
               redirectURI:
                 description: Redirect URI.
                 type: string
