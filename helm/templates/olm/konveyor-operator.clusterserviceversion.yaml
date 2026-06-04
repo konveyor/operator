@@ -58,6 +58,26 @@ spec:
       kind: Extension
       name: extensions.tackle.konveyor.io
       version: v1alpha1
+    - description: Identity Provider
+      displayName: Identity Provider
+      kind: IdentityProvider
+      name: identityproviders.tackle.konveyor.io
+      version: v1alpha1
+    - description: IDP Client
+      displayName: IDP Client
+      kind: IdpClient
+      name: idpclients.tackle.konveyor.io
+      version: v1alpha1
+    - description: LDAP Provider
+      displayName: LDAP Provider
+      kind: LdapProvider
+      name: ldapproviders.tackle.konveyor.io
+      version: v1alpha1
+    - description: Schema
+      displayName: Schema
+      kind: Schema
+      name: schemas.tackle.konveyor.io
+      version: v1alpha1
     - description: Tackle
       displayName: Tackle
       kind: Tackle

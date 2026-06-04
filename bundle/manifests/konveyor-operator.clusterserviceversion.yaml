@@ -148,7 +148,7 @@ metadata:
     categories: Modernization & Migration
     certified: "false"
     containerImage: quay.io/konveyor/tackle2-operator:latest
-    createdAt: "2026-04-29T10:07:56Z"
+    createdAt: "2026-06-03T16:15:05Z"
     description: Konveyor is an open-source application modernization platform that
       helps organizations safely and predictably modernize applications to Kubernetes
       at scale.
@@ -201,7 +201,24 @@ spec:
       kind: Extension
       name: extensions.tackle.konveyor.io
       version: v1alpha1
-    - kind: Schema
+    - description: Identity Provider
+      displayName: Identity Provider
+      kind: IdentityProvider
+      name: identityproviders.tackle.konveyor.io
+      version: v1alpha1
+    - description: IDP Client
+      displayName: IDP Client
+      kind: IdpClient
+      name: idpclients.tackle.konveyor.io
+      version: v1alpha1
+    - description: LDAP Provider
+      displayName: LDAP Provider
+      kind: LdapProvider
+      name: ldapproviders.tackle.konveyor.io
+      version: v1alpha1
+    - description: Schema
+      displayName: Schema
+      kind: Schema
       name: schemas.tackle.konveyor.io
       version: v1alpha1
     - description: Tackle
@@ -500,6 +517,9 @@ spec:
           - extensions
           - tasks
           - schemas
+          - idpclients
+          - identityproviders
+          - ldapproviders
           verbs:
           - create
           - delete

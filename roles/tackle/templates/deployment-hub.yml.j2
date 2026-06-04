@@ -9,16 +9,7 @@ metadata:
     app.kubernetes.io/component: {{ hub_component_name }}
     app.kubernetes.io/part-of: {{ app_name }}
   annotations:
-    app.openshift.io/connects-to: >-
-      [
-{% if feature_auth_required|bool and feature_auth_type == "keycloak" %}
-{% if app_profile == 'konveyor' %}
-        { "apiVersion": "apps/v1", "kind": "Deployment", "name": "{{ keycloak_sso_deployment_name }}" },
-{% elif app_profile == 'mta' %}
-        { "apiVersion": "apps/v1", "kind": "StatefulSet", "name": "keycloak" },
-{% endif %}
-{% endif %}
-      ]
+    app.openshift.io/connects-to: "[]"
 spec:
   replicas: {{ hub_deployment_replicas }}
   selector:
@@ -38,11 +29,6 @@ spec:
         app.kubernetes.io/part-of: {{ app_name }}
         app: {{ app_name }}
         role: {{ hub_service_name }}
-{% if feature_auth_required|bool %}
-{% if app_profile == 'mta' and feature_auth_type == "keycloak" %}
-        keycloak_db_secret_name: {{ keycloak_db_secret.env | k8s_config_resource_name }}
-{% endif %}
-{% endif %}
     spec:
       serviceAccountName: {{ hub_serviceaccount_name }}
       containers:
@@ -118,40 +104,8 @@ spec:
             - name: LOG_TASK
               value: "{{ hub_log_level_task }}"
 {% endif %}
-{% if feature_auth_required|bool and feature_auth_type == "keycloak" %}
             - name: AUTH_REQUIRED
-              value: "true"
-{% else %}
-            - name: AUTH_REQUIRED
-              value: "false"
-{% endif %}
-{% if feature_auth_required|bool and feature_auth_type == "keycloak" %}
-            - name: KEYCLOAK_REALM
-              value: "{{ keycloak_sso_realm }}"
-            - name: KEYCLOAK_CLIENT_ID
-              value: "{{ keycloak_sso_client_id }}"
-{% if app_profile == 'mta' %}
-            - name: KEYCLOAK_HOST
-              value: "{{ rhbk_url }}"
-{% else %}
-            - name: KEYCLOAK_HOST
-              value: "{{ keycloak_sso_url }}"
-{% endif %}
-            - name: KEYCLOAK_ADMIN_USER
-              valueFrom:
-                secretKeyRef:
-                  name: "{{ keycloak_sso_secret_name }}"
-                  key: username
-            - name: KEYCLOAK_ADMIN_PASS
-              valueFrom:
-                secretKeyRef:
-                  name: "{{ keycloak_sso_secret_name }}"
-                  key: password
-            - name: KEYCLOAK_REQ_PASS_UPDATE
-              value: "{{ keycloak_sso_req_passwd_update|lower }}"
-            - name: KEYCLOAK_AUDIENCE
-              value: "{{ keycloak_api_audience }}"
-{% endif %}
+              value: "{{ feature_auth_required | string | lower }}"
             - name: TASK_SA
               value: "{{ hub_task_sa }}"
 {% if hub_task_reap_created is defined %}
@@ -173,6 +127,15 @@ spec:
 {% if hub_task_retries is defined %}
             - name: TASK_RETRIES
               value: "{{ hub_task_retries }}"
+{% endif %}
+            - name: APIKEY_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ hub_secret_name }}
+                  key: apikey-secret
+{% if kai_llm_proxy_enabled|bool %}
+            - name: LLM_PROXY_URL
+              value: "{{ kai_llm_proxy_internal_url }}"
 {% endif %}
             - name: RWX_SUPPORTED
               value: "{{ rwx_supported | string | lower }}"
