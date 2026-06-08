@@ -89,7 +89,7 @@ data:
     registered_resources:
 {% if kai_llm_proxy_model_id %}
       models:
-      - model_id: proxied-model
+      - model_id: {{ kai_llm_proxy_provider_id }}/{{ kai_llm_proxy_model_id }}
         provider_id: {{ kai_llm_proxy_provider_id }}
         model_type: llm
         provider_model_id: {{ kai_llm_proxy_model_id }}
