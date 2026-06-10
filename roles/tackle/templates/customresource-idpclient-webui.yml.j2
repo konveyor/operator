@@ -1,0 +1,28 @@
+---
+
+# web-ui client
+apiVersion: tackle.konveyor.io/v1alpha1
+kind: IdpClient
+metadata:
+  name: web-ui
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/name: web-ui
+    app.kubernetes.io/component: idp-client
+    app.kubernetes.io/part-of: {{ app_name }}
+spec:
+  id: 1
+  clientId: web-ui
+  applicationType: web
+  grants:
+  - urn:ietf:params:oauth:grant-type:jwt-bearer
+  - authorization_code
+  - refresh_token
+  redirectURIs:
+  - "${issuer.proto}://${issuer.host}{,*}/**"
+  scopes:
+  - offline_access
+  - openid
+  - profile
+  - email
+

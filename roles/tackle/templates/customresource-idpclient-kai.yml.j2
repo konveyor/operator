@@ -1,0 +1,28 @@
+---
+
+# kai-ide client (public client - no secret needed)
+apiVersion: tackle.konveyor.io/v1alpha1
+kind: IdpClient
+metadata:
+  name: kai-ide
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/name: kai-ide
+    app.kubernetes.io/component: idp-client
+    app.kubernetes.io/part-of: {{ app_name }}
+spec:
+  id: 3
+  clientId: kai-ide
+  applicationType: native
+  grants:
+  - urn:ietf:params:oauth:grant-type:jwt-bearer
+  - authorization_code
+  - refresh_token
+  redirectURIs:
+  - vscode://konveyor.konveyor-core/auth
+  - http://127.0.0.1/callback
+  scopes:
+  - offline_access
+  - openid
+  - profile
+  - email

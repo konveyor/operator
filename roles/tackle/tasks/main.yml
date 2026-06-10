@@ -36,12 +36,14 @@
     openshift_cluster: true
   when: "'route.openshift.io' in api_groups"
 
-- name: "Create IdpClient CRs (web-ui, kantra, kai-ide)"
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'customresource-idpclients.yml.j2') }}"
-  register: idpclients_result
-  failed_when: idpclients_result.failed
+- name: "Create operator-managed IdpClients"
+  include_tasks: idpclient-create.yml
+  loop:
+    - { name: web-ui, template: customresource-idpclient-webui.yml.j2 }
+    - { name: kantra, template: customresource-idpclient-kantra.yml.j2 }
+    - { name: kai-ide, template: customresource-idpclient-kai.yml.j2 }
+  loop_control:
+    loop_var: idpclient
 
 - name: "Detect existing Keycloak deployment"
   block:
