@@ -90,7 +90,7 @@
   when:
     - feature_auth_required|bool
     - keycloak_detected|bool
-    - (idp_status.resources | length) == 0 or (idp_status.resources[0].metadata.labels['app.kubernetes.io/part-of'] | default('') == app_name)
+    - (idp_status.resources | length) == 0 or ((idp_status.resources[0].metadata.labels | default({})).get('app.kubernetes.io/part-of', '') == app_name)
   k8s:
     state: present
     definition: "{{ lookup('template', 'customresource-identityprovider.yml.j2') }}"

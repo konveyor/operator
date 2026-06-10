@@ -8,7 +8,7 @@
   register: existing_idpclient
 
 - name: "Create/update {{ idpclient.name }} IdpClient if operator-managed"
-  when: (existing_idpclient.resources | length) == 0 or (existing_idpclient.resources[0].metadata.labels['app.kubernetes.io/part-of'] | default('') == app_name)
+  when: (existing_idpclient.resources | length) == 0 or ((existing_idpclient.resources[0].metadata.labels | default({})).get('app.kubernetes.io/part-of', '') == app_name)
   k8s:
     state: present
     definition: "{{ lookup('template', idpclient.template) }}"
