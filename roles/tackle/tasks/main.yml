@@ -36,12 +36,14 @@
     openshift_cluster: true
   when: "'route.openshift.io' in api_groups"
 
-- name: "Create IdpClient CRs (web-ui, kantra, kai-ide)"
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'customresource-idpclients.yml.j2') }}"
-  register: idpclients_result
-  failed_when: idpclients_result.failed
+- name: "Create operator-managed IdpClients"
+  include_tasks: idpclient-create.yml
+  loop:
+    - { name: web-ui, template: customresource-idpclient-webui.yml.j2 }
+    - { name: kantra, template: customresource-idpclient-kantra.yml.j2 }
+    - { name: kai-ide, template: customresource-idpclient-kai.yml.j2 }
+  loop_control:
+    loop_var: idpclient
 
 - name: "Detect existing Keycloak deployment"
   block:
@@ -73,10 +75,22 @@
         keycloak_service_url: "{{ 'https://' + app_name + '-rhbk-service.' + app_namespace + '.svc:8443' if keycloak_is_rhbk else 'http://' + app_name + '-keycloak-sso.' + app_namespace + '.svc:8080' }}"
       when: keycloak_detected|bool
 
+- name: "Check for existing IdentityProvider"
+  when:
+    - feature_auth_required|bool
+    - keycloak_detected|bool
+  k8s_info:
+    api_version: tackle.konveyor.io/v1alpha1
+    kind: IdentityProvider
+    name: keycloak
+    namespace: "{{ app_namespace }}"
+  register: idp_status
+
 - name: "Create IdentityProvider CR for detected Keycloak"
   when:
     - feature_auth_required|bool
     - keycloak_detected|bool
+    - (idp_status.resources | length) == 0 or ((idp_status.resources[0].metadata.labels | default({})).get('app.kubernetes.io/part-of', '') == app_name)
   k8s:
     state: present
     definition: "{{ lookup('template', 'customresource-identityprovider.yml.j2') }}"
@@ -159,6 +173,30 @@
       k8s:
         state: present
         definition: "{{ lookup('template', 'secret-hub.yml.j2') }}"
+
+- name: "Add apikey-secret to existing Hub secret if missing (upgrade scenario)"
+  when: (hub_secret_status.resources | length) > 0
+  block:
+    - name: "Check if apikey-secret exists in Hub secret"
+      set_fact:
+        apikey_exists: "{{ 'apikey-secret' in hub_secret_status.resources[0].data }}"
+
+    - name: "Generate and add apikey-secret to existing Hub secret"
+      when: not apikey_exists
+      block:
+        - name: "Generate Hub API key secret for upgrade"
+          set_fact:
+            hub_apikey_secret_upgrade: "{{ lookup('password', '/dev/null chars=ascii_lowercase,ascii_uppercase,digits length=32') }}"
+
+        - name: "Add apikey-secret key to existing Hub secret"
+          kubernetes.core.k8s:
+            state: patched
+            kind: Secret
+            name: "{{ hub_secret_name }}"
+            namespace: "{{ app_namespace }}"
+            definition:
+              data:
+                apikey-secret: "{{ hub_apikey_secret_upgrade | b64encode }}"
 
 # Create all the neccessary CR's before the hub deployment is created
 - name: "Remove Admin Addon CR"

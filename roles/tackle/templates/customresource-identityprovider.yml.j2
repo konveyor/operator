@@ -10,11 +10,11 @@ metadata:
     app.kubernetes.io/part-of: {{ app_name }}
 spec:
   name: keycloak
-  issuer: {{ keycloak_service_url }}/auth/realms/{{ app_name }}
+  issuer: ${issuer.proto}://${issuer.host}/auth/realms/{{ app_name }}
   tls:
     insecure: true
   clientId: {{ app_name }}-ui
-  redirectURI: {{ hub_url }}/oidc/idp/callback
+  redirectURI: ${issuer.proto}://${issuer.host}/oidc/idp/callback
   scopes:
   - openid
   - profile

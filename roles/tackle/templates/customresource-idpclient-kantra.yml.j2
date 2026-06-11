@@ -1,0 +1,26 @@
+---
+
+# kantra client (public client - no secret needed)
+apiVersion: tackle.konveyor.io/v1alpha1
+kind: IdpClient
+metadata:
+  name: kantra
+  namespace: {{ app_namespace }}
+  labels:
+    app.kubernetes.io/name: kantra
+    app.kubernetes.io/component: idp-client
+    app.kubernetes.io/part-of: {{ app_name }}
+spec:
+  id: 2
+  clientId: kantra
+  applicationType: native
+  grants:
+  - urn:ietf:params:oauth:grant-type:device_code
+  - authorization_code
+  - refresh_token
+  scopes:
+  - offline_access
+  - openid
+  - profile
+  - email
+

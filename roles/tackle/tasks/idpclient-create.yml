@@ -1,0 +1,16 @@
+---
+- name: "Check for existing IdpClient: {{ idpclient.name }}"
+  k8s_info:
+    api_version: tackle.konveyor.io/v1alpha1
+    kind: IdpClient
+    name: "{{ idpclient.name }}"
+    namespace: "{{ app_namespace }}"
+  register: existing_idpclient
+
+- name: "Create/update IdpClient if operator-managed: {{ idpclient.name }}"
+  when: >-
+    (existing_idpclient.resources | length) == 0 or
+    ((existing_idpclient.resources[0].metadata.labels | default({})).get('app.kubernetes.io/part-of', '') == app_name)
+  k8s:
+    state: present
+    definition: "{{ lookup('template', idpclient.template) }}"
