@@ -137,6 +137,8 @@ jobs:
             image: konveyor/tackle2-ui
           - repo: konveyor/tackle2-addon
             image: ''
+          - repo: konveyor/tackle2-seed
+            image: ''
           - repo: konveyor/operator
             image: konveyor/tackle2-operator
           - repo: konveyor/kantra
