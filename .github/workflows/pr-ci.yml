@@ -54,3 +54,5 @@ jobs:
     uses: konveyor/ci/.github/workflows/global-ci-bundle.yml@main
     with:
       operator_bundle: ttl.sh/konveyor-operator-bundle-${{ github.sha }}:2h
+      run_koncur_hub_tests: true
+      run_koncur_kantra_tests: true
