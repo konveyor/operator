@@ -279,8 +279,12 @@ jobs:
     uses: konveyor/ci/.github/workflows/global-ci-bundle.yml@main
     with:
       operator_bundle: quay.io/konveyor/tackle2-operator-bundle:${{ inputs.version }}
+      kantra: quay.io/konveyor/kantra:${{ inputs.version }}
       api_tests_ref: ${{ inputs.branch }}
       ui_tests_ref: ${{ inputs.branch }}
+      run_koncur_hub_tests: true
+      run_koncur_kantra_tests: true
+      koncur_ref: ${{ inputs.branch }}
 
   publish-bundle:
     name: Publish Bundle Manifest
