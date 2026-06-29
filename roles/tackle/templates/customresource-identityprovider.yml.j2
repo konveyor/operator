@@ -19,3 +19,6 @@ spec:
   - openid
   - profile
   - email
+{% if idp_primary is defined %}
+  primary: {{ idp_primary | bool }}
+{% endif %}

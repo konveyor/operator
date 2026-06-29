@@ -91,8 +91,6 @@ NAME                                                           READY   STATUS   
 c4af2f0f9eab63b6ac49c81b0e517eb37c2efe1bb2ede02e8642cd--1-ghq  0/1     Completed   0          134m
 konveyor-tackle-rm6jb                                          1/1     Running     0          134m
 tackle-hub-6b6ff674dd-c6xbr                                    1/1     Running     0          130m
-tackle-keycloak-postgresql-57f5c44bcc-r9w9s                    1/1     Running     0          131m
-tackle-keycloak-sso-c65cd79bf-6j4xr                            1/1     Running     0          130m
 tackle-operator-6b65fccb7f-q9lpf                               1/1     Running     0          133m
 tackle-ui-5f694bddcb-scbh5                                     1/1     Running     0          130m
 ```
@@ -137,17 +135,23 @@ If operator defaults need to be altered, the Tackle CR spec can be customized to
 
 Name | Default | Description
 --- | --- | ---
-feature_auth_required | true | Enable keycloak auth or false (single user/noauth)
+feature_auth_required | true | Require authentication for UI and Hub API (true) or allow unauthenticated access (false)
+idp_primary | N/A | Set to true to mark auto-discovered IdentityProvider as primary (automatically redirects users to IdP for authentication)
 feature_isolate_namespace | true | Enable namespace isolation via network policies
 feature_analysis_archiver | true | If enabled, automatically archives old analysis reports when a new one is created
 rwx_supported: | true | Whether or not RWX volumes are supported in the cluster
 hub_database_volume_size | 5Gi | Size requested for Hub database volume
 hub_bucket_volume_size | 100gi | Size requested for Hub bucket volume
-keycloak_database_data_volume_size | 1Gi | Size requested for Keycloak DB volume
 cache_data_volume_size | 100Gi | Size requested for Tackle Cache volume
 cache_storage_class | N/A | Storage class requested for Tackle Cache volume
 hub_bucket_storage_class | N/A | Storage class requested for Tackle Hub Bucket volume
 rwo_storage_class | N/A | Storage class requested for RWO database volumes
+hub_apikey_lifespan | 87600 (hours) | API key lifespan in hours (default: 10 years)
+hub_auth_cache_lifespan | 5 (minutes) | Auth cache lifespan in minutes
+hub_ldap_auth_lifespan | 5 (minutes) | LDAP auth lifespan in minutes
+hub_oidc_token_lifespan | 300 (seconds) | OIDC token lifespan in seconds (default: 5 minutes)
+hub_oidc_refresh_token_lifespan | 172800 (seconds) | OIDC refresh token lifespan in seconds (default: 2 days)
+hub_oidc_key_rotation | 90 (days) | OIDC key rotation period in days
 
 ## Tackle CR Customize Settings
 
@@ -155,11 +159,19 @@ Custom settings can be applied by editing the `Tackle` CR.
 
 `oc edit tackle -n <your-tackle-namespace>`
 
-## Keycloak Auth
-If `feature_auth_required` is enabled keycloak will be installed and a random password will be generated.
+## Authentication
 
-To view these credentials:
+When `feature_auth_required` is set to `true` (the default), both the UI and Hub API require authentication. The operator will automatically detect and configure an IdentityProvider CR for any existing Keycloak (SSO) or Red Hat Build of Keycloak (RHBK) deployment found in the namespace.
+
+If you have a Keycloak/RHBK deployment and need to access its admin credentials:
 `oc -n konveyor-tackle extract secret/tackle-keycloak-sso --to=-`
+
+To configure the auto-discovered IdentityProvider as the primary authentication method (automatically redirect users to the IdP):
+```yaml
+spec:
+  feature_auth_required: true
+  idp_primary: true
+```
 
 ## Enable KAI (Solution Server)
 
@@ -260,7 +272,7 @@ The following table shows popular provider/model combinations (not exhaustive):
 
 ## Konveyor Storage Requirements
 
-Konveyor requires a total of 4 persistent volumes (PVs): 2 RWO and 2 RWX. When
+Konveyor requires a total of 3 persistent volumes (PVs): 1 RWO and 2 RWX. When
 `kai_solution_server_enabled: true` is enabled, an additional RWO volume is required
 for the Kai database.
 
@@ -268,7 +280,6 @@ Name | Default Size | Access Mode | Description
 --- | --- | --- | ---
 hub database | 5Gi | RWO | Hub DB
 hub bucket | 100Gi | RWX | Hub file storage
-keycloak postgresql | 1Gi | RWO | Keycloak backend DB
 cache | 100Gi | RWX | cache repository
 kai database | 5Gi | RWO | Kai DB (when kai_solution_server_enabled: true)
 
