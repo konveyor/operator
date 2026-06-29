@@ -138,6 +138,7 @@ If operator defaults need to be altered, the Tackle CR spec can be customized to
 Name | Default | Description
 --- | --- | ---
 feature_auth_required | true | Enable keycloak auth or false (single user/noauth)
+idp_primary | N/A | Set to true to mark auto-discovered IdentityProvider as primary (automatically redirects users to IdP for authentication)
 feature_isolate_namespace | true | Enable namespace isolation via network policies
 feature_analysis_archiver | true | If enabled, automatically archives old analysis reports when a new one is created
 rwx_supported: | true | Whether or not RWX volumes are supported in the cluster
@@ -148,6 +149,12 @@ cache_data_volume_size | 100Gi | Size requested for Tackle Cache volume
 cache_storage_class | N/A | Storage class requested for Tackle Cache volume
 hub_bucket_storage_class | N/A | Storage class requested for Tackle Hub Bucket volume
 rwo_storage_class | N/A | Storage class requested for RWO database volumes
+hub_apikey_lifespan | 87600 (hours) | API key lifespan in hours (default: 10 years)
+hub_auth_cache_lifespan | 5 (minutes) | Auth cache lifespan in minutes
+hub_ldap_auth_lifespan | 5 (minutes) | LDAP auth lifespan in minutes
+hub_oidc_token_lifespan | 300 (seconds) | OIDC token lifespan in seconds (default: 5 minutes)
+hub_oidc_refresh_token_lifespan | 172800 (seconds) | OIDC refresh token lifespan in seconds (default: 2 days)
+hub_oidc_key_rotation | 90 (days) | OIDC key rotation period in days
 
 ## Tackle CR Customize Settings
 

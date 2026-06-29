@@ -133,6 +133,30 @@ spec:
                 secretKeyRef:
                   name: {{ hub_secret_name }}
                   key: apikey-secret
+{% if hub_apikey_lifespan is defined %}
+            - name: APIKEY_LIFESPAN
+              value: "{{ hub_apikey_lifespan }}"
+{% endif %}
+{% if hub_auth_cache_lifespan is defined %}
+            - name: AUTH_CACHE_LIFESPAN
+              value: "{{ hub_auth_cache_lifespan }}"
+{% endif %}
+{% if hub_ldap_auth_lifespan is defined %}
+            - name: LDAP_AUTH_LIFESPAN
+              value: "{{ hub_ldap_auth_lifespan }}"
+{% endif %}
+{% if hub_oidc_token_lifespan is defined %}
+            - name: OIDC_TOKEN_LIFESPAN
+              value: "{{ hub_oidc_token_lifespan }}"
+{% endif %}
+{% if hub_oidc_refresh_token_lifespan is defined %}
+            - name: OIDC_REFRESH_TOKEN_LIFESPAN
+              value: "{{ hub_oidc_refresh_token_lifespan }}"
+{% endif %}
+{% if hub_oidc_key_rotation is defined %}
+            - name: OIDC_KEY_ROTATION
+              value: "{{ hub_oidc_key_rotation }}"
+{% endif %}
 {% if kai_llm_proxy_enabled|bool %}
             - name: LLM_PROXY_URL
               value: "{{ kai_llm_proxy_internal_url }}"
