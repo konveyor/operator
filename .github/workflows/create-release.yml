@@ -284,6 +284,7 @@ jobs:
       ui_tests_ref: ${{ inputs.branch }}
       run_koncur_hub_tests: true
       run_koncur_kantra_tests: true
+      run_windows_kantra_tests: false
       koncur_ref: ${{ inputs.branch }}
 
   publish-bundle:
