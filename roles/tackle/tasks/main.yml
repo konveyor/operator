@@ -59,7 +59,7 @@
       k8s_info:
         api_version: apps/v1
         kind: StatefulSet
-        name: "keycloak"
+        name: "mta-rhbk"
         namespace: "{{ app_namespace }}"
       register: rhbk_statefulset
 
