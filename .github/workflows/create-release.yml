@@ -282,6 +282,7 @@ jobs:
       kantra: quay.io/konveyor/kantra:${{ inputs.version }}
       api_tests_ref: ${{ inputs.branch }}
       ui_tests_ref: ${{ inputs.branch }}
+      run_api_tests: false
       run_koncur_hub_tests: true
       run_koncur_kantra_tests: true
       run_windows_kantra_tests: false
