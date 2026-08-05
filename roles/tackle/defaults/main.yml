@@ -18,6 +18,9 @@ feature_discovery: true
 enable_chown_init_container: true
 disable_maven_search: false
 
+# Auth
+idp_primary: "{{ false if app_profile == 'konveyor' else true }}"
+
 # Environment
 openshift_cluster: false
 image_pull_policy: "IfNotPresent"
