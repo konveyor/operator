@@ -84,9 +84,9 @@ spec:
               path: /
               port: {{ ui_port }}
               scheme: {{ ui_proto|upper }}
-            initialDelaySeconds: 10
-            timeoutSeconds: 1
-            periodSeconds: 5
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            periodSeconds: 10
             successThreshold: 1
             failureThreshold: 3
           readinessProbe:
@@ -94,8 +94,8 @@ spec:
               path: /
               port: {{ ui_port }}
               scheme: {{ ui_proto|upper }}
-            initialDelaySeconds: 10
-            timeoutSeconds: 1
+            initialDelaySeconds: 5
+            timeoutSeconds: 3
             periodSeconds: 5
             successThreshold: 1
             failureThreshold: 3
