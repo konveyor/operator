@@ -80,14 +80,13 @@ spec:
               cpu: {{ ui_container_requests_cpu }}
               memory: {{ ui_container_requests_memory }}
           livenessProbe:
-            exec:
-              command:
-                - /bin/sh
-                - '-c'
-                - 'ps -A | grep node'
-            initialDelaySeconds: 10
-            timeoutSeconds: 1
-            periodSeconds: 5
+            httpGet:
+              path: /
+              port: {{ ui_port }}
+              scheme: {{ ui_proto|upper }}
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            periodSeconds: 10
             successThreshold: 1
             failureThreshold: 3
           readinessProbe:
@@ -95,8 +94,8 @@ spec:
               path: /
               port: {{ ui_port }}
               scheme: {{ ui_proto|upper }}
-            initialDelaySeconds: 10
-            timeoutSeconds: 1
+            initialDelaySeconds: 5
+            timeoutSeconds: 3
             periodSeconds: 5
             successThreshold: 1
             failureThreshold: 3
