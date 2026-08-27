@@ -28,3 +28,10 @@ images:
   kantra: quay.io/konveyor/kantra:latest
   kai: quay.io/konveyor/kai-solution-server:latest
   lightspeed_stack: quay.io/lightspeed-core/lightspeed-stack:latest
+  agentic_controller: quay.io/konveyor/agentic-controller:latest
+  agent_base: quay.io/konveyor/agent-base:latest
+  agent_go: quay.io/konveyor/agent-go:latest
+  agent_java: quay.io/konveyor/agent-java:latest
+  agent_csharp: quay.io/konveyor/agent-csharp:latest
+  agent_nodejs: quay.io/konveyor/agent-nodejs:latest
+  agent_skills: quay.io/konveyor/skills:latest

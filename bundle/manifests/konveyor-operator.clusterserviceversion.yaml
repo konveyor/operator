@@ -148,7 +148,7 @@ metadata:
     categories: Modernization & Migration
     certified: "false"
     containerImage: quay.io/konveyor/tackle2-operator:latest
-    createdAt: "2026-06-03T16:15:05Z"
+    createdAt: "2026-08-27T17:14:51Z"
     description: Konveyor is an open-source application modernization platform that
       helps organizations safely and predictably modernize applications to Kubernetes
       at scale.
@@ -191,6 +191,43 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
+    - description: AgentRun is a request to execute a single Agent with specific selections.
+      displayName: Agent Run
+      kind: AgentRun
+      name: agentruns.konveyor.io
+      version: v1alpha1
+    - description: Agent is a capability definition declaring what is available for
+        execution.
+      displayName: Agent
+      kind: Agent
+      name: agents.konveyor.io
+      version: v1alpha1
+    - description: AgentWorkflowRun is a request to execute an AgentWorkflow.
+      displayName: Agent Workflow Run
+      kind: AgentWorkflowRun
+      name: agentworkflowruns.konveyor.io
+      version: v1alpha1
+    - description: AgentWorkflow is a reusable workflow combining a high-level guide
+        with an ordered sequence of stages.
+      displayName: Agent Workflow
+      kind: AgentWorkflow
+      name: agentworkflows.konveyor.io
+      version: v1alpha1
+    - description: Gateway is an LLM service endpoint serving exactly one provider/model.
+      displayName: Gateway
+      kind: Gateway
+      name: gateways.konveyor.io
+      version: v1alpha1
+    - description: SkillCard is an individual agent capability or behavioral constraint.
+      displayName: Skill Card
+      kind: SkillCard
+      name: skillcards.konveyor.io
+      version: v1alpha1
+    - description: SkillCollection is a group of skills.
+      displayName: Skill Collection
+      kind: SkillCollection
+      name: skillcollections.konveyor.io
+      version: v1alpha1
     - description: Tackle Addon
       displayName: Addon
       kind: Addon
@@ -273,6 +310,131 @@ spec:
       clusterPermissions:
       - rules:
         - apiGroups:
+          - ""
+          resources:
+          - configmaps
+          verbs:
+          - create
+          - get
+          - list
+          - update
+          - watch
+        - apiGroups:
+          - ""
+          resources:
+          - events
+          verbs:
+          - create
+          - patch
+        - apiGroups:
+          - ""
+          resources:
+          - pods
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - ""
+          resources:
+          - secrets
+          verbs:
+          - create
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - ""
+          resources:
+          - serviceaccounts
+          verbs:
+          - create
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - agents.x-k8s.io
+          resources:
+          - sandboxes
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - batch
+          resources:
+          - jobs
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - konveyor.io
+          resources:
+          - agentruns
+          - agents
+          - agentworkflowruns
+          - agentworkflows
+          - gateways
+          - skillcards
+          - skillcollections
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - konveyor.io
+          resources:
+          - agentruns/finalizers
+          - agents/finalizers
+          - agentworkflowruns/finalizers
+          - agentworkflows/finalizers
+          - gateways/finalizers
+          - skillcards/finalizers
+          - skillcollections/finalizers
+          verbs:
+          - update
+        - apiGroups:
+          - konveyor.io
+          resources:
+          - agentruns/status
+          - agents/status
+          - agentworkflowruns/status
+          - agentworkflows/status
+          - gateways/status
+          - skillcards/status
+          - skillcollections/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - rbac.authorization.k8s.io
+          resources:
+          - rolebindings
+          - roles
+          verbs:
+          - create
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        serviceAccountName: agentic-controller
+      - rules:
+        - apiGroups:
           - operator.openshift.io
           resources:
           - dnses
@@ -312,6 +474,14 @@ spec:
           - list
           - watch
           - delete
+        - apiGroups:
+          - apiextensions.k8s.io
+          resources:
+          - customresourcedefinitions
+          verbs:
+          - get
+          - list
+          - watch
         serviceAccountName: tackle-operator
       deployments:
       - name: tackle-operator
@@ -380,6 +550,20 @@ spec:
                   value: quay.io/konveyor/kai-solution-server:latest
                 - name: RELATED_IMAGE_LIGHTSPEED_STACK
                   value: quay.io/lightspeed-core/lightspeed-stack:latest
+                - name: RELATED_IMAGE_AGENTIC_CONTROLLER
+                  value: quay.io/konveyor/agentic-controller:latest
+                - name: RELATED_IMAGE_AGENT_BASE
+                  value: quay.io/konveyor/agent-base:latest
+                - name: RELATED_IMAGE_AGENT_GO
+                  value: quay.io/konveyor/agent-go:latest
+                - name: RELATED_IMAGE_AGENT_JAVA
+                  value: quay.io/konveyor/agent-java:latest
+                - name: RELATED_IMAGE_AGENT_CSHARP
+                  value: quay.io/konveyor/agent-csharp:latest
+                - name: RELATED_IMAGE_AGENT_NODEJS
+                  value: quay.io/konveyor/agent-nodejs:latest
+                - name: RELATED_IMAGE_AGENT_SKILLS
+                  value: quay.io/konveyor/skills:latest
                 image: quay.io/konveyor/tackle2-operator:latest
                 imagePullPolicy: Always
                 livenessProbe:
@@ -408,6 +592,39 @@ spec:
                 runAsNonRoot: true
               serviceAccountName: tackle-operator
       permissions:
+      - rules:
+        - apiGroups:
+          - ""
+          resources:
+          - configmaps
+          verbs:
+          - get
+          - list
+          - watch
+          - create
+          - update
+          - patch
+          - delete
+        - apiGroups:
+          - coordination.k8s.io
+          resources:
+          - leases
+          verbs:
+          - get
+          - list
+          - watch
+          - create
+          - update
+          - patch
+          - delete
+        - apiGroups:
+          - ""
+          resources:
+          - events
+          verbs:
+          - create
+          - patch
+        serviceAccountName: agentic-controller
       - rules:
         - apiGroups:
           - ""
@@ -590,4 +807,18 @@ spec:
     name: kai
   - image: quay.io/lightspeed-core/lightspeed-stack:latest
     name: lightspeed-stack
+  - image: quay.io/konveyor/agentic-controller:latest
+    name: agentic-controller
+  - image: quay.io/konveyor/agent-base:latest
+    name: agent-base
+  - image: quay.io/konveyor/agent-go:latest
+    name: agent-go
+  - image: quay.io/konveyor/agent-java:latest
+    name: agent-java
+  - image: quay.io/konveyor/agent-csharp:latest
+    name: agent-csharp
+  - image: quay.io/konveyor/agent-nodejs:latest
+    name: agent-nodejs
+  - image: quay.io/konveyor/skills:latest
+    name: agent-skills
   version: 99.0.0

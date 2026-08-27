@@ -48,6 +48,43 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
+    - description: Agent is a capability definition declaring what is available for
+        execution.
+      displayName: Agent
+      kind: Agent
+      name: agents.konveyor.io
+      version: v1alpha1
+    - description: AgentRun is a request to execute a single Agent with specific selections.
+      displayName: Agent Run
+      kind: AgentRun
+      name: agentruns.konveyor.io
+      version: v1alpha1
+    - description: AgentWorkflow is a reusable workflow combining a high-level guide
+        with an ordered sequence of stages.
+      displayName: Agent Workflow
+      kind: AgentWorkflow
+      name: agentworkflows.konveyor.io
+      version: v1alpha1
+    - description: AgentWorkflowRun is a request to execute an AgentWorkflow.
+      displayName: Agent Workflow Run
+      kind: AgentWorkflowRun
+      name: agentworkflowruns.konveyor.io
+      version: v1alpha1
+    - description: Gateway is an LLM service endpoint serving exactly one provider/model.
+      displayName: Gateway
+      kind: Gateway
+      name: gateways.konveyor.io
+      version: v1alpha1
+    - description: SkillCard is an individual agent capability or behavioral constraint.
+      displayName: Skill Card
+      kind: SkillCard
+      name: skillcards.konveyor.io
+      version: v1alpha1
+    - description: SkillCollection is a group of skills.
+      displayName: Skill Collection
+      kind: SkillCollection
+      name: skillcollections.konveyor.io
+      version: v1alpha1
     - description: Tackle Addon
       displayName: Addon
       kind: Addon
