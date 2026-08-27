@@ -1,0 +1,77 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ agentic_component_name }}
+  namespace: "{{ app_namespace }}"
+  labels:
+    app.kubernetes.io/name: {{ agentic_component_name }}
+    app.kubernetes.io/component: {{ agentic_component_name }}
+    app.kubernetes.io/part-of: {{ app_name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ agentic_component_name }}
+      app.kubernetes.io/component: {{ agentic_component_name }}
+      app.kubernetes.io/part-of: {{ app_name }}
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: manager
+      labels:
+        app.kubernetes.io/name: {{ agentic_component_name }}
+        app.kubernetes.io/component: {{ agentic_component_name }}
+        app.kubernetes.io/part-of: {{ app_name }}
+    spec:
+      serviceAccountName: {{ agentic_component_name }}
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: manager
+          image: "{{ agentic_fqin }}"
+          command:
+            - /manager
+          args:
+            - --leader-elect
+            - --health-probe-bind-address=:8081
+            - --metrics-bind-address=0
+          env:
+            # The skill loader and the enumeration Job run this same image. The
+            # controller cannot read its own image (it deliberately lacks
+            # `pods get`), so SKILL_LOADER_IMAGE must be set explicitly and kept
+            # equal to the image above (kustomize kept them in sync upstream).
+            - name: SKILL_LOADER_IMAGE
+              value: "{{ agentic_fqin }}"
+          ports:
+            - containerPort: 8081
+              name: health
+              protocol: TCP
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - "ALL"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            limits:
+              cpu: 500m
+              memory: 128Mi
+            requests:
+              cpu: 10m
+              memory: 64Mi
+      terminationGracePeriodSeconds: 10
