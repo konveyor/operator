@@ -2,49 +2,53 @@
 # Updates the AgenticControllerReady condition on the Tackle CR.
 # Only runs when invoked through the operator (ansible_operator_meta is defined).
 #
-# When the feature is disabled we post nothing: a feature the admin never
-# enabled should not surface a (red) condition. When enabled there are two
-# outcomes:
-#   - Agent Sandbox CRD missing  -> False / AgentSandboxMissing
-#   - Agent Sandbox CRD present   -> readiness of the controller Deployment
+# Three outcomes:
+#   - feature disabled             -> False / Disabled
+#   - enabled, Sandbox CRD absent  -> False / AgentSandboxMissing
+#   - enabled, Sandbox CRD present -> readiness of the controller Deployment
+#
+# The condition is posted in all cases (including disabled) so it never goes
+# stale: disabling the feature removes the Deployment and must flip the
+# condition away from a previously-posted True.
 
-- name: Manage AgenticControllerReady condition
-  when: agentic_enabled | bool
-  block:
-    - name: Check agentic controller deployment status
-      k8s_info:
-        api_version: apps/v1
-        kind: Deployment
-        name: "{{ agentic_component_name }}"
-        namespace: "{{ app_namespace }}"
-      register: agentic_deployment
-      when: agentic_sandbox_crd_present | bool
+- name: Check agentic controller deployment status
+  k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    name: "{{ agentic_component_name }}"
+    namespace: "{{ app_namespace }}"
+  register: agentic_deployment
+  when: agentic_enabled | bool and agentic_sandbox_crd_present | bool
 
-    - name: Set agentic controller ready status
-      set_fact:
-        agentic_deployment_ready: "{{ agentic_sandbox_crd_present | bool and
-                                      (agentic_deployment.resources | default([]) | length) > 0 and
-                                      (agentic_deployment.resources[0].status.readyReplicas | default(0)) > 0 and
-                                      (agentic_deployment.resources[0].status.readyReplicas | default(0)) == (agentic_deployment.resources[0].status.replicas | default(1)) and
-                                      (agentic_deployment.resources[0].status.updatedReplicas | default(0)) == (agentic_deployment.resources[0].status.replicas | default(1)) }}"
+- name: Set agentic controller ready status
+  set_fact:
+    agentic_deployment_ready: "{{ agentic_enabled | bool and agentic_sandbox_crd_present | bool and
+                                  (agentic_deployment.resources | default([]) | length) > 0 and
+                                  (agentic_deployment.resources[0].status.readyReplicas | default(0)) > 0 and
+                                  (agentic_deployment.resources[0].status.readyReplicas | default(0)) == (agentic_deployment.resources[0].status.replicas | default(1)) and
+                                  (agentic_deployment.resources[0].status.updatedReplicas | default(0)) == (agentic_deployment.resources[0].status.replicas | default(1)) }}"
 
-    - name: Update AgenticControllerReady condition
-      operator_sdk.util.k8s_status:
-        api_version: tackle.konveyor.io/v1alpha1
-        kind: Tackle
-        name: "{{ ansible_operator_meta.name }}"
-        namespace: "{{ ansible_operator_meta.namespace }}"
-        conditions:
-          - type: AgenticControllerReady
-            status: >-
-              {{ 'False' if not agentic_sandbox_crd_present | bool else
-                 ('True' if agentic_deployment_ready else 'False') }}
-            reason: >-
-              {{ 'AgentSandboxMissing' if not agentic_sandbox_crd_present | bool else
-                 ('DeploymentReady' if agentic_deployment_ready else 'DeploymentNotReady') }}
-            message: >-
-              {{ 'The Agent Sandbox CRD (sandboxes.agents.x-k8s.io) is not installed. Install Agent Sandbox before enabling the agentic controller.'
-                 if not agentic_sandbox_crd_present | bool else
-                 ('Agentic controller is running and ready' if agentic_deployment_ready else
-                  'Agentic controller deployment is not ready. Check pod logs for details.') }}
-            lastTransitionTime: "{{ now(fmt='%Y-%m-%dT%H:%M:%SZ') }}"
+- name: Update AgenticControllerReady condition
+  operator_sdk.util.k8s_status:
+    api_version: tackle.konveyor.io/v1alpha1
+    kind: Tackle
+    name: "{{ ansible_operator_meta.name }}"
+    namespace: "{{ ansible_operator_meta.namespace }}"
+    conditions:
+      - type: AgenticControllerReady
+        status: >-
+          {{ 'False' if not agentic_enabled | bool else
+             ('False' if not agentic_sandbox_crd_present | bool else
+              ('True' if agentic_deployment_ready else 'False')) }}
+        reason: >-
+          {{ 'Disabled' if not agentic_enabled | bool else
+             ('AgentSandboxMissing' if not agentic_sandbox_crd_present | bool else
+              ('DeploymentReady' if agentic_deployment_ready else 'DeploymentNotReady')) }}
+        message: >-
+          {{ 'The agentic controller is disabled (spec.agentic_enabled is false).'
+             if not agentic_enabled | bool else
+             ('The Agent Sandbox CRD (sandboxes.agents.x-k8s.io) is not installed. Install Agent Sandbox before enabling the agentic controller.'
+              if not agentic_sandbox_crd_present | bool else
+              ('Agentic controller is running and ready' if agentic_deployment_ready else
+               'Agentic controller deployment is not ready. Check pod logs for details.')) }}
+        lastTransitionTime: "{{ now(fmt='%Y-%m-%dT%H:%M:%SZ') }}"
