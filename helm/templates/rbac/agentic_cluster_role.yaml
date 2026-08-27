@@ -1,0 +1,133 @@
+---
+# Synced from konveyor/agentic-controller config/rbac/role.yaml (manager-role).
+# metadata.name is renamed to avoid colliding with the operator's own
+# manager-role. Rules are otherwise verbatim; do not hand-edit -- update by
+# re-syncing from agentic-controller.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: agentic-controller-manager-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - create
+  - get
+  - list
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - serviceaccounts
+  verbs:
+  - create
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - agents.x-k8s.io
+  resources:
+  - sandboxes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - watch
+- apiGroups:
+  - konveyor.io
+  resources:
+  - agentruns
+  - agents
+  - agentworkflowruns
+  - agentworkflows
+  - gateways
+  - skillcards
+  - skillcollections
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - konveyor.io
+  resources:
+  - agentruns/finalizers
+  - agents/finalizers
+  - agentworkflowruns/finalizers
+  - agentworkflows/finalizers
+  - gateways/finalizers
+  - skillcards/finalizers
+  - skillcollections/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - konveyor.io
+  resources:
+  - agentruns/status
+  - agents/status
+  - agentworkflowruns/status
+  - agentworkflows/status
+  - gateways/status
+  - skillcards/status
+  - skillcollections/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - rolebindings
+  - roles
+  verbs:
+  - create
+  - get
+  - list
+  - patch
+  - update
+  - watch
