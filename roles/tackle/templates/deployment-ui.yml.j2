@@ -46,6 +46,10 @@ spec:
               value: "{{ hub_url }}"
             - name: AUTH_REQUIRED
               value: "{{ feature_auth_required | string | lower }}"
+            - name: AGENTIC_ENABLED
+              value: "{{ agentic_enabled | string | lower }}"
+            - name: AGENTIC_STEER_ENABLED
+              value: "{{ agentic_steer_enabled | string | lower }}"
             - name: OIDC_ISSUER
               value: "{{ hub_url }}/oidc"
             - name: OIDC_CLIENT_ID

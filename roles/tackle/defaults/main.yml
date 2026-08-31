@@ -311,6 +311,12 @@ kai_llm_proxy_api_key_env: "{{ kai_llm_proxy_api_key_env_map[kai_llm_provider] |
 # (sandboxes.agents.x-k8s.io) to be installed in the cluster; when absent the
 # controller is not deployed and AgenticControllerReady is posted as False.
 agentic_enabled: false
+# Surfaces the agentic console in the UI (AGENTIC_ENABLED). Follows
+# agentic_enabled so a single switch lights up the controller and the console.
+# AGENTIC_STEER_ENABLED is a separate, riskier opt-in (inject instructions into
+# and stop a live run) that stays off by default even when the console is on,
+# mirroring the UI's own default.
+agentic_steer_enabled: false
 agentic_component_name: "agentic-controller"
 agentic_fqin: "{{ lookup('env', 'RELATED_IMAGE_AGENTIC_CONTROLLER') }}"
 # agent runtime + skills images are opaque CR data (Agent.spec.image /
