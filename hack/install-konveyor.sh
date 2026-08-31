@@ -172,6 +172,14 @@ debug() {
 trap 'debug' ERR
 
 # Function to deploy bundle - waits for OLM operators as precondition
+# Discover the namespace where OLM is running. Self-installed OLM (kind/minikube)
+# uses 'olm', while OpenShift ships it in 'openshift-operator-lifecycle-manager'.
+# The packageserver CSV lives in the OLM namespace in both cases.
+get_olm_namespace() {
+  kubectl get clusterserviceversions.operators.coreos.com --all-namespaces 2>/dev/null \
+    | awk '/packageserver/ {print $1; exit}'
+}
+
 start_bundle() {
   echo "=== Starting Bundle Deployment ==="
   
@@ -184,17 +192,19 @@ start_bundle() {
       return 1
     fi
     
-    # Check if OLM namespace exists and operators are ready
-    if kubectl get namespace olm >/dev/null 2>&1; then
-      echo "  OLM namespace exists, checking if operators are ready..."
-      if kubectl wait --for=condition=Available deployment/olm-operator deployment/catalog-operator -n olm --timeout=30s 2>/dev/null; then
+    # Discover the OLM namespace (works for both self-installed OLM and OpenShift)
+    local olm_namespace
+    olm_namespace=$(get_olm_namespace)
+    if [ -n "${olm_namespace}" ]; then
+      echo "  OLM detected in namespace '${olm_namespace}', checking if operators are ready..."
+      if kubectl wait --for=condition=Available deployment/olm-operator deployment/catalog-operator -n "${olm_namespace}" --timeout=30s 2>/dev/null; then
         echo "  OLM operators are ready"
         break
       else
         echo "  OLM operators not ready yet, will retry in 5s..."
       fi
     else
-      echo "  OLM namespace doesn't exist yet, will retry in 5s..."
+      echo "  OLM not detected yet, will retry in 5s..."
     fi
     sleep 5
   done
@@ -410,7 +420,7 @@ validate_full_stack() {
   
   # Get OLM namespace
   local olm_namespace
-  olm_namespace=$(kubectl get clusterserviceversions.operators.coreos.com --all-namespaces | grep packageserver | awk '{print $1}')
+  olm_namespace=$(get_olm_namespace)
   
   # Check if namespace was found
   if [ -z "${olm_namespace}" ]; then
