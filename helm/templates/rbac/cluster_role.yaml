@@ -44,4 +44,15 @@ rules:
   - list
   - watch
   - delete
+# Read-only detection of the Agent Sandbox CRD for the agentic controller
+# pre-flight (roles/tackle/tasks/agentic.yml). This is the operator's own
+# detection permission, distinct from the agentic operand RBAC.
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - get
+  - list
+  - watch
 #+kubebuilder:scaffold:rules

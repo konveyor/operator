@@ -8,7 +8,7 @@ The Konveyor Operator fully manages the deployment and life cycle of Konveyor on
 
 Please ensure the following requirements are met prior installation.
 
-* [__k8s v1.22+__](https://kubernetes.io/) or [__OpenShift 4.9+__](https://www.openshift.com/)
+* [__k8s v1.25+__](https://kubernetes.io/) or [__OpenShift 4.12+__](https://www.openshift.com/)
 * [__Persistent Storage__](https://kubernetes.io/docs/concepts/storage/persistent-volumes/)
 * [__Operator Lifecycle Manager (OLM) support__](https://olm.operatorframework.io/)
 * [__Ingress support__](https://kubernetes.io/docs/concepts/services-networking/ingress/)

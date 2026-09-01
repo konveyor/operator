@@ -8,7 +8,7 @@ Alternatively, it is possible to test operators locally outside a cluster but is
 
 Before you begin, the following tools need to be installed in your dev system:
 
-* [__k8s v1.22+__](https://kubernetes.io/) or [__OpenShift 4.9+__](https://www.openshift.com/)
+* [__k8s v1.25+__](https://kubernetes.io/) or [__OpenShift 4.12+__](https://www.openshift.com/)
 * [__Operator SDK__](https://sdk.operatorframework.io/docs/installation/)
 * [__Operator Lifecycle Manager (OLM) support__](https://olm.operatorframework.io/) (minikube/k8s clusters)
 * [__OPM__](https://github.com/operator-framework/operator-registry/)

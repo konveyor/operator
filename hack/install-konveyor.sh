@@ -17,6 +17,16 @@ KAI_LLM_PROVIDER="${KAI_LLM_PROVIDER:-}"
 KAI_LLM_BASEURL="${KAI_LLM_BASEURL:-}"
 USE_HELM="${USE_HELM:-false}"
 
+# Agent Sandbox is a prerequisite for the agentic controller (it provides the
+# sandboxes.agents.x-k8s.io CRD). It is not an operator-managed operand, so this
+# optional step installs it for development/testing. Off by default.
+INSTALL_AGENT_SANDBOX="${INSTALL_AGENT_SANDBOX:-false}"
+AGENT_SANDBOX_VERSION="${AGENT_SANDBOX_VERSION:-v1.0.0}"
+# Which released manifest to apply: sandbox.yaml (core) or
+# sandbox-with-extensions.yaml (core + extensions). Core is enough for the
+# agentic controller.
+AGENT_SANDBOX_MANIFEST="${AGENT_SANDBOX_MANIFEST:-sandbox.yaml}"
+
 # Global timeout configuration - entire script must complete within this time
 GLOBAL_TIMEOUT_SECONDS="${GLOBAL_TIMEOUT_SECONDS:-600}"  # 10 minutes default
 SCRIPT_START_TIME=$(date +%s)
@@ -172,6 +182,32 @@ debug() {
 trap 'debug' ERR
 
 # Function to deploy bundle - waits for OLM operators as precondition
+# Optionally install Agent Sandbox (a prerequisite for the agentic controller).
+# Applies the pre-rendered release manifest and waits for its controller.
+start_agent_sandbox() {
+  echo "=== Installing Agent Sandbox ${AGENT_SANDBOX_VERSION} (${AGENT_SANDBOX_MANIFEST}) ==="
+  local url="https://github.com/kubernetes-sigs/agent-sandbox/releases/download/${AGENT_SANDBOX_VERSION}/${AGENT_SANDBOX_MANIFEST}"
+  if ! kubectl apply -f "${url}"; then
+    echo "Error: Failed to apply Agent Sandbox manifest from ${url}"
+    return 1
+  fi
+  echo "Waiting for the Agent Sandbox controller to become available..."
+  if ! kubectl wait --namespace agent-sandbox-system \
+    --for=condition=Available deployment/agent-sandbox-controller --timeout=120s; then
+    echo "Error: Agent Sandbox controller did not become ready"
+    return 1
+  fi
+  echo "Agent Sandbox is ready"
+}
+
+# Discover the namespace where OLM is running. Self-installed OLM (kind/minikube)
+# uses 'olm', while OpenShift ships it in 'openshift-operator-lifecycle-manager'.
+# The packageserver CSV lives in the OLM namespace in both cases.
+get_olm_namespace() {
+  kubectl get clusterserviceversions.operators.coreos.com --all-namespaces 2>/dev/null \
+    | awk '/packageserver/ {print $1; exit}'
+}
+
 start_bundle() {
   echo "=== Starting Bundle Deployment ==="
   
@@ -184,17 +220,19 @@ start_bundle() {
       return 1
     fi
     
-    # Check if OLM namespace exists and operators are ready
-    if kubectl get namespace olm >/dev/null 2>&1; then
-      echo "  OLM namespace exists, checking if operators are ready..."
-      if kubectl wait --for=condition=Available deployment/olm-operator deployment/catalog-operator -n olm --timeout=30s 2>/dev/null; then
+    # Discover the OLM namespace (works for both self-installed OLM and OpenShift)
+    local olm_namespace
+    olm_namespace=$(get_olm_namespace)
+    if [ -n "${olm_namespace}" ]; then
+      echo "  OLM detected in namespace '${olm_namespace}', checking if operators are ready..."
+      if kubectl wait --for=condition=Available deployment/olm-operator deployment/catalog-operator -n "${olm_namespace}" --timeout=30s 2>/dev/null; then
         echo "  OLM operators are ready"
         break
       else
         echo "  OLM operators not ready yet, will retry in 5s..."
       fi
     else
-      echo "  OLM namespace doesn't exist yet, will retry in 5s..."
+      echo "  OLM not detected yet, will retry in 5s..."
     fi
     sleep 5
   done
@@ -410,7 +448,7 @@ validate_full_stack() {
   
   # Get OLM namespace
   local olm_namespace
-  olm_namespace=$(kubectl get clusterserviceversions.operators.coreos.com --all-namespaces | grep packageserver | awk '{print $1}')
+  olm_namespace=$(get_olm_namespace)
   
   # Check if namespace was found
   if [ -z "${olm_namespace}" ]; then
@@ -457,6 +495,12 @@ echo "=== PHASE 1: Starting All Components ==="
 
 # Create namespace early if it doesn't exist
 kubectl create namespace "${NAMESPACE}" 2>/dev/null || true
+
+# Install the Agent Sandbox prerequisite first (opt-in) so its CRD is present
+# before the operator reconciles a Tackle CR with agentic_enabled=true.
+if [ "${INSTALL_AGENT_SANDBOX}" == "true" ]; then
+  start_agent_sandbox
+fi
 
 if [ "${USE_HELM}" == "true" ]; then
   # Helm-based installation

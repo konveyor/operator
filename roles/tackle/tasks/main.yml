@@ -498,3 +498,6 @@
 
 - name: Run kai tasks
   import_tasks: kai.yml
+
+- name: Run agentic controller tasks
+  import_tasks: agentic.yml

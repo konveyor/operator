@@ -305,3 +305,26 @@ kai_llm_proxy_api_key_env_map:
   anthropic: "ANTHROPIC_API_KEY"
 
 kai_llm_proxy_api_key_env: "{{ kai_llm_proxy_api_key_env_map[kai_llm_provider] | default(kai_llm_provider | upper + '_API_KEY') if kai_llm_provider else 'OPENAI_API_KEY' }}"
+
+# Agentic controller variables
+# Opt-in operand (default off). Requires the Agent Sandbox CRD
+# (sandboxes.agents.x-k8s.io) to be installed in the cluster; when absent the
+# controller is not deployed and AgenticControllerReady is posted as False.
+agentic_enabled: false
+# Surfaces the agentic console in the UI (AGENTIC_ENABLED). Follows
+# agentic_enabled so a single switch lights up the controller and the console.
+# AGENTIC_STEER_ENABLED is a separate, riskier opt-in (inject instructions into
+# and stop a live run) that stays off by default even when the console is on,
+# mirroring the UI's own default.
+agentic_steer_enabled: false
+agentic_component_name: "agentic-controller"
+agentic_fqin: "{{ lookup('env', 'RELATED_IMAGE_AGENTIC_CONTROLLER') }}"
+# agent runtime + skills images are opaque CR data (Agent.spec.image /
+# SkillCard.spec.image), not consumed by the controller Deployment. Declared
+# only so they land in the CSV relatedImages for disconnected mirroring.
+agentic_agent_base_fqin: "{{ lookup('env', 'RELATED_IMAGE_AGENT_BASE') }}"
+agentic_agent_go_fqin: "{{ lookup('env', 'RELATED_IMAGE_AGENT_GO') }}"
+agentic_agent_java_fqin: "{{ lookup('env', 'RELATED_IMAGE_AGENT_JAVA') }}"
+agentic_agent_csharp_fqin: "{{ lookup('env', 'RELATED_IMAGE_AGENT_CSHARP') }}"
+agentic_agent_nodejs_fqin: "{{ lookup('env', 'RELATED_IMAGE_AGENT_NODEJS') }}"
+agentic_skills_fqin: "{{ lookup('env', 'RELATED_IMAGE_AGENT_SKILLS') }}"

@@ -67,6 +67,20 @@ spec:
           value: {{ .Values.images.kai }}
         - name: RELATED_IMAGE_LIGHTSPEED_STACK
           value: {{ .Values.images.lightspeed_stack }}
+        - name: RELATED_IMAGE_AGENTIC_CONTROLLER
+          value: {{ .Values.images.agentic_controller }}
+        - name: RELATED_IMAGE_AGENT_BASE
+          value: {{ .Values.images.agent_base }}
+        - name: RELATED_IMAGE_AGENT_GO
+          value: {{ .Values.images.agent_go }}
+        - name: RELATED_IMAGE_AGENT_JAVA
+          value: {{ .Values.images.agent_java }}
+        - name: RELATED_IMAGE_AGENT_CSHARP
+          value: {{ .Values.images.agent_csharp }}
+        - name: RELATED_IMAGE_AGENT_NODEJS
+          value: {{ .Values.images.agent_nodejs }}
+        - name: RELATED_IMAGE_AGENT_SKILLS
+          value: {{ .Values.images.agent_skills }}
         name: tackle-operator
         image: {{ .Values.images.operator }}
         imagePullPolicy: Always
