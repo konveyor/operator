@@ -17,6 +17,16 @@ KAI_LLM_PROVIDER="${KAI_LLM_PROVIDER:-}"
 KAI_LLM_BASEURL="${KAI_LLM_BASEURL:-}"
 USE_HELM="${USE_HELM:-false}"
 
+# Agent Sandbox is a prerequisite for the agentic controller (it provides the
+# sandboxes.agents.x-k8s.io CRD). It is not an operator-managed operand, so this
+# optional step installs it for development/testing. Off by default.
+INSTALL_AGENT_SANDBOX="${INSTALL_AGENT_SANDBOX:-false}"
+AGENT_SANDBOX_VERSION="${AGENT_SANDBOX_VERSION:-v1.0.0}"
+# Which released manifest to apply: sandbox.yaml (core) or
+# sandbox-with-extensions.yaml (core + extensions). Core is enough for the
+# agentic controller.
+AGENT_SANDBOX_MANIFEST="${AGENT_SANDBOX_MANIFEST:-sandbox.yaml}"
+
 # Global timeout configuration - entire script must complete within this time
 GLOBAL_TIMEOUT_SECONDS="${GLOBAL_TIMEOUT_SECONDS:-600}"  # 10 minutes default
 SCRIPT_START_TIME=$(date +%s)
@@ -172,6 +182,24 @@ debug() {
 trap 'debug' ERR
 
 # Function to deploy bundle - waits for OLM operators as precondition
+# Optionally install Agent Sandbox (a prerequisite for the agentic controller).
+# Applies the pre-rendered release manifest and waits for its controller.
+start_agent_sandbox() {
+  echo "=== Installing Agent Sandbox ${AGENT_SANDBOX_VERSION} (${AGENT_SANDBOX_MANIFEST}) ==="
+  local url="https://github.com/kubernetes-sigs/agent-sandbox/releases/download/${AGENT_SANDBOX_VERSION}/${AGENT_SANDBOX_MANIFEST}"
+  if ! kubectl apply -f "${url}"; then
+    echo "Error: Failed to apply Agent Sandbox manifest from ${url}"
+    return 1
+  fi
+  echo "Waiting for the Agent Sandbox controller to become available..."
+  if ! kubectl wait --namespace agent-sandbox-system \
+    --for=condition=Available deployment/agent-sandbox-controller --timeout=120s; then
+    echo "Error: Agent Sandbox controller did not become ready"
+    return 1
+  fi
+  echo "Agent Sandbox is ready"
+}
+
 # Discover the namespace where OLM is running. Self-installed OLM (kind/minikube)
 # uses 'olm', while OpenShift ships it in 'openshift-operator-lifecycle-manager'.
 # The packageserver CSV lives in the OLM namespace in both cases.
@@ -467,6 +495,12 @@ echo "=== PHASE 1: Starting All Components ==="
 
 # Create namespace early if it doesn't exist
 kubectl create namespace "${NAMESPACE}" 2>/dev/null || true
+
+# Install the Agent Sandbox prerequisite first (opt-in) so its CRD is present
+# before the operator reconciles a Tackle CR with agentic_enabled=true.
+if [ "${INSTALL_AGENT_SANDBOX}" == "true" ]; then
+  start_agent_sandbox
+fi
 
 if [ "${USE_HELM}" == "true" ]; then
   # Helm-based installation
