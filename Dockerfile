@@ -1,4 +1,4 @@
-ARG OPERATOR_SDK_VERSION=v1.37.1
+ARG OPERATOR_SDK_VERSION=v1.42.3
 FROM quay.io/operator-framework/ansible-operator:$OPERATOR_SDK_VERSION
 
 USER 0
