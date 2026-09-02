@@ -203,9 +203,15 @@ start_agent_sandbox() {
 # Discover the namespace where OLM is running. Self-installed OLM (kind/minikube)
 # uses 'olm', while OpenShift ships it in 'openshift-operator-lifecycle-manager'.
 # The packageserver CSV lives in the OLM namespace in both cases.
+#
+# This is a best-effort probe: before OLM is installed the
+# clusterserviceversions CRD does not exist yet, so kubectl exits non-zero.
+# The trailing '|| true' keeps that non-zero from tripping 'set -e' (and
+# 'set -o pipefail') when the result is assigned in a bare command
+# substitution by callers, e.g. `olm_namespace=$(get_olm_namespace)`.
 get_olm_namespace() {
   kubectl get clusterserviceversions.operators.coreos.com --all-namespaces 2>/dev/null \
-    | awk '/packageserver/ {print $1; exit}'
+    | awk '/packageserver/ {print $1; exit}' || true
 }
 
 start_bundle() {
