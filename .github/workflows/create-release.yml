@@ -234,12 +234,13 @@ jobs:
         tackle_postgres: quay.io/konveyor/postgresql-15-c9s:${{ inputs.version }}
         keycloak_sso: quay.io/konveyor/keycloak:${{ inputs.version }}
         lightspeed_stack: quay.io/konveyor/lightspeed-stack:${{ inputs.version }}
-        agentic_agent_base_fqin: quay.io/konveyor/agent-base:${{inputs.version}}
-        agentic_agent_go_fqin: quay.io/konveyor/agent-go:${{inputs.version}}
-        agentic_agent_java_fqin: quay.io/konveyor/agent-java:${{inputs.version}}
-        agentic_agent_csharp_fqin: quay.io/konveyor/agent-csharp:${{inputs.version}}
-        agentic_agent_nodejs_fqin: quay.io/konveyor/agent-nodejs:${{inputs.version}}
-        agentic_skills_fqin: quay.io/konveyor/skills:${{inputs.version}}
+        agentic_controller: quay.io/konveyor/agentic-controller:${{ inputs.version }}
+        agent_base: quay.io/konveyor/agent-base:${{ inputs.version }}
+        agent_go: quay.io/konveyor/agent-go:${{ inputs.version }}
+        agent_java: quay.io/konveyor/agent-java:${{ inputs.version }}
+        agent_csharp: quay.io/konveyor/agent-csharp:${{ inputs.version }}
+        agent_nodejs: quay.io/konveyor/agent-nodejs:${{ inputs.version }}
+        agent_skills: quay.io/konveyor/skills:${{ inputs.version }}
         # Bundle specific args
         version: ${{ inputs.version }}
         channels: ${{ inputs.operator_channels }}

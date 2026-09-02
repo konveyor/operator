@@ -69,6 +69,34 @@ inputs:
     description: "image uri for lightspeed-stack (ie. quay.io/<namespace>/<image-name>:<tag>)"
     required: false
     default: ""
+  agentic_controller:
+    description: "image uri for agentic-controller (ie. quay.io/<namespace>/<image-name>:<tag>)"
+    required: false
+    default: ""
+  agent_base:
+    description: "image uri for agent-base (ie. quay.io/<namespace>/<image-name>:<tag>)"
+    required: false
+    default: ""
+  agent_go:
+    description: "image uri for agent-go (ie. quay.io/<namespace>/<image-name>:<tag>)"
+    required: false
+    default: ""
+  agent_java:
+    description: "image uri for agent-java (ie. quay.io/<namespace>/<image-name>:<tag>)"
+    required: false
+    default: ""
+  agent_csharp:
+    description: "image uri for agent-csharp (ie. quay.io/<namespace>/<image-name>:<tag>)"
+    required: false
+    default: ""
+  agent_nodejs:
+    description: "image uri for agent-nodejs (ie. quay.io/<namespace>/<image-name>:<tag>)"
+    required: false
+    default: ""
+  agent_skills:
+    description: "image uri for agent-skills (ie. quay.io/<namespace>/<image-name>:<tag>)"
+    required: false
+    default: ""
   version:
     description: "operator version"
     required: false
@@ -110,6 +138,13 @@ runs:
       [ -n "${{ inputs.provider_c_sharp }}" ] && OPTS+=" --set images.provider_c_sharp=${{ inputs.provider_c_sharp }}"
       [ -n "${{ inputs.kantra }}" ] && OPTS+=" --set images.kantra=${{ inputs.kantra }}"
       [ -n "${{ inputs.lightspeed_stack }}" ] && OPTS+=" --set images.lightspeed_stack=${{ inputs.lightspeed_stack }}"
+      [ -n "${{ inputs.agentic_controller }}" ] && OPTS+=" --set images.agentic_controller=${{ inputs.agentic_controller }}"
+      [ -n "${{ inputs.agent_base }}" ] && OPTS+=" --set images.agent_base=${{ inputs.agent_base }}"
+      [ -n "${{ inputs.agent_go }}" ] && OPTS+=" --set images.agent_go=${{ inputs.agent_go }}"
+      [ -n "${{ inputs.agent_java }}" ] && OPTS+=" --set images.agent_java=${{ inputs.agent_java }}"
+      [ -n "${{ inputs.agent_csharp }}" ] && OPTS+=" --set images.agent_csharp=${{ inputs.agent_csharp }}"
+      [ -n "${{ inputs.agent_nodejs }}" ] && OPTS+=" --set images.agent_nodejs=${{ inputs.agent_nodejs }}"
+      [ -n "${{ inputs.agent_skills }}" ] && OPTS+=" --set images.agent_skills=${{ inputs.agent_skills }}"
       HELM_OPTS="${OPTS}" make bundle
       cat ./bundle/manifests/konveyor-operator.clusterserviceversion.yaml
       make bundle-build
