@@ -37,10 +37,7 @@ spec:
           imagePullPolicy: "{{ image_pull_policy }}"
           env:
             - name: NAMESPACE
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: metadata.namespace
+              value: "{{ hub_agent_namespace }}"
             - name: APP_NAME
               value: "{{ app_name }}"
             - name: PROFILE

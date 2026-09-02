@@ -4,6 +4,10 @@
 # App defaults
 app_name: "{{ lookup('env', 'APP_NAME') or 'tackle' }}"
 app_namespace: "{{ lookup('env', 'WATCH_NAMESPACE') or 'konveyor-tackle' }}"
+# Namespace the Hub watches for agentic resources (Agents, Gateways, AgentRuns,
+# AgentWorkflows). Defaults to the Hub's own namespace to preserve existing
+# behaviour; override to point the Hub at a separate agent namespace.
+hub_agent_namespace: "{{ app_namespace }}"
 app_profile: "{{ lookup('env', 'PROFILE') }}"
 app_version: "{{ lookup('env', 'VERSION') }}"
 
