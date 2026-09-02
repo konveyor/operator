@@ -149,6 +149,8 @@ jobs:
             image: konveyor/kai-solution-server
           - repo: konveyor/c-sharp-analyzer-provider
             image: konveyor/c-sharp-provider
+          - repo: konveyor/agentic-controller
+            image: konveyor/agentic-controller
       fail-fast: true
     steps:
       - uses: konveyor/release-tools/create-release@main
@@ -232,6 +234,12 @@ jobs:
         tackle_postgres: quay.io/konveyor/postgresql-15-c9s:${{ inputs.version }}
         keycloak_sso: quay.io/konveyor/keycloak:${{ inputs.version }}
         lightspeed_stack: quay.io/konveyor/lightspeed-stack:${{ inputs.version }}
+        agentic_agent_base_fqin: quay.io/konveyor/agent-base:${{inputs.version}}
+        agentic_agent_go_fqin: quay.io/konveyor/agent-go:${{inputs.version}}
+        agentic_agent_java_fqin: quay.io/konveyor/agent-java:${{inputs.version}}
+        agentic_agent_csharp_fqin: quay.io/konveyor/agent-csharp:${{inputs.version}}
+        agentic_agent_nodejs_fqin: quay.io/konveyor/agent-nodejs:${{inputs.version}}
+        agentic_skills_fqin: quay.io/konveyor/skills:${{inputs.version}}
         # Bundle specific args
         version: ${{ inputs.version }}
         channels: ${{ inputs.operator_channels }}
@@ -351,6 +359,7 @@ jobs:
           "konveyor/operator"
           "konveyor/kantra"
           "konveyor/kai"
+          "konveyor/agentic-controller"
         )
 
         echo "Konveyor Operator ${{ inputs.version }}" > changelog.md
