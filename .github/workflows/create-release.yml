@@ -150,7 +150,9 @@ jobs:
           - repo: konveyor/c-sharp-analyzer-provider
             image: konveyor/c-sharp-provider
           - repo: konveyor/agentic-controller
-            image: konveyor/agentic-controller
+            # skills is built last, so waiting on it confirms the
+            # agentic-controller and all agent-* images have published
+            image: konveyor/skills
       fail-fast: true
     steps:
       - uses: konveyor/release-tools/create-release@main
