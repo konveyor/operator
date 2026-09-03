@@ -204,14 +204,15 @@ start_agent_sandbox() {
 # uses 'olm', while OpenShift ships it in 'openshift-operator-lifecycle-manager'.
 # The packageserver CSV lives in the OLM namespace in both cases.
 #
-# This is a best-effort probe: before OLM is installed the
-# clusterserviceversions CRD does not exist yet, so kubectl exits non-zero.
-# The trailing '|| true' keeps that non-zero from tripping 'set -e' (and
-# 'set -o pipefail') when the result is assigned in a bare command
-# substitution by callers, e.g. `olm_namespace=$(get_olm_namespace)`.
+# Listing CRDs succeeds whenever the API is reachable, so a failure there is a
+# genuine error (return 1, caller fails fast); a missing CSV CRD just means OLM
+# isn't installed yet (return empty, caller retries).
 get_olm_namespace() {
-  kubectl get clusterserviceversions.operators.coreos.com --all-namespaces 2>/dev/null \
-    | awk '/packageserver/ {print $1; exit}' || true
+  local crds
+  crds=$(kubectl get crd -o name) || return 1
+  grep -qx 'customresourcedefinition.apiextensions.k8s.io/clusterserviceversions.operators.coreos.com' <<<"${crds}" || return 0
+  kubectl get clusterserviceversions.operators.coreos.com --all-namespaces \
+    | awk '/packageserver/ {print $1; exit}'
 }
 
 start_bundle() {
