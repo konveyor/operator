@@ -30,6 +30,9 @@
     template: agentic/deployment.yaml.j2
     merge_type: merge
 
+- name: Install (or remove) agentic controller default content
+  import_tasks: agentic-defaults.yml
+
 - name: Update agentic controller status conditions
   when: ansible_operator_meta is defined
   import_tasks: agentic-status.yml

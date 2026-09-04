@@ -1,0 +1,99 @@
+---
+# Install the agentic controller's curated default content: the SkillCards,
+# SkillCollection, stage Agents, and the AgentWorkflow the UI lists so a user
+# has something to run out of the box. These manifests are authored in
+# konveyor/agentic-controller (config/defaults/) and synced verbatim into
+# templates/agentic/defaults/ by that repo's sync-operator workflow -- do NOT
+# hand-edit them here; re-sync instead.
+#
+# They are plain konveyor.io CRs (no Jinja), so each file is applied as-is via
+# the k8s module's `src`. They depend only on the agentic controller's own CRDs
+# (installed with the operand through the OLM bundle), not on the Agent Sandbox
+# CRD. We gate them on agentic_state (enabled AND controller deployable) so the
+# cluster never carries curated content without a controller to reconcile it --
+# the same switch that governs the Deployment.
+#
+# CLOBBER POLICY: state: present with server-side apply (server_side_apply with a
+# stable field_manager) re-asserts the declared fields on every reconcile. These
+# are product-owned defaults, so the operator keeps them canonical -- force_conflicts
+# makes a hand-edit to a shipped SkillCard revert next reconcile (SSA would
+# otherwise error on the competing field manager), exactly like the controller
+# Deployment. Customers who want their own content should create a new
+# SkillCard/Agent, not edit these.
+#
+# PRUNING: the apply loop is create-or-update only, so a default removed from
+# config/defaults/ upstream stops being re-created but the object already in the
+# cluster would linger. The prune tasks below remove those orphans. They are
+# safe because every curated CR carries the marker label
+# app.kubernetes.io/managed-by: agentic-controller-defaults (set at the source in
+# agentic-controller): the prune only ever lists and deletes objects bearing that
+# label, so user-created SkillCards/Agents -- which never have it -- are untouched.
+#
+# The synced directory does not exist until the first agentic-controller sync
+# lands, so `find` is written to tolerate its absence (empty result, no error).
+
+- name: Discover agentic default manifests
+  find:
+    paths: "{{ role_path }}/templates/agentic/defaults"
+    patterns: "*.yaml"
+    file_type: file
+  register: agentic_defaults
+
+- name: Apply agentic controller default content
+  k8s:
+    state: "{{ agentic_state }}"
+    namespace: "{{ app_namespace }}"
+    src: "{{ item }}"
+    apply: true
+    server_side_apply:
+      field_manager: agentic-controller-defaults
+      force_conflicts: true
+  loop: "{{ agentic_defaults.files | map(attribute='path') | sort }}"
+  loop_control:
+    label: "{{ item | basename }}"
+
+# --- Prune curated defaults removed from the catalog -------------------------
+# Only when the content is meant to be present; when agentic_state is absent the
+# apply loop above already deletes each shipped default, so there is nothing to
+# reconcile here.
+
+- name: Record the desired default identities (kind/name)
+  set_fact:
+    agentic_desired_defaults: >-
+      {{ agentic_desired_defaults | default([])
+         + [ (lookup('file', item) | from_yaml).kind
+             ~ '/' ~ (lookup('file', item) | from_yaml).metadata.name ] }}
+  loop: "{{ agentic_defaults.files | map(attribute='path') | sort }}"
+  loop_control:
+    label: "{{ item | basename }}"
+  when: agentic_state == 'present'
+
+- name: List installed curated defaults
+  k8s_info:
+    api_version: konveyor.io/v1alpha1
+    kind: "{{ item }}"
+    namespace: "{{ app_namespace }}"
+    label_selectors:
+      - "app.kubernetes.io/managed-by=agentic-controller-defaults"
+  register: agentic_installed_defaults
+  loop:
+    - Agent
+    - AgentWorkflow
+    - SkillCard
+    - SkillCollection
+  when: agentic_state == 'present'
+
+- name: Prune curated defaults no longer in the catalog
+  k8s:
+    state: absent
+    api_version: konveyor.io/v1alpha1
+    kind: "{{ item.kind }}"
+    namespace: "{{ app_namespace }}"
+    name: "{{ item.metadata.name }}"
+  loop: "{{ (agentic_installed_defaults.results | default([]))
+            | map(attribute='resources') | flatten }}"
+  loop_control:
+    label: "{{ item.kind }}/{{ item.metadata.name }}"
+  when:
+    - agentic_state == 'present'
+    - (item.kind ~ '/' ~ item.metadata.name) not in (agentic_desired_defaults | default([]))
