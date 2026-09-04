@@ -1,0 +1,75 @@
+---
+# Install the agentic controller's curated default content: the SkillCards,
+# SkillCollection, stage Agents, and the AgentWorkflow the UI lists so a user
+# has something to run out of the box. These manifests are authored in
+# konveyor/agentic-controller (config/defaults/) and synced verbatim into
+# templates/agentic/defaults/ by that repo's sync-operator workflow -- do NOT
+# hand-edit them here; re-sync instead.
+#
+# They are plain konveyor.io CRs (no Jinja), so each file is applied as-is via
+# the k8s module's `src`. They depend only on the agentic controller's own CRDs
+# (installed with the operand through the OLM bundle), not on the Agent Sandbox
+# CRD. We gate them on agentic_state (enabled AND controller deployable) so the
+# cluster never carries curated content without a controller to reconcile it --
+# the same switch that governs the Deployment.
+#
+# CLOBBER POLICY: state: present with server-side apply (apply: true) re-asserts
+# the declared fields on every reconcile. These are product-owned defaults, so
+# the operator keeps them canonical -- a hand-edit to a shipped SkillCard is
+# reverted next reconcile, exactly like the controller Deployment. Customers who
+# want their own content should create a new SkillCard/Agent, not edit these.
+#
+# PRUNING: deleting a file from config/defaults/ stops the apply loop from
+# re-creating it, but state: present does NOT remove the object already in the
+# cluster. Safe pruning needs a marker label to tell curated content apart from
+# user-created CRs; that label is not on the source manifests yet, so pruning is
+# deferred (see the commented sketch at the end).
+#
+# The synced directory does not exist until the first agentic-controller sync
+# lands, so `find` is written to tolerate its absence (empty result, no error).
+
+- name: Discover agentic default manifests
+  find:
+    paths: "{{ role_path }}/templates/agentic/defaults"
+    patterns: "*.yaml"
+    file_type: file
+  register: agentic_defaults
+
+- name: Apply agentic controller default content
+  k8s:
+    state: "{{ agentic_state }}"
+    namespace: "{{ app_namespace }}"
+    src: "{{ item }}"
+    apply: true
+  loop: "{{ agentic_defaults.files | map(attribute='path') | sort }}"
+  loop_control:
+    label: "{{ item | basename }}"
+
+# --- OPTIONAL: let customer edits survive (apply-if-absent) -------------------
+# Replace the apply task above with a create-only path (drop apply: true so an
+# existing object is left as the user edited it):
+#
+#   - name: Apply agentic defaults, leaving existing objects untouched
+#     k8s:
+#       state: present
+#       namespace: "{{ app_namespace }}"
+#       src: "{{ item }}"
+#     loop: "{{ agentic_defaults.files | map(attribute='path') | sort }}"
+#     when: agentic_state == 'present'
+#
+# --- OPTIONAL: prune orphaned defaults ---------------------------------------
+# Requires curated CRs to carry a marker label at the source, e.g. add to every
+# config/defaults/*.yaml in agentic-controller:
+#   metadata.labels."app.kubernetes.io/managed-by": agentic-controller-defaults
+# Then, per managed kind, list by that selector and delete any object whose name
+# is not in the freshly-synced set:
+#
+#   - name: List curated objects
+#     k8s_info:
+#       api_version: konveyor.io/v1alpha1
+#       kind: "{{ item }}"
+#       namespace: "{{ app_namespace }}"
+#       label_selectors: ["app.kubernetes.io/managed-by=agentic-controller-defaults"]
+#     loop: [SkillCard, SkillCollection, Agent, AgentWorkflow]
+#     register: curated
+#   # ...then k8s state=absent on curated names not present in agentic_defaults.
