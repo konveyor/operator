@@ -19,11 +19,13 @@
 # reverted next reconcile, exactly like the controller Deployment. Customers who
 # want their own content should create a new SkillCard/Agent, not edit these.
 #
-# PRUNING: deleting a file from config/defaults/ stops the apply loop from
-# re-creating it, but state: present does NOT remove the object already in the
-# cluster. Safe pruning needs a marker label to tell curated content apart from
-# user-created CRs; that label is not on the source manifests yet, so pruning is
-# deferred (see the commented sketch at the end).
+# PRUNING: the apply loop is create-or-update only, so a default removed from
+# config/defaults/ upstream stops being re-created but the object already in the
+# cluster would linger. The prune tasks below remove those orphans. They are
+# safe because every curated CR carries the marker label
+# app.kubernetes.io/managed-by: agentic-controller-defaults (set at the source in
+# agentic-controller): the prune only ever lists and deletes objects bearing that
+# label, so user-created SkillCards/Agents -- which never have it -- are untouched.
 #
 # The synced directory does not exist until the first agentic-controller sync
 # lands, so `find` is written to tolerate its absence (empty result, no error).
@@ -45,31 +47,48 @@
   loop_control:
     label: "{{ item | basename }}"
 
-# --- OPTIONAL: let customer edits survive (apply-if-absent) -------------------
-# Replace the apply task above with a create-only path (drop apply: true so an
-# existing object is left as the user edited it):
-#
-#   - name: Apply agentic defaults, leaving existing objects untouched
-#     k8s:
-#       state: present
-#       namespace: "{{ app_namespace }}"
-#       src: "{{ item }}"
-#     loop: "{{ agentic_defaults.files | map(attribute='path') | sort }}"
-#     when: agentic_state == 'present'
-#
-# --- OPTIONAL: prune orphaned defaults ---------------------------------------
-# Requires curated CRs to carry a marker label at the source, e.g. add to every
-# config/defaults/*.yaml in agentic-controller:
-#   metadata.labels."app.kubernetes.io/managed-by": agentic-controller-defaults
-# Then, per managed kind, list by that selector and delete any object whose name
-# is not in the freshly-synced set:
-#
-#   - name: List curated objects
-#     k8s_info:
-#       api_version: konveyor.io/v1alpha1
-#       kind: "{{ item }}"
-#       namespace: "{{ app_namespace }}"
-#       label_selectors: ["app.kubernetes.io/managed-by=agentic-controller-defaults"]
-#     loop: [SkillCard, SkillCollection, Agent, AgentWorkflow]
-#     register: curated
-#   # ...then k8s state=absent on curated names not present in agentic_defaults.
+# --- Prune curated defaults removed from the catalog -------------------------
+# Only when the content is meant to be present; when agentic_state is absent the
+# apply loop above already deletes each shipped default, so there is nothing to
+# reconcile here.
+
+- name: Record the desired default identities (kind/name)
+  set_fact:
+    agentic_desired_defaults: >-
+      {{ agentic_desired_defaults | default([])
+         + [ (lookup('file', item) | from_yaml).kind
+             ~ '/' ~ (lookup('file', item) | from_yaml).metadata.name ] }}
+  loop: "{{ agentic_defaults.files | map(attribute='path') | sort }}"
+  loop_control:
+    label: "{{ item | basename }}"
+  when: agentic_state == 'present'
+
+- name: List installed curated defaults
+  k8s_info:
+    api_version: konveyor.io/v1alpha1
+    kind: "{{ item }}"
+    namespace: "{{ app_namespace }}"
+    label_selectors:
+      - "app.kubernetes.io/managed-by=agentic-controller-defaults"
+  register: agentic_installed_defaults
+  loop:
+    - Agent
+    - AgentWorkflow
+    - SkillCard
+    - SkillCollection
+  when: agentic_state == 'present'
+
+- name: Prune curated defaults no longer in the catalog
+  k8s:
+    state: absent
+    api_version: konveyor.io/v1alpha1
+    kind: "{{ item.kind }}"
+    namespace: "{{ app_namespace }}"
+    name: "{{ item.metadata.name }}"
+  loop: "{{ (agentic_installed_defaults.results | default([]))
+            | map(attribute='resources') | flatten }}"
+  loop_control:
+    label: "{{ item.kind }}/{{ item.metadata.name }}"
+  when:
+    - agentic_state == 'present'
+    - (item.kind ~ '/' ~ item.metadata.name) not in (agentic_desired_defaults | default([]))
