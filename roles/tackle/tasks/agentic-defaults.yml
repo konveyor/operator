@@ -13,11 +13,13 @@
 # cluster never carries curated content without a controller to reconcile it --
 # the same switch that governs the Deployment.
 #
-# CLOBBER POLICY: state: present with server-side apply (apply: true) re-asserts
-# the declared fields on every reconcile. These are product-owned defaults, so
-# the operator keeps them canonical -- a hand-edit to a shipped SkillCard is
-# reverted next reconcile, exactly like the controller Deployment. Customers who
-# want their own content should create a new SkillCard/Agent, not edit these.
+# CLOBBER POLICY: state: present with server-side apply (server_side_apply with a
+# stable field_manager) re-asserts the declared fields on every reconcile. These
+# are product-owned defaults, so the operator keeps them canonical -- force_conflicts
+# makes a hand-edit to a shipped SkillCard revert next reconcile (SSA would
+# otherwise error on the competing field manager), exactly like the controller
+# Deployment. Customers who want their own content should create a new
+# SkillCard/Agent, not edit these.
 #
 # PRUNING: the apply loop is create-or-update only, so a default removed from
 # config/defaults/ upstream stops being re-created but the object already in the
@@ -43,6 +45,9 @@
     namespace: "{{ app_namespace }}"
     src: "{{ item }}"
     apply: true
+    server_side_apply:
+      field_manager: agentic-controller-defaults
+      force_conflicts: true
   loop: "{{ agentic_defaults.files | map(attribute='path') | sort }}"
   loop_control:
     label: "{{ item | basename }}"
