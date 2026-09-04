@@ -1,0 +1,40 @@
+# An inline skill: the content lives in the CR, so nothing is built and no
+# registry is involved. The AgentRun controller materializes it as a
+# ConfigMap and stages it like any other source.
+#
+# The frontmatter is not decoration. Without a name and a description the
+# skill is invisible to the agent runtime, so the SkillCard controller
+# rejects content that lacks them rather than reporting Ready for a skill
+# that would contribute nothing.
+#
+# spec.type: rule makes it always-loaded: the loader collects it into the rules
+# list and the harness puts it in every prompt. It lives on the CR rather than
+# in the content below, because the Agent Skills spec defines a closed set of
+# frontmatter fields and a top-level type: would fail its own validator.
+#
+# An inline skill is a single SKILL.md: a ConfigMap key cannot contain a
+# path separator, so anything needing references/ has to be an image or a
+# git source.
+apiVersion: konveyor.io/v1alpha1
+kind: SkillCard
+metadata:
+  name: house-rules
+  labels:
+    app.kubernetes.io/managed-by: agentic-controller-defaults
+spec:
+  displayName: House Rules
+  version: "1.0.0"
+  description: Always-loaded constraints for Java migrations.
+  type: rule
+  inline: |
+    ---
+    name: house-rules
+    description: >
+      Constraints that apply to every Java migration, regardless of which
+      stage or domain skill is driving.
+    ---
+
+    # House Rules
+
+    - Never leave `javax.*` imports behind in a module you have migrated.
+    - Do not add a dependency without pinning its version.

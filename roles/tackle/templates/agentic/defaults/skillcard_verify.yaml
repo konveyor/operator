@@ -1,0 +1,24 @@
+# The verify stage skill, selected from the shared skill bundle with subPath.
+# Same image as plan and execute; the kubelet pulls it once.
+#
+# type: rule for the same reason as plan and execute — this card drives a
+# workflow stage, and the stage's driver has to stay in context (ADR 0014).
+apiVersion: konveyor.io/v1alpha1
+kind: SkillCard
+metadata:
+  name: verify
+  labels:
+    app.kubernetes.io/managed-by: agentic-controller-defaults
+spec:
+  image: quay.io/konveyor/skills:latest
+  subPath: verify
+  displayName: Migration Verification
+  version: "1.0.0"
+  description: >
+    Builds the migrated project and fixes build errors until it compiles, then
+    runs tests and runtime verification, and confirms that every violation
+    listed in .konveyor/analysis.json was addressed.
+  type: rule
+  tags:
+    - migration
+    - verification

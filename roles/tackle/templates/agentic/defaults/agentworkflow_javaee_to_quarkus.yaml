@@ -1,0 +1,49 @@
+# The Java EE to Quarkus migration workflow.
+#
+# An AgentWorkflow is a template — creating it executes nothing. It combines a
+# high-level guide with an ordered sequence of stages, each referencing one of
+# the migration-*-agent Agents. Stages run sequentially, each in a fresh
+# Sandbox; continuity between them comes from committed handoff files on the
+# shared target branch (docs/plan.md, .konveyor/handoff.md). The UI lists this
+# workflow so a user can run the whole plan → execute → verify sequence.
+#
+# Prerequisites (the SkillCards and Agents ship here in config/defaults/ and are
+# installed alongside this workflow):
+#   - SkillCards plan, execute, verify (skillcard_plan/execute/verify.yaml)
+#   - Agents migration-plan/execute/verify-agent (agent_migration_*.yaml)
+# The Agents declare no gateway, so a Gateway is named at run time on the
+# AgentWorkflowRun, not by editing the Agents. Create one from a
+# config/samples/gateway_*.yaml first.
+apiVersion: konveyor.io/v1alpha1
+kind: AgentWorkflow
+metadata:
+  name: java-ee-to-quarkus
+  labels:
+    app.kubernetes.io/managed-by: agentic-controller-defaults
+spec:
+  guide: "Migrate a Java EE application to Quarkus 3"
+  stages:
+    - name: plan
+      agentRef: migration-plan-agent
+      instructions: >-
+        Load the plan skill and follow its SKILL.md exactly. Build the
+        migration plan from the Kantra analysis results in
+        .konveyor/analysis.json, reading the build manifest, layout, and
+        source for context. Use the output structure defined in SKILL.md as
+        the exact structure for docs/plan.md — reproduce every required
+        section and field. Do not invent your own document structure.
+    - name: execute
+      agentRef: migration-execute-agent
+      instructions: >-
+        Load the execute skill and follow its SKILL.md exactly. Execute each
+        step in docs/plan.md to migrate the code from Java EE to Quarkus.
+        Create .konveyor/handoff.md and write your results as an ## Execute
+        section in it, as defined in SKILL.md.
+    - name: verify
+      agentRef: migration-verify-agent
+      instructions: >-
+        Load the verify skill and follow its SKILL.md exactly. Run the build
+        from docs/plan.md, fix build errors until it compiles, then run tests
+        and runtime verification — grounded in .konveyor/analysis.json and the
+        ## Execute section of .konveyor/handoff.md. Append your results as a
+        ## Verify section in .konveyor/handoff.md as defined in SKILL.md.

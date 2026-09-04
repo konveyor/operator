@@ -1,0 +1,28 @@
+# Plan-stage Agent for the Java EE to Quarkus workflow.
+#
+# An Agent is a template — it declares what is available (image, skills) but
+# does not execute anything. This one is a workflow stage agent: the
+# java-ee-to-quarkus AgentWorkflow references it from its "plan" stage. The UI
+# lists Agents and AgentWorkflows so a user can pick one to run.
+#
+# gateways is intentionally omitted. It is a presence-gated curation
+# constraint: an empty list means the controller enforces nothing, so this
+# curated default ships without knowing a customer's Gateway name and still
+# becomes Ready. An AgentRun (or the AgentWorkflowRun that drives this stage)
+# names the gateway at run time. An architect who wants to lock this Agent to
+# specific gateways can add a gateways list here.
+#
+# Turn limits live in the execution field, not in params — execution control
+# is a CRD-level concern the harness enforces, never a skill or param concern.
+apiVersion: konveyor.io/v1alpha1
+kind: Agent
+metadata:
+  name: migration-plan-agent
+  labels:
+    app.kubernetes.io/managed-by: agentic-controller-defaults
+spec:
+  image: quay.io/konveyor/agent-java:latest
+  skillCards:
+    - ref: plan
+  execution:
+    maxTurns: 200
