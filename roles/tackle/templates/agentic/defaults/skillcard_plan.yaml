@@ -1,0 +1,32 @@
+# One skill out of an image that holds several.
+#
+# A SkillCard is always one skill, so a card pointing at an image holding
+# several selects with subPath. The kubelet pulls the image once no matter how
+# many cards reference it, which is what lets us publish a single image for all
+# of our skills and still reference them individually.
+#
+# type is the load policy, and it lives here rather than in SKILL.md: the Agent
+# Skills spec has a closed set of frontmatter fields, so declaring it in
+# content would make the skill fail its own format. See ADR 0015.
+#
+# A rule, not an on-demand skill. Under progressive disclosure the agent
+# decides what to read, and ADR 0014 measured a plan stage that skipped its own
+# driving skill. A stage's driver has to be in context, so it is a rule. The
+# 8KB is only spent where the card is referenced, which is the plan Agent.
+apiVersion: konveyor.io/v1alpha1
+kind: SkillCard
+metadata:
+  name: plan
+  labels:
+    app.kubernetes.io/managed-by: agentic-controller-defaults
+spec:
+  image: quay.io/konveyor/skills:latest
+  subPath: plan
+  displayName: Migration Planning
+  version: "1.0.0"
+  description: >
+    Analyzes a project and produces a structured migration plan.
+  type: rule
+  tags:
+    - migration
+    - planning

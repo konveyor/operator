@@ -1,0 +1,17 @@
+# Execute-stage Agent for the Java EE to Quarkus workflow.
+#
+# Referenced by the "execute" stage of the java-ee-to-quarkus AgentWorkflow.
+# See agent_migration_plan.yaml for the omitted-gateways and execution notes —
+# the same apply here.
+apiVersion: konveyor.io/v1alpha1
+kind: Agent
+metadata:
+  name: migration-execute-agent
+  labels:
+    app.kubernetes.io/managed-by: agentic-controller-defaults
+spec:
+  image: quay.io/konveyor/agent-java:latest
+  skillCards:
+    - ref: execute
+  execution:
+    maxTurns: 200

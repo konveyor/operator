@@ -1,0 +1,26 @@
+# The execute stage skill, selected from the shared skill bundle with subPath.
+# The kubelet pulls the image once however many cards reference it, so plan,
+# execute, and verify all ride on the same quay.io/konveyor/skills:latest pull.
+#
+# type: rule, not an on-demand skill. This card drives a workflow stage, and a
+# stage's driver has to be in context for the whole stage — under progressive
+# disclosure an on-demand skill may never be read (ADR 0014). The cost is only
+# paid where the card is referenced, which is the execute Agent.
+apiVersion: konveyor.io/v1alpha1
+kind: SkillCard
+metadata:
+  name: execute
+  labels:
+    app.kubernetes.io/managed-by: agentic-controller-defaults
+spec:
+  image: quay.io/konveyor/skills:latest
+  subPath: execute
+  displayName: Migration Execution
+  version: "1.0.0"
+  description: >
+    Reads docs/plan.md and executes each migration step in order. Does not
+    build or test — that is the verify stage's job.
+  type: rule
+  tags:
+    - migration
+    - execution
