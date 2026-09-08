@@ -1,0 +1,68 @@
+---
+# Based on agent-sandbox v1.0.0 sandbox-with-extensions.yaml.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ agent_sandbox_component_name }}
+  namespace: "{{ app_namespace }}"
+  annotations:
+    tackle.konveyor.io/agent-sandbox-owner: "{{ agent_sandbox_owner }}"
+  labels:
+    app.kubernetes.io/name: {{ agent_sandbox_component_name }}
+    app.kubernetes.io/part-of: {{ app_name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ agent_sandbox_component_name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ agent_sandbox_component_name }}
+        app.kubernetes.io/part-of: {{ app_name }}
+    spec:
+      serviceAccountName: agent-sandbox-controller
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: agent-sandbox-controller
+          image: "{{ agent_sandbox_fqin }}"
+          args:
+            - --leader-elect=true
+            - --extensions
+          ports:
+            - containerPort: 8080
+              name: metrics
+              protocol: TCP
+            - containerPort: 8081
+              name: healthz
+              protocol: TCP
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: healthz
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: healthz
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          volumeMounts:
+            - mountPath: /etc/sandbox-config
+              name: config-volume
+              readOnly: true
+      volumes:
+        - configMap:
+            name: agent-sandbox-config
+            optional: true
+          name: config-volume

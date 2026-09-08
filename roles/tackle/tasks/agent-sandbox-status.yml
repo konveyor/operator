@@ -1,0 +1,65 @@
+---
+- name: Check managed Agent Sandbox controller deployment status
+  k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    name: "{{ agent_sandbox_component_name }}"
+    namespace: "{{ app_namespace }}"
+  register: agent_sandbox_deployment
+  when: agent_sandbox_state == 'present' and not agent_sandbox_resource_conflict | bool
+
+- name: Determine managed Agent Sandbox controller readiness
+  set_fact:
+    agent_sandbox_deployment_ready: >-
+      {{ agent_sandbox_state == 'present' and not agent_sandbox_resource_conflict | bool and
+         (agent_sandbox_deployment.resources | default([]) | length) > 0 and
+         (agent_sandbox_deployment.resources[0].status.observedGeneration | default(0)) >= agent_sandbox_deployment.resources[0].metadata.generation and
+         (agent_sandbox_deployment.resources[0].status.readyReplicas | default(0)) > 0 and
+         (agent_sandbox_deployment.resources[0].status.readyReplicas | default(0)) == (agent_sandbox_deployment.resources[0].spec.replicas | default(1)) and
+         (agent_sandbox_deployment.resources[0].status.updatedReplicas | default(0)) == (agent_sandbox_deployment.resources[0].spec.replicas | default(1)) }}
+
+# Use one stable condition type so toggling the feature cannot leave a stale
+# Ready=True alongside a separate Disabled/Missing condition. BYO checks only
+# CRD presence and cannot promise that an external controller is healthy.
+- name: Update AgentSandboxReady condition
+  vars:
+    agent_sandbox_reason: >-
+      {{ 'AgentSandboxDisabled' if not agentic_enabled | bool else
+         ('AgentSandboxMissing' if not agentic_sandbox_crd_present | bool else
+          ('AgentSandboxResourceConflict' if agent_sandbox_resource_conflict | bool else
+           ('ExternalControllerUnverified' if not agent_sandbox_managed | bool else
+            ('AgentSandboxReady' if agent_sandbox_deployment_ready | bool else 'AgentSandboxNotReady')))) }}
+    agent_sandbox_conditions:
+      AgentSandboxDisabled:
+        status: "False"
+        message: Agent Sandbox management is disabled because spec.agentic_enabled is false.
+      AgentSandboxMissing:
+        status: "False"
+        message: >-
+          The Sandbox CRD (sandboxes.agents.x-k8s.io) is missing.
+          Install Agent Sandbox v1.0.0 before enabling the agentic controller.
+      AgentSandboxResourceConflict:
+        status: "False"
+        message: >-
+          A controller Deployment or Service with the managed name already exists
+          and is not owned by this Tackle. It has been left untouched.
+      ExternalControllerUnverified:
+        status: Unknown
+        message: The Sandbox CRD is present. An external controller is required; its health is not checked.
+      AgentSandboxReady:
+        status: "True"
+        message: The managed Agent Sandbox controller deployment is ready.
+      AgentSandboxNotReady:
+        status: "False"
+        message: The managed Agent Sandbox controller deployment is not ready. Check its pod logs.
+  operator_sdk.util.k8s_status:
+    api_version: tackle.konveyor.io/v1alpha1
+    kind: Tackle
+    name: "{{ ansible_operator_meta.name }}"
+    namespace: "{{ ansible_operator_meta.namespace }}"
+    conditions:
+      - type: AgentSandboxReady
+        status: "{{ agent_sandbox_conditions[agent_sandbox_reason].status }}"
+        reason: "{{ agent_sandbox_reason }}"
+        message: "{{ agent_sandbox_conditions[agent_sandbox_reason].message }}"
+        lastTransitionTime: "{{ now(fmt='%Y-%m-%dT%H:%M:%SZ') }}"

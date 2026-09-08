@@ -237,6 +237,8 @@ jobs:
         keycloak_sso: quay.io/konveyor/keycloak:${{ inputs.version }}
         lightspeed_stack: quay.io/konveyor/lightspeed-stack:${{ inputs.version }}
         agentic_controller: quay.io/konveyor/agentic-controller:${{ inputs.version }}
+        # Mirrored from the pinned upstream version, then digest-pinned below.
+        agent_sandbox_controller: quay.io/konveyor/agent-sandbox-controller:${{ inputs.version }}
         agent_base: quay.io/konveyor/agent-base:${{ inputs.version }}
         agent_go: quay.io/konveyor/agent-go:${{ inputs.version }}
         agent_java: quay.io/konveyor/agent-java:${{ inputs.version }}

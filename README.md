@@ -139,6 +139,8 @@ feature_auth_required | true | Require authentication for UI and Hub API (true) 
 idp_primary | N/A | Set to true to mark auto-discovered IdentityProvider as primary (automatically redirects users to IdP for authentication)
 feature_isolate_namespace | true | Enable namespace isolation via network policies
 feature_analysis_archiver | true | If enabled, automatically archives old analysis reports when a new one is created
+agentic_enabled | false | Enable the agentic controller and its managed Agent Sandbox dependency
+agent_sandbox_managed | true | Install the Agent Sandbox controller when agentic is enabled; set false to use an existing external controller
 rwx_supported: | true | Whether or not RWX volumes are supported in the cluster
 hub_database_volume_size | 5Gi | Size requested for Hub database volume
 hub_bucket_volume_size | 100gi | Size requested for Hub bucket volume
@@ -152,6 +154,33 @@ hub_ldap_auth_lifespan | 5 (minutes) | LDAP auth lifespan in minutes
 hub_oidc_token_lifespan | 300 (seconds) | OIDC token lifespan in seconds (default: 5 minutes)
 hub_oidc_refresh_token_lifespan | 172800 (seconds) | OIDC refresh token lifespan in seconds (default: 2 days)
 hub_oidc_key_rotation | 90 (days) | OIDC key rotation period in days
+
+### Agent Sandbox
+
+Enabling `spec.agentic_enabled` installs the Agent Sandbox v1.0.0 controller
+(core and extensions) in the operator's namespace. The operator's bundle owns
+the four Sandbox CRDs; CRDs and controller RBAC are installed even when the
+agentic feature is disabled.
+
+If Agent Sandbox is already installed, set `spec.agent_sandbox_managed: false`
+before enabling agentic. The external controller must support the v1beta1 API.
+Konveyor leaves that controller untouched. Helm preserves pre-existing external
+Sandbox CRDs instead of adopting them; an existing installation must already
+provide the compatible CRDs. OLM supplies the bundled CRDs.
+
+Changing `agent_sandbox_managed` to `false`, or disabling `agentic_enabled`,
+removes only the controller Deployment and Service created by this Tackle.
+Sandbox objects and their workloads are preserved. Arrange an external
+controller before switching to avoid interrupting sandbox reconciliation.
+The upstream controller watches the whole cluster, so use one managed stack
+per cluster and select the external mode for other Konveyor installations.
+
+`AgentSandboxReady` reports the managed Deployment's readiness, with
+`AgentSandboxDisabled` or `AgentSandboxMissing` reasons when appropriate.
+In external mode, CRD presence allows the agentic controller to start; sandbox
+readiness is `Unknown` because Konveyor does not inspect the external controller.
+A missing Sandbox CRD leaves the agentic controller absent and reports a status
+condition without failing the rest of the Tackle reconcile.
 
 ## Tackle CR Customize Settings
 

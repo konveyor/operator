@@ -1,12 +1,12 @@
 ---
 # Agentic controller operand tasks.
 #
-# The agentic controller requires the Agent Sandbox CRD
-# (sandboxes.agents.x-k8s.io) to be present in the cluster: it adds the type to
-# its scheme and Owns() Sandbox objects, so it crash-loops at startup when the
-# CRD is absent. Agent Sandbox is therefore a deployment prerequisite installed
-# separately (not an operator-managed operand). We pre-flight for the CRD and
-# only deploy the controller when it is present.
+# The operator supplies Agent Sandbox unless an external controller is selected.
+# Keep the CRD pre-flight for bring-your-own installations: a missing dependency
+# is a soft status condition, not a failure of the whole Tackle reconcile.
+
+- name: Reconcile Agent Sandbox controller
+  import_tasks: agent-sandbox.yml
 
 - name: Check for the Agent Sandbox CRD
   k8s_info:
@@ -18,11 +18,13 @@
 
 - name: Determine Agent Sandbox CRD presence
   set_fact:
-    agentic_sandbox_crd_present: "{{ (agentic_sandbox_crd.resources | default([]) | length) > 0 }}"
+    agentic_sandbox_crd_present: "{{ agentic_enabled | bool and (agentic_sandbox_crd.resources | default([]) | length) > 0 }}"
 
 - name: Set agentic controller deployment state
   set_fact:
-    agentic_state: "{{ 'present' if (agentic_enabled | bool and agentic_sandbox_crd_present | bool) else 'absent' }}"
+    agentic_state: >-
+      {{ 'present' if (agentic_enabled | bool and agentic_sandbox_crd_present | bool and
+                      not agent_sandbox_resource_conflict | bool) else 'absent' }}
 
 - name: Create agentic controller Deployment
   k8s:
@@ -33,3 +35,7 @@
 - name: Update agentic controller status conditions
   when: ansible_operator_meta is defined
   import_tasks: agentic-status.yml
+
+- name: Update Agent Sandbox status condition
+  when: ansible_operator_meta is defined
+  import_tasks: agent-sandbox-status.yml

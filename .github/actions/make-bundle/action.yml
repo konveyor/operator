@@ -73,6 +73,10 @@ inputs:
     description: "image uri for agentic-controller (ie. quay.io/<namespace>/<image-name>:<tag>)"
     required: false
     default: ""
+  agent_sandbox_controller:
+    description: "image uri for the Agent Sandbox controller"
+    required: false
+    default: ""
   agent_base:
     description: "image uri for agent-base (ie. quay.io/<namespace>/<image-name>:<tag>)"
     required: false
@@ -139,6 +143,7 @@ runs:
       [ -n "${{ inputs.kantra }}" ] && OPTS+=" --set images.kantra=${{ inputs.kantra }}"
       [ -n "${{ inputs.lightspeed_stack }}" ] && OPTS+=" --set images.lightspeed_stack=${{ inputs.lightspeed_stack }}"
       [ -n "${{ inputs.agentic_controller }}" ] && OPTS+=" --set images.agentic_controller=${{ inputs.agentic_controller }}"
+      [ -n "${{ inputs.agent_sandbox_controller }}" ] && OPTS+=" --set images.agent_sandbox_controller=${{ inputs.agent_sandbox_controller }}"
       [ -n "${{ inputs.agent_base }}" ] && OPTS+=" --set images.agent_base=${{ inputs.agent_base }}"
       [ -n "${{ inputs.agent_go }}" ] && OPTS+=" --set images.agent_go=${{ inputs.agent_go }}"
       [ -n "${{ inputs.agent_java }}" ] && OPTS+=" --set images.agent_java=${{ inputs.agent_java }}"

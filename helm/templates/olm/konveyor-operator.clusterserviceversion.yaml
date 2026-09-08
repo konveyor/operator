@@ -48,6 +48,26 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
+    - description: Sandbox manages an isolated workload for agent execution.
+      displayName: Sandbox
+      kind: Sandbox
+      name: sandboxes.agents.x-k8s.io
+      version: v1beta1
+    - description: SandboxTemplate defines reusable sandbox configuration.
+      displayName: Sandbox Template
+      kind: SandboxTemplate
+      name: sandboxtemplates.extensions.agents.x-k8s.io
+      version: v1beta1
+    - description: SandboxClaim requests a sandbox from a template or warm pool.
+      displayName: Sandbox Claim
+      kind: SandboxClaim
+      name: sandboxclaims.extensions.agents.x-k8s.io
+      version: v1beta1
+    - description: SandboxWarmPool maintains ready sandboxes for allocation.
+      displayName: Sandbox Warm Pool
+      kind: SandboxWarmPool
+      name: sandboxwarmpools.extensions.agents.x-k8s.io
+      version: v1beta1
     - description: Agent is a capability definition declaring what is available for
         execution.
       displayName: Agent

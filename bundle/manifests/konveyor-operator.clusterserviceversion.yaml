@@ -148,7 +148,7 @@ metadata:
     categories: Modernization & Migration
     certified: "false"
     containerImage: quay.io/konveyor/tackle2-operator:latest
-    createdAt: "2026-08-27T20:07:33Z"
+    createdAt: "2026-09-08T16:57:00Z"
     description: Konveyor is an open-source application modernization platform that
       helps organizations safely and predictably modernize applications to Kubernetes
       at scale.
@@ -191,6 +191,26 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
+    - description: Sandbox manages an isolated workload for agent execution.
+      displayName: Sandbox
+      kind: Sandbox
+      name: sandboxes.agents.x-k8s.io
+      version: v1beta1
+    - description: SandboxClaim requests a sandbox from a template or warm pool.
+      displayName: Sandbox Claim
+      kind: SandboxClaim
+      name: sandboxclaims.extensions.agents.x-k8s.io
+      version: v1beta1
+    - description: SandboxTemplate defines reusable sandbox configuration.
+      displayName: Sandbox Template
+      kind: SandboxTemplate
+      name: sandboxtemplates.extensions.agents.x-k8s.io
+      version: v1beta1
+    - description: SandboxWarmPool maintains ready sandboxes for allocation.
+      displayName: Sandbox Warm Pool
+      kind: SandboxWarmPool
+      name: sandboxwarmpools.extensions.agents.x-k8s.io
+      version: v1beta1
     - description: AgentRun is a request to execute a single Agent with specific selections.
       displayName: Agent Run
       kind: AgentRun
@@ -308,6 +328,143 @@ spec:
   install:
     spec:
       clusterPermissions:
+      - rules:
+        - apiGroups:
+          - ""
+          resources:
+          - persistentvolumeclaims
+          - pods
+          - services
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - ""
+          - events.k8s.io
+          resources:
+          - events
+          verbs:
+          - create
+          - patch
+        - apiGroups:
+          - agents.x-k8s.io
+          resources:
+          - sandboxes
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - agents.x-k8s.io
+          resources:
+          - sandboxes/finalizers
+          - sandboxes/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - coordination.k8s.io
+          resources:
+          - leases
+          verbs:
+          - create
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - ""
+          resources:
+          - pods
+          verbs:
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - ""
+          - events.k8s.io
+          resources:
+          - events
+          verbs:
+          - create
+          - patch
+          - update
+        - apiGroups:
+          - agents.x-k8s.io
+          resources:
+          - sandboxes
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - coordination.k8s.io
+          resources:
+          - leases
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - extensions.agents.x-k8s.io
+          resources:
+          - sandboxclaims
+          - sandboxtemplates
+          - sandboxwarmpools
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - extensions.agents.x-k8s.io
+          resources:
+          - sandboxclaims/finalizers
+          - sandboxclaims/status
+          - sandboxtemplates/finalizers
+          - sandboxwarmpools/finalizers
+          - sandboxwarmpools/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - networking.k8s.io
+          resources:
+          - networkpolicies
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        serviceAccountName: agent-sandbox-controller
       - rules:
         - apiGroups:
           - ""
@@ -552,6 +709,8 @@ spec:
                   value: quay.io/lightspeed-core/lightspeed-stack:latest
                 - name: RELATED_IMAGE_AGENTIC_CONTROLLER
                   value: quay.io/konveyor/agentic-controller:latest
+                - name: RELATED_IMAGE_AGENT_SANDBOX_CONTROLLER
+                  value: registry.k8s.io/agent-sandbox/agent-sandbox-controller:v1.0.0
                 - name: RELATED_IMAGE_AGENT_BASE
                   value: quay.io/konveyor/agent-base:latest
                 - name: RELATED_IMAGE_AGENT_GO
@@ -809,6 +968,8 @@ spec:
     name: lightspeed-stack
   - image: quay.io/konveyor/agentic-controller:latest
     name: agentic-controller
+  - image: registry.k8s.io/agent-sandbox/agent-sandbox-controller:v1.0.0
+    name: agent-sandbox-controller
   - image: quay.io/konveyor/agent-base:latest
     name: agent-base
   - image: quay.io/konveyor/agent-go:latest

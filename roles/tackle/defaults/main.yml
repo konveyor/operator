@@ -307,10 +307,15 @@ kai_llm_proxy_api_key_env_map:
 kai_llm_proxy_api_key_env: "{{ kai_llm_proxy_api_key_env_map[kai_llm_provider] | default(kai_llm_provider | upper + '_API_KEY') if kai_llm_provider else 'OPENAI_API_KEY' }}"
 
 # Agentic controller variables
-# Opt-in operand (default off). Requires the Agent Sandbox CRD
-# (sandboxes.agents.x-k8s.io) to be installed in the cluster; when absent the
-# controller is not deployed and AgenticControllerReady is posted as False.
+# Opt-in operand (default off). Agent Sandbox is managed alongside it unless
+# an external controller is selected with agent_sandbox_managed: false.
 agentic_enabled: false
+# This flag controls the controller Deployment and Service only. CRDs and RBAC
+# are installed statically with the operator. Disabling management removes only
+# controller resources created by this Tackle instance.
+agent_sandbox_managed: true
+agent_sandbox_component_name: "tackle-agent-sandbox-controller"
+agent_sandbox_fqin: "{{ lookup('env', 'RELATED_IMAGE_AGENT_SANDBOX_CONTROLLER') }}"
 # Surfaces the agentic console in the UI (AGENTIC_ENABLED). Follows
 # agentic_enabled so a single switch lights up the controller and the console.
 # AGENTIC_STEER_ENABLED is a separate, riskier opt-in (inject instructions into

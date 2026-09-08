@@ -1,0 +1,46 @@
+---
+# CRDs and RBAC are installed with Helm/OLM. Reconcile only our controller and
+# Service here. The marker also tracks ownership when running the role directly
+# in development, where the Ansible operator's owner-reference proxy is absent.
+- name: Set Agent Sandbox management state
+  set_fact:
+    agent_sandbox_state: "{{ 'present' if (agentic_enabled | bool and agent_sandbox_managed | bool) else 'absent' }}"
+    agent_sandbox_owner: "{{ ansible_operator_meta.namespace | default(app_namespace) }}/{{ ansible_operator_meta.name | default(app_name) }}"
+    agent_sandbox_resource_conflict: false
+
+- name: Inspect Agent Sandbox controller resources
+  k8s_info:
+    api_version: "{{ item.api_version }}"
+    kind: "{{ item.kind }}"
+    name: "{{ agent_sandbox_component_name }}"
+    namespace: "{{ app_namespace }}"
+  loop:
+    - { api_version: apps/v1, kind: Deployment, template: agentic/sandbox-deployment.yaml.j2 }
+    - { api_version: v1, kind: Service, template: agentic/sandbox-service.yaml.j2 }
+  register: agent_sandbox_resources
+
+- name: Detect a conflicting Agent Sandbox controller resource
+  set_fact:
+    agent_sandbox_resource_conflict: true
+  loop: "{{ agent_sandbox_resources.results }}"
+  loop_control:
+    label: "{{ item.item.kind }}"
+  when:
+    - agent_sandbox_state == 'present'
+    - item.resources | length > 0
+    - (item.resources[0].metadata.annotations | default({})).get('tackle.konveyor.io/agent-sandbox-owner', '') != agent_sandbox_owner
+
+- name: Reconcile owned Agent Sandbox controller resources
+  k8s:
+    state: "{{ agent_sandbox_state }}"
+    template: "{{ item.item.template }}"
+    merge_type: merge
+  loop: "{{ agent_sandbox_resources.results }}"
+  loop_control:
+    label: "{{ item.item.kind }}"
+  when:
+    - not agent_sandbox_resource_conflict | bool
+    - >-
+      (item.resources | length == 0 and agent_sandbox_state == 'present') or
+      (item.resources | length > 0 and
+       (item.resources[0].metadata.annotations | default({})).get('tackle.konveyor.io/agent-sandbox-owner', '') == agent_sandbox_owner)

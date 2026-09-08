@@ -69,6 +69,8 @@ spec:
           value: {{ .Values.images.lightspeed_stack }}
         - name: RELATED_IMAGE_AGENTIC_CONTROLLER
           value: {{ .Values.images.agentic_controller }}
+        - name: RELATED_IMAGE_AGENT_SANDBOX_CONTROLLER
+          value: {{ .Values.images.agent_sandbox_controller }}
         - name: RELATED_IMAGE_AGENT_BASE
           value: {{ .Values.images.agent_base }}
         - name: RELATED_IMAGE_AGENT_GO
