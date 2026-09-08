@@ -1,4 +1,16 @@
 ---
+# Synced from konveyor/agentic-controller config/operator/deployment.yaml.j2 by
+# hack/sync-operator.sh. Do not hand-edit in the operator -- update it here and
+# re-sync.
+#
+# This is the operator's rendering of the controller Deployment: the container
+# spec mirrors config/manager/manager.yaml (command, args, env, ports, probes,
+# securityContext, resources), with operator-specific values templated in --
+# the image ({{ agentic_fqin }}, resolved to a digest at bundle time), the
+# name/namespace/labels, the ServiceAccount, a disabled metrics endpoint, and
+# the default-container annotation. Keep the container spec in step with
+# config/manager/manager.yaml when either changes;
+# internal/manifests/deployment_parity_test.go fails the build if they drift.
 apiVersion: apps/v1
 kind: Deployment
 metadata:

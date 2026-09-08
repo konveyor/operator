@@ -206,6 +206,13 @@ spec:
                   by the controller.
                 format: int64
                 type: integer
+              verifiedCredentialHash:
+                description: |-
+                  VerifiedCredentialHash is a digest of the credential Secret's data as
+                  of the last settled verification. Rotating the credential does not
+                  bump the Gateway generation, so this is what tells the controller the
+                  verified result no longer describes the credential in the Secret.
+                type: string
             type: object
         type: object
     served: true

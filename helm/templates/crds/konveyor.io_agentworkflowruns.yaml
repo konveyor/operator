@@ -296,6 +296,18 @@ spec:
                 x-kubernetes-list-map-keys:
                 - name
                 x-kubernetes-list-type: map
+              ttlSecondsAfterFinished:
+                description: |-
+                  TTLSecondsAfterFinished limits the lifetime of an AgentWorkflowRun that
+                  has reached a terminal phase (Succeeded or Failed), mirroring Job's
+                  ttlSecondsAfterFinished. When set, the controller deletes the run this
+                  many seconds after it finished — cascading to the child AgentRuns it
+                  owns via owner references — so terminal runs do not accumulate. Zero
+                  deletes as soon as the run finishes. When unset, the run is kept until
+                  deleted manually, unless the controller is configured with a default TTL.
+                format: int32
+                minimum: 0
+                type: integer
               workflowRef:
                 description: WorkflowRef is the name of the AgentWorkflow CR to execute.
                 minLength: 1

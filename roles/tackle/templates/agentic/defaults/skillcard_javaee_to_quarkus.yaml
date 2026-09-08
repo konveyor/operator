@@ -1,0 +1,22 @@
+# The second skill out of the same image, selected with a different subPath.
+# The kubelet pulls the image once however many cards reference it.
+apiVersion: konveyor.io/v1alpha1
+kind: SkillCard
+metadata:
+  name: javaee-to-quarkus
+  labels:
+    app.kubernetes.io/managed-by: agentic-controller-defaults
+spec:
+  image: quay.io/konveyor/skills:latest
+  subPath: javaee-to-quarkus
+  displayName: Java EE to Quarkus Migration
+  version: "1.0.0"
+  description: >
+    Migrates Java EE 7/8 applications to Quarkus 3. Covers EJB-to-CDI,
+    JMS to SmallRye Reactive Messaging, WAR-to-JAR packaging, and
+    persistence.xml to application.properties.
+  tags:
+    - java
+    - javaee
+    - quarkus
+    - migration
