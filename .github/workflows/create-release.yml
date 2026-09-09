@@ -276,7 +276,7 @@ jobs:
 
         yq eval --inplace 'del(.annotations["operators.operatorframework.io.test.mediatype.v1"])' ${ANNOTATIONS}
         yq eval --inplace 'del(.annotations["operators.operatorframework.io.test.config.v1"])' ${ANNOTATIONS}
-        yq eval --inplace '.annotations["com.redhat.openshift.versions"] = "v4.9" | .annotations["com.redhat.openshift.versions"] style="double"' ${ANNOTATIONS}
+        yq eval --inplace '.annotations["com.redhat.openshift.versions"] = "v4.18" | .annotations["com.redhat.openshift.versions"] style="double"' ${ANNOTATIONS}
 
     - name: Build and Push Bundle Image
       working-directory: ./operator
