@@ -268,6 +268,102 @@ spec:
                       x-kubernetes-map-type: atomic
                   type: object
                 type: array
+              fileMounts:
+                description: |-
+                  FileMounts attaches Secrets or ConfigMaps as read-only files across
+                  all stages. Passed through to each stage's AgentRun unchanged and
+                  validated there against the controller-managed mounts.
+                items:
+                  description: |-
+                    FileMount attaches a Secret or ConfigMap into the Sandbox container as
+                    files on disk, mounted read-only. It is the file-shaped sibling of
+                    spec.envFrom: use it for config or credentials a skill or tool reads
+                    from a path (e.g. a config file, a service-account JSON) rather than
+                    from an environment variable. The controller passes the source through
+                    as a Kubernetes primitive. Before creating the Sandbox it checks source
+                    existence and projected keys, without interpreting their values.
+
+                    Exactly one of SecretName or ConfigMapName must be set. MountPath is
+                    rejected at run creation if it lands on, under, or above a
+                    controller-managed mount (/opt/skills, /opt/skills-src, /run/konveyor,
+                    /workspace, /tmp), the Kubernetes service-account token mount, or another
+                    user mount. Invalid paths and missing items keys or subPaths fail the run
+                    with InvalidFileMounts. Missing sources are retried with Succeeded=Unknown
+                    and reason FileMountSourceNotFound, allowing apply-order races to recover.
+                  properties:
+                    configMapName:
+                      description: |-
+                        ConfigMapName names a ConfigMap in the same namespace to mount.
+                        Mutually exclusive with SecretName.
+                      minLength: 1
+                      type: string
+                    items:
+                      description: |-
+                        Items selects and optionally renames individual keys from the
+                        source object. When empty, every key is projected
+                        under MountPath using the key as the filename.
+                      items:
+                        description: Maps a string key to a path within a volume.
+                        properties:
+                          key:
+                            description: key is the key to project.
+                            type: string
+                          mode:
+                            description: |-
+                              mode is Optional: mode bits used to set permissions on this file.
+                              Must be an octal value between 0000 and 0777 or a decimal value between 0 and 511.
+                              YAML accepts both octal and decimal values, JSON requires decimal values for mode bits.
+                              If not specified, the volume defaultMode will be used.
+                              This might be in conflict with other options that affect the file
+                              mode, like fsGroup, and the result can be other mode bits set.
+                            format: int32
+                            type: integer
+                          path:
+                            description: |-
+                              path is the relative path of the file to map the key to.
+                              May not be an absolute path.
+                              May not contain the path element '..'.
+                              May not start with the string '..'.
+                            type: string
+                        required:
+                        - key
+                        - path
+                        type: object
+                      type: array
+                    mountPath:
+                      description: |-
+                        MountPath is the absolute path in the Sandbox container where the
+                        content is mounted. When SubPath is empty the whole object is
+                        mounted as a directory here (one file per key); when SubPath is set
+                        MountPath is the file path a single key lands at. Must not collide
+                        with a reserved mount or overlap another mount after path cleaning.
+                        The cleaned path is used in the Sandbox.
+                      minLength: 1
+                      type: string
+                    secretName:
+                      description: |-
+                        SecretName names a Secret in the same namespace to mount. Mutually
+                        exclusive with ConfigMapName.
+                      minLength: 1
+                      type: string
+                    subPath:
+                      description: |-
+                        SubPath mounts a single key from the source object as a file at
+                        MountPath instead of mounting the whole object as a directory. Its
+                        value is a path in the projected volume: a key name by default, or
+                        an Items path when keys are selected or renamed. Projected directories
+                        may also be mounted.
+                      type: string
+                  required:
+                  - mountPath
+                  type: object
+                  x-kubernetes-validations:
+                  - message: exactly one of secretName or configMapName must be set
+                    rule: has(self.secretName) != has(self.configMapName)
+                type: array
+                x-kubernetes-list-map-keys:
+                - mountPath
+                x-kubernetes-list-type: map
               gateway:
                 description: |-
                   Gateway selects the Gateway (provider/model combination) for all
