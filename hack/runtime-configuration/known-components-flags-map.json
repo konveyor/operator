@@ -1,0 +1,107 @@
+{
+  "_comment": "Component map for hack/report-images.sh. Maps RELATED_IMAGE_* env vars to human-readable component names, activation conditions (feature flags), and deployment name prefixes for drift detection. Update this file when images are added/removed from helm/templates/deployment.yaml.",
+  "components": {
+    "RELATED_IMAGE_TACKLE_HUB": {
+      "component": "Hub API Server",
+      "condition": "always",
+      "deployment_prefix": "tackle-hub"
+    },
+    "RELATED_IMAGE_TACKLE_UI": {
+      "component": "UI",
+      "condition": "always",
+      "deployment_prefix": "tackle-ui"
+    },
+    "RELATED_IMAGE_KEYCLOAK_SSO": {
+      "component": "Keycloak SSO",
+      "condition": "feature_auth_required",
+      "deployment_prefix": "tackle-keycloak-sso"
+    },
+    "RELATED_IMAGE_TACKLE_POSTGRES": {
+      "component": "Keycloak PostgreSQL",
+      "condition": "feature_auth_required",
+      "deployment_prefix": "tackle-keycloak-postgresql"
+    },
+    "RELATED_IMAGE_OAUTH_PROXY": {
+      "component": "OAuth Proxy",
+      "condition": "openshift_cluster",
+      "deployment_prefix": null
+    },
+    "RELATED_IMAGE_ADDON_ANALYZER": {
+      "component": "Analyzer Addon",
+      "condition": "always",
+      "deployment_prefix": null
+    },
+    "RELATED_IMAGE_ADDON_DISCOVERY": {
+      "component": "Language Discovery Addon",
+      "condition": "feature_discovery",
+      "deployment_prefix": null
+    },
+    "RELATED_IMAGE_ADDON_PLATFORM": {
+      "component": "Platform Addon",
+      "condition": "always",
+      "deployment_prefix": null
+    },
+    "RELATED_IMAGE_PROVIDER_JAVA": {
+      "component": "Java Provider",
+      "condition": "always",
+      "deployment_prefix": null
+    },
+    "RELATED_IMAGE_PROVIDER_GO": {
+      "component": "Go Provider",
+      "condition": "always",
+      "deployment_prefix": null
+    },
+    "RELATED_IMAGE_PROVIDER_PYTHON": {
+      "component": "Python Provider",
+      "condition": "always",
+      "deployment_prefix": null
+    },
+    "RELATED_IMAGE_PROVIDER_NODEJS": {
+      "component": "Node.js Provider",
+      "condition": "always",
+      "deployment_prefix": null
+    },
+    "RELATED_IMAGE_PROVIDER_C_SHARP": {
+      "component": "C# Provider",
+      "condition": "always",
+      "deployment_prefix": null
+    },
+    "RELATED_IMAGE_KANTRA": {
+      "component": "Kantra CLI",
+      "condition": "always",
+      "deployment_prefix": null
+    },
+    "RELATED_IMAGE_KAI": {
+      "component": "KAI Solution Server",
+      "condition": "kai_solution_server_enabled",
+      "deployment_prefix": "kai"
+    },
+    "RELATED_IMAGE_LIGHTSPEED_STACK": {
+      "component": "LLM Proxy",
+      "condition": "kai_llm_proxy_enabled",
+      "deployment_prefix": "llm-proxy"
+    }
+  },
+  "feature_flags": {
+    "feature_auth_required": {
+      "default": true,
+      "description": "Keycloak + PostgreSQL + OAuth Proxy"
+    },
+    "feature_discovery": {
+      "default": true,
+      "description": "Language Discovery Addon"
+    },
+    "kai_solution_server_enabled": {
+      "default": false,
+      "description": "KAI Solution Server"
+    },
+    "kai_llm_proxy_enabled": {
+      "default": false,
+      "description": "LLM Proxy (Lightspeed Stack)"
+    },
+    "openshift_cluster": {
+      "default": false,
+      "description": "OAuth Proxy sidecar"
+    }
+  }
+}
