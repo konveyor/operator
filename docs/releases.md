@@ -24,3 +24,22 @@ We use semantic versioning convention (semver) for stable releases, release bran
 1. Once the release PR is ready and merged, add it to the index image and push to quay.io
    1. `tools/push-release-metadata.py --old-version 1.9.9 --new-version 2.0.0`
    1. Create or refresh existing konveyor-tackle catalog source and validate `oc create -f konveyor-operator-catalog.yaml`
+
+## Retrying image readiness in the release workflow
+
+The **Create Release and Publish to Community Operators** workflow prepares bundle
+manifests, then runs **Wait for Release Images** (`wait-for-images`) before building
+and publishing the bundle image. The wait reads the operator image and all related
+images from the prepared manifests, so it checks the exact references the bundle
+will consume.
+
+Outstanding registry manifests are checked concurrently every three minutes, with
+one 120-minute deadline per attempt. Logs show newly available images, progress,
+and the remaining images with their last registry errors. Existing version tags
+count as ready; the workflow does not substitute older tags.
+
+If this job times out, resolve any upstream image-build failures and rerun
+**Wait for Release Images** from the workflow run. The retry reuses the prepared
+bundle artifact and starts a fresh wait budget without recreating successful
+component releases. Earlier waits required for dependent builds remain in
+`release-bases`.

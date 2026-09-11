@@ -37,6 +37,10 @@ inputs:
     description: "image uri for analyzer addon (ie. quay.io/<namespace>/<image-name>:<tag>)"
     required: false
     default: ""
+  addon_platform:
+    description: "image uri for platform addon (ie. quay.io/konveyor/tackle2-addon-platform:tag)"
+    required: false
+    default: ""
   addon_discovery:
     description: "image uri for discovery addon (ie. quay.io/<namespace>/<image-name>:<tag>)"
     required: false
@@ -105,6 +109,10 @@ inputs:
     description: "comma separated channel(s) this operator should be available on"
     required: false
     default: ""
+  build_bundle:
+    description: "Build the bundle image after generating manifests"
+    required: false
+    default: "true"
   push_bundle:
     description: ""
     required: false
@@ -130,6 +138,7 @@ runs:
       [ -n "${{ inputs.keycloak_sso }}" ] && OPTS+=" --set images.keycloak_sso=${{ inputs.keycloak_sso }}"
       [ -n "${{ inputs.tackle_ui }}" ] && OPTS+=" --set images.tackle_ui=${{ inputs.tackle_ui }}"
       [ -n "${{ inputs.addon_analyzer }}" ] && OPTS+=" --set images.addon_analyzer=${{ inputs.addon_analyzer }}"
+      [ -n "${{ inputs.addon_platform }}" ] && OPTS+=" --set images.addon_platform=${{ inputs.addon_platform }}"
       [ -n "${{ inputs.addon_discovery }}" ] && OPTS+=" --set images.addon_discovery=${{ inputs.addon_discovery }}"
       [ -n "${{ inputs.provider_go }}" ] && OPTS+=" --set images.provider_go=${{ inputs.provider_go }}"
       [ -n "${{ inputs.provider_python }}" ] && OPTS+=" --set images.provider_python=${{ inputs.provider_python }}"
@@ -147,7 +156,9 @@ runs:
       [ -n "${{ inputs.agent_skills }}" ] && OPTS+=" --set images.agent_skills=${{ inputs.agent_skills }}"
       HELM_OPTS="${OPTS}" make bundle
       cat ./bundle/manifests/konveyor-operator.clusterserviceversion.yaml
-      make bundle-build
+      if [ "${{ inputs.build_bundle }}" = "true" ]; then
+        make bundle-build
+      fi
     working-directory: ${{ github.action_path }}/../../..
     shell: bash
 

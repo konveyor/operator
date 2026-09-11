@@ -131,53 +131,32 @@ jobs:
     strategy:
       matrix:
         projects:
-          - repo: konveyor/tackle2-hub
-            image: konveyor/tackle2-hub
-          - repo: konveyor/tackle2-ui
-            image: konveyor/tackle2-ui
-          - repo: konveyor/tackle2-addon
-            image: ''
-          - repo: konveyor/tackle2-seed
-            image: ''
-          - repo: konveyor/operator
-            image: konveyor/tackle2-operator
-          - repo: konveyor/kantra
-            image: konveyor/kantra
-          - repo: konveyor/tackle2-addon-discovery
-            image: konveyor/tackle2-addon-discovery
-          - repo: konveyor/kai
-            image: konveyor/kai-solution-server
-          - repo: konveyor/c-sharp-analyzer-provider
-            image: konveyor/c-sharp-provider
-          - repo: konveyor/agentic-controller
-            # skills is built last, so waiting on it confirms the
-            # agentic-controller and all agent-* images have published
-            image: konveyor/skills
+          - konveyor/tackle2-hub
+          - konveyor/tackle2-ui
+          - konveyor/tackle2-addon
+          - konveyor/tackle2-seed
+          - konveyor/operator
+          - konveyor/kantra
+          - konveyor/tackle2-addon-discovery
+          - konveyor/kai
+          - konveyor/c-sharp-analyzer-provider
+          - konveyor/agentic-controller
       fail-fast: true
     steps:
       - uses: konveyor/release-tools/create-release@main
         with:
           version: ${{ inputs.version }}
           prev_version: ${{ inputs.previous_version }}
-          repository: ${{ matrix.projects.repo }}
+          repository: ${{ matrix.projects }}
           ref: ${{ inputs.branch }}
           github_token: ${{ secrets.GH_TOKEN }}
-      - if: ${{ matrix.projects.image != '' }}
-        run: |
-          #!/bin/bash
-          while ! docker pull quay.io/${{ matrix.projects.image }}:${{ inputs.version }} &> /dev/null; do
-              sleep 3m
-          done
-          docker image inspect quay.io/${{ matrix.projects.image }}:${{ inputs.version }}
 
-  build-bundle:
-    name: Build Bundle Manifest
+  prepare-bundle:
+    name: Prepare Bundle Manifests
     needs: release-components
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
     steps:
-    - name: Checkout Push to Registry action
+    - name: Checkout operator
       uses: actions/checkout@v4
       with:
         path: operator
@@ -215,14 +194,16 @@ jobs:
             fi
         done
 
-    - name: Build bundle
+    - name: Generate bundle manifests
       uses: ./operator/.github/actions/make-bundle
       with:
+        build_bundle: 'false'
         operator_bundle: quay.io/konveyor/tackle2-operator-bundle:${{ inputs.version }}
         operator: quay.io/konveyor/tackle2-operator:${{ inputs.version }}
         tackle_hub: quay.io/konveyor/tackle2-hub:${{ inputs.version }}
         tackle_ui: quay.io/konveyor/tackle2-ui:${{ inputs.version }}
         addon_analyzer: quay.io/konveyor/tackle2-addon-analyzer:${{ inputs.version }}
+        addon_platform: quay.io/konveyor/tackle2-addon-platform:${{ inputs.version }}
         addon_discovery: quay.io/konveyor/tackle2-addon-discovery:${{ inputs.version }}
         provider_go: quay.io/konveyor/go-external-provider:${{ inputs.version }}
         provider_python: quay.io/konveyor/python-external-provider:${{ inputs.version }}
@@ -246,6 +227,66 @@ jobs:
         # Bundle specific args
         version: ${{ inputs.version }}
         channels: ${{ inputs.operator_channels }}
+
+    - name: Save prepared bundle
+      uses: actions/upload-artifact@v4
+      with:
+        name: prepared-bundle
+        overwrite: true
+        path: |
+          operator/bundle/
+          operator/bundle.Dockerfile
+
+  wait-for-images:
+    name: Wait for Release Images
+    needs: prepare-bundle
+    runs-on: ubuntu-latest
+    # Leave time for checkout/setup and the script's final timeout report.
+    timeout-minutes: 130
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ inputs.branch }}
+
+    - uses: actions/download-artifact@v4
+      with:
+        name: prepared-bundle
+        path: prepared
+
+    - name: Wait for all bundle images
+      run: |
+        make yq
+        ./bin/yq -r '[.metadata.annotations.containerImage, .spec.relatedImages[].image] | unique | .[]' \
+          prepared/bundle/manifests/konveyor-operator.clusterserviceversion.yaml > images.txt
+        python3 hack/wait-for-images.py images.txt --timeout 7200 --interval 180
+
+  build-bundle:
+    name: Build Bundle Manifest
+    needs: wait-for-images
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        path: operator
+        ref: ${{ inputs.branch }}
+
+    - uses: actions/download-artifact@v4
+      with:
+        name: prepared-bundle
+        path: operator
+
+    - name: Set up bundle tools
+      working-directory: ./operator
+      run: |
+        make yq
+        echo "$PWD/bin" >> "$GITHUB_PATH"
+
+    - name: Log in to Quay.io
+      uses: redhat-actions/podman-login@v1
+      with:
+        registry: quay.io
+        username: ${{ secrets.QUAY_PUBLISH_ROBOT }}
+        password: ${{ secrets.QUAY_PUBLISH_TOKEN }}
 
     - name: Replace with digest
       working-directory: ./operator
