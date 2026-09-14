@@ -20,6 +20,7 @@ metadata:
   name: java-ee-to-quarkus
   labels:
     app.kubernetes.io/managed-by: agentic-controller-defaults
+    konveyor.io/managed: "true"
 spec:
   guide: "Migrate a Java EE application to Quarkus 3"
   stages:

@@ -20,6 +20,7 @@ metadata:
   name: migration-plan-agent
   labels:
     app.kubernetes.io/managed-by: agentic-controller-defaults
+    konveyor.io/managed: "true"
 spec:
   image: quay.io/konveyor/agent-java:latest
   skillCards:
