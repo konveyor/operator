@@ -10,6 +10,7 @@ spec:
   podSelector: {}
   policyTypes:
   - Ingress
+  - Egress
 ---
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
@@ -60,3 +61,36 @@ spec:
           network.openshift.io/policy-group: monitoring
   - ports:
     - port: {{ hub_metrics_port }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ app_name }}-egress
+  namespace: {{ app_namespace }}
+  labels:
+    app: {{ app_name }}
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  # Cluster DNS resolution (all operands resolve *.svc names).
+  - ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+  # Intra-namespace traffic (ui<->hub, hub->kai/llm-proxy, kai-api->kai-db, etc.).
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: {{ app_namespace }}
+  # Outbound web + Kubernetes API server. 443/80 cover analyzer package-repo
+  # pulls and external LLM providers; 443/6443 cover the host-networked API server.
+  - ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80
+    - protocol: TCP
+      port: 6443
