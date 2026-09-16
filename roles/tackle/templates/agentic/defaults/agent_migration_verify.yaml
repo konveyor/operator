@@ -6,6 +6,8 @@
 apiVersion: konveyor.io/v1alpha1
 kind: Agent
 metadata:
+  annotations:
+    konveyor.io/related-image: RELATED_IMAGE_AGENT_JAVA
   name: migration-verify-agent
   labels:
     app.kubernetes.io/managed-by: agentic-controller-defaults
