@@ -61,12 +61,18 @@ spec:
   policyTypes:
   - Egress
   egress:
-  # Cluster DNS resolution (all operands resolve *.svc names).
-  - ports:
-    - protocol: UDP
-      port: 53
-    - protocol: TCP
-      port: 53
+  # Cluster DNS resolution (all operands resolve *.svc names). OVN-Kubernetes
+  # does not match egress rules that carry a `ports` clause against a pod-backed
+  # ClusterIP such as the DNS service, so the DNS namespace is selected with no
+  # ports rather than `ports: 53`. Both the OpenShift (openshift-dns) and
+  # upstream Kubernetes (kube-system) DNS namespaces are allowed.
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: openshift-dns
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
   # Intra-namespace traffic (ui<->hub, hub->kai/llm-proxy, kai-api->kai-db, etc.).
   - to:
     - namespaceSelector:
