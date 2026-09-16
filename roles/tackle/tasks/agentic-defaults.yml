@@ -6,8 +6,9 @@
 # templates/agentic/defaults/ by that repo's sync-operator workflow -- do NOT
 # hand-edit them here; re-sync instead.
 #
-# They are plain konveyor.io CRs (no Jinja), so each file is applied as-is via
-# the k8s module's `src`. They depend only on the agentic controller's own CRDs
+# They are plain konveyor.io CRs (no Jinja). Image-bearing objects declare a
+# related-image environment variable, resolved before applying the object.
+# They depend only on the agentic controller's own CRDs
 # (installed with the operand through the OLM bundle), not on the Agent Sandbox
 # CRD. We gate them on agentic_state (enabled AND controller deployable) so the
 # cluster never carries curated content without a controller to reconcile it --
@@ -43,15 +44,15 @@
     file_type: file
   register: agentic_defaults
 
+- name: Reset agentic default reconciliation state
+  set_fact:
+    agentic_default_image_errors: []
+    agentic_desired_defaults: []
+
 - name: Apply agentic controller default content
-  k8s:
-    state: present
-    namespace: "{{ app_namespace }}"
-    src: "{{ item }}"
-    apply: true
-    server_side_apply:
-      field_manager: agentic-controller-defaults
-      force_conflicts: true
+  include_tasks: agentic-default.yml
+  vars:
+    agentic_default: "{{ lookup('file', item, rstrip=False) | from_yaml }}"
   loop: "{{ agentic_defaults.files | map(attribute='path') | sort }}"
   loop_control:
     label: "{{ item | basename }}"
@@ -73,8 +74,8 @@
   set_fact:
     agentic_desired_defaults: >-
       {{ agentic_desired_defaults | default([])
-         + [ (lookup('file', item) | from_yaml).kind
-             ~ '/' ~ (lookup('file', item) | from_yaml).metadata.name ] }}
+         + [ (lookup('file', item, rstrip=False) | from_yaml).kind
+             ~ '/' ~ (lookup('file', item, rstrip=False) | from_yaml).metadata.name ] }}
   loop: "{{ agentic_defaults.files | map(attribute='path') | sort }}"
   loop_control:
     label: "{{ item | basename }}"
