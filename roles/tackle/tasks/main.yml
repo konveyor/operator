@@ -359,6 +359,21 @@
     definition: "{{ lookup('template', 'networkpolicy.yml.j2') }}"
   when: feature_isolate_namespace|bool
 
+- name: "Remove Network Policies when namespace isolation is disabled"
+  k8s:
+    state: absent
+    api_version: networking.k8s.io/v1
+    kind: NetworkPolicy
+    namespace: "{{ app_namespace }}"
+    name: "{{ item }}"
+  loop:
+    - "{{ app_name }}-namespace"
+    - "{{ app_name }}-external"
+    - "{{ app_name }}-metrics"
+    - "{{ app_name }}-egress"
+    - "{{ app_name }}-deny-all"
+  when: not (feature_isolate_namespace|bool)
+
 - name: "Create Hub ServiceMonitor"
   k8s:
     state: present
