@@ -79,7 +79,10 @@ spec:
         matchLabels:
           kubernetes.io/metadata.name: {{ app_namespace }}
   # Outbound web + Kubernetes API server. 443/80 cover analyzer package-repo
-  # pulls and external LLM providers; 443/6443 cover the host-networked API server.
+  # pulls and external LLM providers. The host-networked API server is reached
+  # via a ClusterIP that DNATs to the node IP, and the CNI matches egress against
+  # that post-DNAT node IP + port, so the actual API server port must be allowed:
+  # 443 (managed Kubernetes), 6443 (OpenShift), 8443 (minikube/k3s-style).
   - ports:
     - protocol: TCP
       port: 443
@@ -87,6 +90,8 @@ spec:
       port: 80
     - protocol: TCP
       port: 6443
+    - protocol: TCP
+      port: 8443
 ---
 # Default-deny MUST be applied last: the operator reconciles these policies
 # sequentially, so the allow rules above must already exist before ingress and
