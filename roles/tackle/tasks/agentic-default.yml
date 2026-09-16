@@ -1,0 +1,38 @@
+---
+- name: Resolve the default content image binding
+  set_fact:
+    agentic_default_has_image: "{{ 'image' in (agentic_default.spec | default({})) }}"
+    agentic_default_image_binding: "{{ (agentic_default.metadata.annotations | default({}, true)).get('konveyor.io/related-image', '') }}"
+
+- name: Look up the configured related image
+  set_fact:
+    agentic_default_image: >-
+      {{ lookup('env', agentic_default_image_binding)
+         if agentic_default_has_image
+            and agentic_default_image_binding is string
+            and agentic_default_image_binding is match('^RELATED_IMAGE_[A-Z0-9_]+$')
+         else '' }}
+
+- name: Record an unresolved default content image
+  set_fact:
+    agentic_default_image_errors: >-
+      {{ agentic_default_image_errors
+         + [agentic_default.kind ~ '/' ~ agentic_default.metadata.name
+            ~ ': ' ~ (agentic_default_image_binding | default('missing konveyor.io/related-image annotation', true))
+            ~ ' must name a nonempty RELATED_IMAGE_* environment variable'] }}
+  when:
+    - agentic_default_has_image
+    - agentic_default_image | trim | length == 0
+
+- name: Apply the resolved default content
+  k8s:
+    state: present
+    namespace: "{{ app_namespace }}"
+    definition: >-
+      {{ agentic_default | combine({'spec': {'image': agentic_default_image}}, recursive=True)
+         if agentic_default_has_image else agentic_default }}
+    apply: true
+    server_side_apply:
+      field_manager: agentic-controller-defaults
+      force_conflicts: true
+  when: not agentic_default_has_image or agentic_default_image | trim | length > 0
