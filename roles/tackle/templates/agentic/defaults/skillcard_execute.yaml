@@ -9,6 +9,8 @@
 apiVersion: konveyor.io/v1alpha1
 kind: SkillCard
 metadata:
+  annotations:
+    konveyor.io/related-image: RELATED_IMAGE_AGENT_SKILLS
   name: execute
   labels:
     app.kubernetes.io/managed-by: agentic-controller-defaults
