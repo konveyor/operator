@@ -1,16 +1,4 @@
 ---
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: {{ app_name }}-deny-all
-  namespace: {{ app_namespace }}
-  labels:
-    app: {{ app_name }}
-spec:
-  podSelector: {}
-  policyTypes:
-  - Ingress
----
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
@@ -60,3 +48,70 @@ spec:
           network.openshift.io/policy-group: monitoring
   - ports:
     - port: {{ hub_metrics_port }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ app_name }}-egress
+  namespace: {{ app_namespace }}
+  labels:
+    app: {{ app_name }}
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  # Cluster DNS resolution (all operands resolve *.svc names). OVN-Kubernetes
+  # does not match egress rules that carry a `ports` clause against a pod-backed
+  # ClusterIP such as the DNS service, so the DNS namespace is selected with no
+  # ports rather than `ports: 53`. Both the OpenShift (openshift-dns) and
+  # upstream Kubernetes (kube-system) DNS namespaces are allowed.
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: openshift-dns
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+  # Intra-namespace traffic (ui<->hub, hub->kai/llm-proxy, kai-api->kai-db, etc.).
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: {{ app_namespace }}
+  # Outbound web + Kubernetes API server. 443/80 cover analyzer package-repo
+  # pulls and external LLM providers. The host-networked API server is reached
+  # via a ClusterIP that DNATs to the node IP, and the CNI matches egress against
+  # that post-DNAT node IP + port, so the actual API server port must be allowed:
+  # 443 (managed Kubernetes), 6443 (OpenShift), 8443 (minikube/k3s-style).
+  - ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80
+    - protocol: TCP
+      port: 6443
+    - protocol: TCP
+      port: 8443
+---
+# Default-deny ingress. Egress is deliberately NOT denied here: the
+# {{ app_name }}-egress policy above already isolates every pod for egress
+# (podSelector: {} with policyTypes: [Egress]) and carries the egress
+# allow-list, so it is the single source of egress policy. Keeping egress out
+# of this blanket deny means:
+#   * deleting or losing {{ app_name }}-egress reopens egress, so the operator
+#     can still reach the API server to recreate it instead of deadlocking; and
+#   * tearing the policies down when isolation is disabled never leaves a window
+#     of default-deny egress with no allow rules.
+# Still applied last so the ingress allow rules above exist before ingress is
+# denied (applying this first would briefly deny ingress to already-running pods).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ app_name }}-deny-all
+  namespace: {{ app_namespace }}
+  labels:
+    app: {{ app_name }}
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
