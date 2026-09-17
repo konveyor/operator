@@ -53,11 +53,18 @@ is restricted to:
   (443 managed Kubernetes, 6443 OpenShift, 8443 minikube/k3s).
 
 **Reaching external systems on non-standard ports.** Because the allow-list is
-port-based, an addon that must reach an external or on-prem system on a port other
-than 80/443/6443/8443 (for example an internal Cloud Foundry / Tanzu Application
-Service API or UAA fronted on a custom port, an internal artifact repository, LDAP,
-a database, or git over SSH) will have its connection dropped by the default-deny
-policy. NetworkPolicies are additive, so rather than editing the operator's policies,
+port-based, any pod that must reach an external or on-prem system on a port other
+than 80/443/6443/8443 will have its connection dropped by the default-deny policy.
+This is not just an addon edge case — it affects several supported configurations:
+
+* A hub **Proxy** configured on a non-standard port (the proxy port is free-form).
+* Analyzing an application whose git repository URL uses a non-standard port.
+* Addons reaching an internal Cloud Foundry / Tanzu Application Service API or UAA
+  fronted on a custom port, an internal artifact repository, LDAP, a database, or
+  git over SSH.
+
+These ports are user-defined and cannot be enumerated in the operator's allow-list.
+NetworkPolicies are additive, so rather than editing the operator's policies,
 add your **own** supplemental NetworkPolicy in the application namespace allowing the
 specific destination and port. The operator does not manage or remove policies it did
 not create, so a supplemental policy survives reconciliation:
