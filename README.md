@@ -40,6 +40,57 @@ Tackle can provide namespace network isolation if a supported CNI, such as [Cali
 
 `$ minikube start --network-plugin=cni --cni=calico`
 
+When `feature_isolate_namespace` is enabled (the default), the operator applies a
+default-deny NetworkPolicy in the application namespace plus an allow-list. Egress
+from **every pod in the namespace — including addon/task pods launched by the hub —**
+is restricted to:
+
+* Cluster DNS.
+* Traffic within the application namespace (ui ↔ hub, hub ↔ kai/llm-proxy, etc.).
+* Outbound TCP on ports **80, 443, 6443, and 8443** to any destination. 80/443 cover
+  analyzer package-repo pulls and external LLM providers; 6443/8443 (plus 443) cover
+  the host-networked Kubernetes API server, whose port varies by distribution
+  (443 managed Kubernetes, 6443 OpenShift, 8443 minikube/k3s).
+
+**Reaching external systems on non-standard ports.** Because the allow-list is
+port-based, any pod that must reach an external or on-prem system on a port other
+than 80/443/6443/8443 will have its connection dropped by the default-deny policy.
+This is not just an addon edge case — it affects several supported configurations:
+
+* A hub **Proxy** configured on a non-standard port (the proxy port is free-form).
+* Analyzing an application whose git repository URL uses a non-standard port.
+* Addons reaching an internal Cloud Foundry / Tanzu Application Service API or UAA
+  fronted on a custom port, an internal artifact repository, LDAP, a database, or
+  git over SSH.
+
+These ports are user-defined and cannot be enumerated in the operator's allow-list.
+NetworkPolicies are additive, so rather than editing the operator's policies,
+add your **own** supplemental NetworkPolicy in the application namespace allowing the
+specific destination and port. The operator does not manage or remove policies it did
+not create, so a supplemental policy survives reconciliation:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-pcf
+  namespace: konveyor-tackle   # your application namespace
+spec:
+  podSelector: {}              # or narrow to the addon's pod labels
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 10.0.0.0/24      # your PCF/system CIDR
+    ports:
+    - protocol: TCP
+      port: 8443               # the non-standard port your system uses
+```
+
+Alternatively, set `feature_isolate_namespace: false` to disable namespace isolation
+entirely (all-or-nothing); the operator then removes the policies it created.
+
 ## Konveyor Operator Installation on k8s
 
 ### Installing _released versions_
