@@ -92,6 +92,17 @@ spec:
       port: 6443
     - protocol: TCP
       port: 8443
+  # Self-hosted Maven artifact repositories used by the analyzer to resolve an
+  # application's dependencies. Sonatype Nexus defaults to 8081 and JFrog
+  # Artifactory to 8081/8082, which fall outside the web/API ports above; allow
+  # them so analysis against an on-prem repository works out of the box. A
+  # repository on any other custom port still needs the supplemental
+  # NetworkPolicy pattern documented in the README.
+  - ports:
+    - protocol: TCP
+      port: 8081
+    - protocol: TCP
+      port: 8082
 ---
 # Default-deny ingress. Egress is deliberately NOT denied here: the
 # {{ app_name }}-egress policy above already isolates every pod for egress
