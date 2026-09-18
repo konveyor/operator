@@ -47,10 +47,12 @@ is restricted to:
 
 * Cluster DNS.
 * Traffic within the application namespace (ui ↔ hub, hub ↔ kai/llm-proxy, etc.).
-* Outbound TCP on ports **80, 443, 6443, and 8443** to any destination. 80/443 cover
-  analyzer package-repo pulls and external LLM providers; 6443/8443 (plus 443) cover
-  the host-networked Kubernetes API server, whose port varies by distribution
-  (443 managed Kubernetes, 6443 OpenShift, 8443 minikube/k3s).
+* Outbound TCP on ports **80, 443, 6443, 8443, 8081, and 8082** to any destination.
+  80/443 cover analyzer package-repo pulls and external LLM providers; 6443/8443 (plus
+  443) cover the host-networked Kubernetes API server, whose port varies by distribution
+  (443 managed Kubernetes, 6443 OpenShift, 8443 minikube/k3s); 8081/8082 cover self-hosted
+  Maven artifact repositories on their default ports (Sonatype Nexus 8081, JFrog
+  Artifactory 8081/8082).
 
 **Reaching external systems on non-standard ports.** Because the allow-list is
 port-based, any pod that must reach an external or on-prem system on a port other
@@ -60,8 +62,9 @@ This is not just an addon edge case — it affects several supported configurati
 * A hub **Proxy** configured on a non-standard port (the proxy port is free-form).
 * Analyzing an application whose git repository URL uses a non-standard port.
 * Addons reaching an internal Cloud Foundry / Tanzu Application Service API or UAA
-  fronted on a custom port, an internal artifact repository, LDAP, a database, or
-  git over SSH.
+  fronted on a custom port, an internal artifact repository on a port other than the
+  Nexus/Artifactory defaults (8081/8082) that are already allowed, LDAP, a database,
+  or git over SSH.
 
 These ports are user-defined and cannot be enumerated in the operator's allow-list.
 NetworkPolicies are additive, so rather than editing the operator's policies,
