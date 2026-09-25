@@ -172,6 +172,21 @@ either by applying an upstream [release manifest](https://github.com/kubernetes-
 or from its operator (available on [OperatorHub](https://operatorhub.io/) and in
 the OpenShift catalog).
 
+Steering a live run from the Konveyor UI (sending free-text redirects into the
+agent's current turn and **Stop the agent's turn** in the run's session panel)
+is a separate opt-in that stays off even when the console is on:
+
+```
+spec:
+  agentic_enabled: true
+  agentic_steer_enabled: true
+```
+
+The operator passes this to the UI as `AGENTIC_STEER_ENABLED`. It has no effect
+unless `agentic_enabled` is also `true`. Anyone who can open a run's session
+panel can redirect the run once this is on, so leave it off unless your team
+needs it.
+
 For local development, `hack/install-konveyor.sh` can install the Agent Sandbox
 prerequisite and enable the controller in one step:
 
