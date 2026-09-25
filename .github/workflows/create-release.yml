@@ -256,7 +256,8 @@ jobs:
     - name: Wait for all bundle images
       run: |
         make yq
-        ./bin/yq -r '[.metadata.annotations.containerImage, .spec.relatedImages[].image] | unique | .[]' \
+        export PATH="$PWD/bin:$PATH"
+        yq '[.metadata.annotations.containerImage, .spec.relatedImages[].image] | unique | .[]' \
           prepared/bundle/manifests/konveyor-operator.clusterserviceversion.yaml > images.txt
         python3 hack/wait-for-images.py images.txt --timeout 7200 --interval 180
 
