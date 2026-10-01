@@ -1,0 +1,24 @@
+{
+  "reset": true,
+  "models": ["test-model"],
+  "responses": [
+    {
+      "pattern": "(?s)<turn-context>",
+      "tool_calls": [
+        {
+          "id": "call_e2e_1",
+          "type": "function",
+          "function": {
+            "name": "shell",
+            "arguments": "{\"command\":\"ls -1\"}"
+          }
+        }
+      ]
+    },
+    {
+      "pattern": "",
+      "response": "Listed the repository files.",
+      "times": -1
+    }
+  ]
+}

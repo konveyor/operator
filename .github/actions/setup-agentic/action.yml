@@ -1,0 +1,95 @@
+name: setup-agentic
+description: |
+  An LLM emulator and a Gateway pointing at it, so an agentic run can be
+  exercised with no model credentials and no egress to a provider.
+
+  Agent Sandbox must already be installed - use install_agent_sandbox on the
+  install-konveyor action, since it has to precede the Tackle CR.
+
+  A run also needs an application to run against. That is test data rather
+  than agentic infrastructure, and nothing about it is agentic-specific, so it
+  is the seed-application action instead.
+
+inputs:
+  namespace:
+    description: "Namespace Konveyor is installed in"
+    required: false
+    default: "konveyor-tackle"
+  tackle_name:
+    description: "Name of the Tackle CR"
+    required: false
+    default: "tackle"
+  llemulator_script:
+    description: |
+      The conversation to serve: either JSON encoded inline, or a path to a
+      JSON file, since a scripted conversation can outgrow what fits
+      comfortably in an input. Anything starting with { is read as content,
+      anything else as a path relative to the workspace.
+
+      Defaults to a conversation answering with a shell tool call, so a run
+      executes something rather than the agent receiving text and stopping.
+    required: false
+    default: ""
+  llemulator_model:
+    description: |
+      Model name the Gateway asks for. Must be one the script above declares,
+      or every run fails with a provider error that says nothing about the
+      Gateway, so it moves with llemulator_script.
+    required: false
+    default: "test-model"
+  llemulator_token:
+    description: |
+      Bearer token the emulator scopes its session to, and the Gateway's
+      credential. Only worth changing to run two scenarios side by side.
+    required: false
+    default: "not-a-real-key"
+  gateway_name:
+    description: "Name for the Gateway this creates"
+    required: false
+    default: "llemulator"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up the agentic fixtures
+      env:
+        NAMESPACE: ${{ inputs.namespace }}
+        TACKLE_NAME: ${{ inputs.tackle_name }}
+        GATEWAY_NAME: ${{ inputs.gateway_name }}
+        LLEMULATOR_MODEL: ${{ inputs.llemulator_model }}
+        LLEMULATOR_TOKEN: ${{ inputs.llemulator_token }}
+        LLEMULATOR_SCRIPT_JSON: ${{ inputs.llemulator_script }}
+      run: |
+        if [ -n "${LLEMULATOR_SCRIPT_JSON}" ]; then
+          case "$(printf '%s' "${LLEMULATOR_SCRIPT_JSON}" | tr -d '[:space:]' | cut -c1)" in
+            '{')
+              LLEMULATOR_SCRIPT=$(mktemp)
+              printf '%s' "${LLEMULATOR_SCRIPT_JSON}" > "${LLEMULATOR_SCRIPT}"
+              ;;
+            *)
+              LLEMULATOR_SCRIPT="${LLEMULATOR_SCRIPT_JSON}"
+              if [ ! -f "${LLEMULATOR_SCRIPT}" ]; then
+                echo "llemulator_script is neither JSON nor a file: ${LLEMULATOR_SCRIPT}" >&2
+                exit 1
+              fi
+              ;;
+          esac
+          export LLEMULATOR_SCRIPT
+        fi
+        ${{ github.action_path }}/../../../test/e2e/agentic/setup-agentic.sh
+      shell: bash
+
+    - name: Emulator request log
+      if: ${{ failure() }}
+      # The sandbox pod is gone by the time anyone reads this, so the
+      # emulator's log is the only record of the conversation.
+      env:
+        NAMESPACE: ${{ inputs.namespace }}
+      run: |
+        kubectl -n "${NAMESPACE}" logs deployment/llemulator --tail=400 || true
+        kubectl -n "${NAMESPACE}" get agentruns.konveyor.io -o wide || true
+        # -o yaml, because the printer columns omit the condition message and
+        # that message is the reason.
+        kubectl -n "${NAMESPACE}" get gateways.konveyor.io -o yaml || true
+        kubectl -n "${NAMESPACE}" get agents.konveyor.io || true
+      shell: bash

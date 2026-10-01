@@ -18,6 +18,19 @@ inputs:
     description: "Disable maven central search"
     required: false
     default: "true"
+  install_agent_sandbox:
+    description: |
+      Install Agent Sandbox. Required before a Tackle CR with agentic_enabled,
+      which otherwise parks at AgenticControllerReady=AgentSandboxMissing.
+    required: false
+    default: "false"
+  seed_application:
+    description: |
+      JSON encoded application to create in the Hub once it is up, for tests
+      that need something to run against. The Hub's own schema, so there is no
+      seeding format to learn. Empty creates nothing.
+    required: false
+    default: ""
   use_helm:
     description: "Use Helm for installation instead of operator-sdk/OLM"
     required: false
@@ -60,8 +73,16 @@ runs:
       TACKLE_CR: ${{ inputs.tackle_cr }}
       DISABLE_MAVEN_SEARCH: ${{ inputs.disable_maven_search }}
       USE_HELM: ${{ inputs.use_helm }}
+      INSTALL_AGENT_SANDBOX: ${{ inputs.install_agent_sandbox }}
     run: make install-konveyor
     working-directory: ${{ github.action_path }}/../../..
+    shell: bash
+  - name: Seed an application
+    if: ${{ inputs.seed_application != '' }}
+    env:
+      NAMESPACE: ${{ inputs.namespace }}
+      APP_JSON: ${{ inputs.seed_application }}
+    run: ${{ github.action_path }}/../../../test/e2e/seed-application.sh
     shell: bash
   - name: Upload logs on fail
     if: ${{ failure() }}
