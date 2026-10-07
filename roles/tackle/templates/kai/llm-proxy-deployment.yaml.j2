@@ -28,13 +28,18 @@ spec:
       containers:
         - name: llm-proxy
           image: "{{ kai_llm_proxy_image_fqin }}"
-          command: ["/app-root/.venv/bin/llama"]
+          # lightspeed-stack ships the server CLI as `llama` before 0.7.0 and
+          # `ogx` after the llama-stack -> OGX rename, so run whichever exists.
+          # TODO: switch to a standalone OGX server image instead of borrowing
+          # the CLI from lightspeed-stack (MTA-7992).
+          command: ["/bin/sh", "-c"]
           args:
-            - stack
-            - run
-            - /app/run.yaml
-            - --port
-            - "8321"
+            - |
+              if command -v ogx >/dev/null 2>&1; then
+                exec ogx run /app/run.yaml --port 8321 --insecure
+              else
+                exec llama stack run /app/run.yaml --port 8321
+              fi
           ports:
             - containerPort: 8321
               name: http
