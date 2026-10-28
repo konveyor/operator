@@ -1,2 +1,4 @@
 # This file contains ignores rule violations for ansible-lint
 roles/tackle/tasks/main.yml var-naming[no-role-prefix]
+# Component defaults are public Tackle CR fields with established component prefixes.
+roles/tackle/defaults/main.yml var-naming[no-role-prefix]
