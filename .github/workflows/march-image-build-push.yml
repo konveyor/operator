@@ -20,6 +20,19 @@ jobs:
     strategy:
       fail-fast: false
     steps:
+    - name: Compute image tag
+      shell: bash
+      run: |
+        # Derive the tag the component images are published under for this ref so
+        # the bundle/index reference release images on release branches instead of
+        # main's :latest. Mirrors release-tools/build-push-quay tagging:
+        #   main -> latest, release-* -> branch name, tags -> tag name.
+        TAG="${GITHUB_REF#refs/heads/}"
+        TAG="${TAG#refs/tags/}"
+        if [ "$TAG" = "main" ]; then TAG="latest"; fi
+        echo "IMAGE_TAG=$TAG" >> "$GITHUB_ENV"
+        echo "Using image tag: $TAG"
+
     - name: Build Operator Container
       uses: konveyor/release-tools/build-push-quay@main
       with:
@@ -40,6 +53,14 @@ jobs:
         image_name: "tackle2-operator-bundle"
         image_namespace: "konveyor"
         image_registry: "quay.io"
+        pre_build_cmd: |
+          # Repin konveyor image references in the bundle CSV from :latest to the
+          # tag for this ref, so the published bundle (and the operator image OLM
+          # deploys from it) matches the release branch instead of main. Only
+          # quay.io/konveyor/* is rewritten; third-party images (postgres, oauth
+          # proxy, ...) keep their tags. On main IMAGE_TAG=latest, so this is a no-op.
+          find bundle/manifests -type f -name '*.yaml' -print0 \
+            | xargs -0 sed -i -E 's#(quay\.io/konveyor/[A-Za-z0-9._-]+):latest#\1:${{ env.IMAGE_TAG }}#g'
         quay_publish_robot: ${{ secrets.QUAY_PUBLISH_ROBOT }}
         quay_publish_token: ${{ secrets.QUAY_PUBLISH_TOKEN }}
         ref: ${{ github.ref }}
@@ -49,9 +70,11 @@ jobs:
       with:
         architectures: "amd64, arm64"
         pre_build_cmd: |
+          # Catalog the bundle for this ref, not main's :latest, so
+          # operator-index:release-* points at the matching release bundle.
           CONTAINER_RUNTIME=podman \
-          CATALOG_IMG=quay.io/konveyor/tackle2-operator-index:latest \
-          BUNDLE_IMG=quay.io/konveyor/tackle2-operator-bundle:latest \
+          CATALOG_IMG=quay.io/konveyor/tackle2-operator-index:${{ env.IMAGE_TAG }} \
+          BUNDLE_IMG=quay.io/konveyor/tackle2-operator-bundle:${{ env.IMAGE_TAG }} \
           make catalog-index
         containerfile: "./index.Dockerfile"
         image_name: "tackle2-operator-index"
