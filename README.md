@@ -162,6 +162,12 @@ spec:
   agentic_enabled: true
 ```
 
+The agentic controller currently requires the operator's installation namespace.
+Helm/OLM creates the controller and metrics-reader ServiceAccounts there, so
+`app_namespace`, the controller Deployment, and the metrics token Secret must
+use that same namespace. Deploying this operand into a different namespace is
+not currently supported.
+
 Set the controller's CPU and memory requests and limits in the Tackle CR spec.
 The defaults are limits of `500m` CPU and `400Mi` memory, and requests of `10m`
 CPU and `64Mi` memory. For example, raise the memory limit to `512Mi`:
@@ -184,6 +190,17 @@ and namespace to retain metrics. OpenShift supplies the serving certificate
 and trusted service CA; other Kubernetes installations must supply the
 `agentic-controller-metrics-tls` Secret and the matching CA in
 `agentic-controller-metrics-ca` (`service-ca.crt`).
+
+When namespace isolation is enabled, Prometheus in another namespace needs
+an ingress NetworkPolicy allowing access to the controller on port 8443, or its
+namespace must carry the `network.openshift.io/policy-group: monitoring` label
+selected by the installed metrics policy. Prometheus in the installation
+namespace is already allowed by the intra-namespace policy.
+
+On non-OpenShift installations, create the TLS Secret before starting the
+controller. If the controller started without the certificate files, restart it
+after creating the Secret so it loads the supplied certificate; it otherwise
+continues serving the self-signed certificate created at startup.
 
 The controller also writes structured memory samples to its logs at startup
 and every 30 seconds, independently of Prometheus. Configure the interval with
