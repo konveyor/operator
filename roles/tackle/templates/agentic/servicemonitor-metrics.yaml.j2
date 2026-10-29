@@ -1,0 +1,32 @@
+# Synced to the operator by hack/sync-operator.sh; edit the source here.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: "{{ agentic_component_name }}-metrics"
+  namespace: "{{ app_namespace }}"
+  labels:
+    app.kubernetes.io/name: "{{ agentic_component_name }}-metrics"
+    app.kubernetes.io/component: "{{ agentic_component_name }}"
+    app.kubernetes.io/part-of: "{{ app_name }}"
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: "{{ agentic_component_name }}-metrics"
+      app.kubernetes.io/component: "{{ agentic_component_name }}"
+      app.kubernetes.io/part-of: "{{ app_name }}"
+  endpoints:
+    - port: https
+      path: /metrics
+      interval: 30s
+      scheme: https
+      authorization:
+        type: Bearer
+        credentials:
+          name: "{{ agentic_component_name }}-metrics-token"
+          key: token
+      tlsConfig:
+        serverName: "{{ agentic_component_name }}-metrics.{{ app_namespace }}.svc"
+        ca:
+          configMap:
+            name: "{{ agentic_component_name }}-metrics-ca"
+            key: service-ca.crt
