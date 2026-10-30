@@ -162,6 +162,57 @@ spec:
   agentic_enabled: true
 ```
 
+The agentic controller currently requires the operator's installation namespace.
+Helm/OLM creates the controller and metrics-reader ServiceAccounts there, so
+`app_namespace`, the controller Deployment, and the metrics token Secret must
+use that same namespace. Deploying this operand into a different namespace is
+not currently supported.
+
+Set the controller's CPU and memory requests and limits in the Tackle CR spec.
+The defaults are limits of `500m` CPU and `400Mi` memory, and requests of `10m`
+CPU and `64Mi` memory. For example, raise the memory limit to `512Mi`:
+
+```yaml
+spec:
+  agentic_enabled: true
+  agentic_container_limits_memory: "512Mi"
+```
+
+The other resource settings retain their defaults unless overridden with
+`agentic_container_limits_cpu`, `agentic_container_requests_cpu`, or
+`agentic_container_requests_memory`. Values use Kubernetes resource quantities.
+These settings apply to the controller's `manager` container; agent workload
+pods have separate resource settings.
+
+The operator enables authenticated HTTPS metrics and creates a ServiceMonitor
+when the cluster supports it. A Prometheus instance must select that monitor
+and namespace to retain metrics. OpenShift supplies the serving certificate
+and trusted service CA; other Kubernetes installations must supply the
+`agentic-controller-metrics-tls` Secret and the matching CA in
+`agentic-controller-metrics-ca` (`service-ca.crt`).
+
+When namespace isolation is enabled, Prometheus in another namespace needs
+an ingress NetworkPolicy allowing access to the controller on port 8443, or its
+namespace must carry the `network.openshift.io/policy-group: monitoring` label
+selected by the installed metrics policy. Prometheus in the installation
+namespace is already allowed by the intra-namespace policy.
+
+On non-OpenShift installations, create the TLS Secret before starting the
+controller. If the controller started without the certificate files, restart it
+after creating the Secret so it loads the supplied certificate; it otherwise
+continues serving the self-signed certificate created at startup.
+
+The controller also writes structured memory samples to its logs at startup
+and every 30 seconds, independently of Prometheus. Configure the interval with
+`agentic_memory_log_interval` (`"0"` disables samples). Profiling is disabled
+by default; enable it temporarily with
+`agentic_pprof_bind_address: "127.0.0.1:6060"` and use port-forward to collect
+heap and goroutine profiles. Profiling accepts only loopback listeners and has
+no Service port. `agentic_metrics_enabled: false` disables the metrics endpoint
+and removes its scrape resources. See the controller's
+[memory diagnostics guide](https://github.com/konveyor/agentic-controller/blob/main/docs/controller-diagnostics.md)
+for capture commands and interpretation.
+
 The agentic controller requires [Agent Sandbox](https://github.com/kubernetes-sigs/agent-sandbox)
 to be installed in the cluster first: it watches and owns `Sandbox`
 (`sandboxes.agents.x-k8s.io`) objects, so the operator only deploys it once that
