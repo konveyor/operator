@@ -71,7 +71,7 @@ metadata:
     app.kubernetes.io/part-of: {{ app_name }}
 spec:
   addon: ^({{ analyzer_name }}|{{ tech_discovery_name }})$
-  selector: tag:Language=Golang
+  selector: tag:Language=Go
   container:
     name: {{ provider_go_name }}
     image: {{ provider_go_image_fqin }}
