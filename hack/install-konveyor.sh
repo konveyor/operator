@@ -209,9 +209,9 @@ start_agent_sandbox() {
 # uses 'olm', while OpenShift ships it in 'openshift-operator-lifecycle-manager'.
 # The packageserver CSV lives in the OLM namespace in both cases.
 #
-# Listing CRDs succeeds whenever the API is reachable, so a failure there is a
-# genuine error (return 1, caller fails fast); a missing CSV CRD just means OLM
-# isn't installed yet (return empty, caller retries).
+# A failure to query the API returns 1 so the caller can tell it apart from a
+# missing CSV CRD, which just means OLM isn't installed yet (return empty,
+# caller retries).
 get_olm_namespace() {
   local crds
   crds=$(kubectl get crd -o name) || return 1
@@ -225,6 +225,10 @@ start_bundle() {
   
   # Precondition: Wait for OLM operators to be ready
   echo "Waiting for OLM operators to be ready..."
+  # The API server can briefly fail requests while OLM installs its CRDs, so
+  # only treat repeated consecutive probe failures as fatal.
+  local max_probe_failures=12
+  local probe_failures=0
   while true; do
     local remaining=$(get_remaining_time)
     if [ $remaining -le 0 ]; then
@@ -232,9 +236,22 @@ start_bundle() {
       return 1
     fi
     
-    # Discover the OLM namespace (works for both self-installed OLM and OpenShift)
+    # Discover the OLM namespace (works for both self-installed OLM and OpenShift).
+    # Check the status explicitly: a bare assignment would let 'set -e' kill
+    # this background subshell without any message.
     local olm_namespace
-    olm_namespace=$(get_olm_namespace)
+    if ! olm_namespace=$(get_olm_namespace); then
+      probe_failures=$((probe_failures + 1))
+      if [ $probe_failures -ge $max_probe_failures ]; then
+        echo "Error: OLM probe failed ${probe_failures} times in a row, giving up"
+        return 1
+      fi
+      echo "  OLM probe failed (${probe_failures}/${max_probe_failures}), will retry in 5s..."
+      sleep 5
+      continue
+    fi
+    probe_failures=0
+
     if [ -n "${olm_namespace}" ]; then
       echo "  OLM detected in namespace '${olm_namespace}', checking if operators are ready..."
       if kubectl wait --for=condition=Available deployment/olm-operator deployment/catalog-operator -n "${olm_namespace}" --timeout=30s 2>/dev/null; then
