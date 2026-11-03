@@ -22,9 +22,14 @@ class ActionModule(ActionBase):
         path = os.environ["AGENTIC_METRICS_TEST_STATE"]
         with open(path) as stream:
             state = json.load(stream)
-        if self._task.action == "k8s_info":
-            return {"resources": [{}] if task_vars.get("agentic_test_monitor_present", True) else []}
         args = self._task.args
+        if self._task.action == "k8s_info":
+            if args["kind"] == "CustomResourceDefinition":
+                return {"resources": [{}] if task_vars.get("agentic_test_monitor_present", True) else []}
+            return {"resources": [obj for obj in state["objects"].values()
+                                  if obj["kind"] == args["kind"]
+                                  and obj["metadata"]["name"] == args["name"]
+                                  and obj["metadata"]["namespace"] == args["namespace"]]}
         template = str(Path(task_vars["agentic_test_templates"]) / args["template"])
         expression = "{{ lookup('template', " + repr(template) + ") | from_yaml }}"
         # Ansible 2.19+ requires dynamically built test expressions to be trusted.
@@ -39,6 +44,11 @@ class ActionModule(ActionBase):
         if args["state"] == "absent":
             state["objects"].pop(key, None)
         else:
+            if obj["kind"] == "ConfigMap":
+                # Model CA data provided by the service CA controller or user.
+                data = task_vars["agentic_test_ca_data"]
+                if data:
+                    obj["data"] = data
             state["objects"][key] = obj
         state["calls"].append([key, args["state"]])
         with open(path, "w") as stream:
@@ -48,7 +58,7 @@ class ActionModule(ActionBase):
 
 
 class MetricsLifecycleTest(unittest.TestCase):
-    def run_metrics(self, changes=None, monitor_present=True):
+    def run_metrics(self, changes=None, monitor_present=True, ca_data=None, openshift=False):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory)
             plugins = path / "action_plugins"
@@ -64,7 +74,10 @@ class MetricsLifecycleTest(unittest.TestCase):
             play = [{
                 "hosts": "localhost", "connection": "local", "gather_facts": False,
                 "vars_files": [str(ROOT / "roles/tackle/defaults/main.yml")],
-                "vars": {"agentic_state": "present", "agentic_test_monitor_present": monitor_present,
+                "vars": {"agentic_state": "present", "app_namespace": "test",
+                         "openshift_cluster": openshift,
+                         "agentic_test_monitor_present": monitor_present,
+                         "agentic_test_ca_data": {"service-ca.crt": "test-ca"} if ca_data is None else ca_data,
                          "agentic_test_templates": str(ROOT / "roles/tackle/templates")},
                 "tasks": tasks,
             }]
@@ -80,11 +93,33 @@ class MetricsLifecycleTest(unittest.TestCase):
             return json.loads(state.read_text())
 
     def test_enabled_metrics_create_scrape_resources(self):
-        state = self.run_metrics()
-        self.assertEqual(set(state["objects"]), {
-            "Service/agentic-controller-metrics", "ConfigMap/agentic-controller-metrics-ca",
-            "Secret/agentic-controller-metrics-token", "ServiceMonitor/agentic-controller-metrics",
-        })
+        for openshift in (False, True):
+            with self.subTest(openshift=openshift):
+                state = self.run_metrics(openshift=openshift)
+                self.assertEqual(set(state["objects"]), {
+                    "Service/agentic-controller-metrics", "ConfigMap/agentic-controller-metrics-ca",
+                    "Secret/agentic-controller-metrics-token", "ServiceMonitor/agentic-controller-metrics",
+                })
+
+    def test_missing_or_empty_ca_does_not_create_monitor(self):
+        for data in ({}, {"ca.crt": "wrong-key"}, {"service-ca.crt": ""}, {"service-ca.crt": "  \n "}):
+            with self.subTest(data=data):
+                state = self.run_metrics(ca_data=data)
+                self.assertEqual(len(state["objects"]), 3)
+                self.assertNotIn("ServiceMonitor/agentic-controller-metrics", state["objects"])
+
+    def test_ca_arrival_creates_monitor(self):
+        state = self.run_metrics({"agentic_test_ca_data": {"service-ca.crt": "test-ca"}}, ca_data={})
+        monitor_calls = [mode for key, mode in state["calls"] if key.startswith("ServiceMonitor/")]
+        self.assertEqual(monitor_calls, ["absent", "present"])
+        self.assertIn("ServiceMonitor/agentic-controller-metrics", state["objects"])
+
+    def test_ca_removal_cleans_up_existing_monitor(self):
+        state = self.run_metrics({"agentic_test_ca_data": {}})
+        monitor_calls = [mode for key, mode in state["calls"] if key.startswith("ServiceMonitor/")]
+        self.assertEqual(monitor_calls, ["present", "absent"])
+        self.assertNotIn("ServiceMonitor/agentic-controller-metrics", state["objects"])
+        self.assertEqual(len(state["objects"]), 3)
 
     def test_missing_monitor_crd_preserves_endpoint_resources(self):
         state = self.run_metrics(monitor_present=False)

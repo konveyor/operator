@@ -184,9 +184,12 @@ The other resource settings retain their defaults unless overridden with
 These settings apply to the controller's `manager` container; agent workload
 pods have separate resource settings.
 
-The operator enables authenticated HTTPS metrics and creates a ServiceMonitor
-when the cluster supports it. A Prometheus instance must select that monitor
-and namespace to retain metrics. OpenShift supplies the serving certificate
+The operator enables authenticated HTTPS metrics. It creates a ServiceMonitor
+once the ServiceMonitor CRD exists and the metrics CA ConfigMap contains a
+non-empty `service-ca.crt`. It waits for CA injection or provisioning before
+creating the monitor, and removes an existing monitor if that CA entry becomes
+empty or disappears. A Prometheus instance must select that monitor and
+namespace to retain metrics. OpenShift supplies the serving certificate
 and trusted service CA; other Kubernetes installations must supply the
 `agentic-controller-metrics-tls` Secret and the matching CA in
 `agentic-controller-metrics-ca` (`service-ca.crt`).
