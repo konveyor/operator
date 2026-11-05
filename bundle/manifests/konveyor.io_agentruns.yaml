@@ -23,6 +23,9 @@ spec:
     - jsonPath: .status.phase
       name: Phase
       type: string
+    - jsonPath: .status.conditions[?(@.type=="Verified")].status
+      name: Verified
+      type: string
     - jsonPath: .metadata.creationTimestamp
       name: Age
       type: date
@@ -284,6 +287,15 @@ spec:
                   values here (ADR 0018). Unset fields resolve against the Agent's
                   Execution defaults; mode resolves to auto when unset everywhere.
                 properties:
+                  askUser:
+                    description: |-
+                      AskUser gives the agent the ask_user tool: it may stop mid-turn and
+                      put a question to the viewers attached to the run (ADR 0017). An
+                      unanswered question fails the run — the harness never answers for
+                      the human — so set this only for a run somebody will be watching.
+                      Defaults to false: a run nobody opted into supervising cannot be
+                      failed by a question nobody saw.
+                    type: boolean
                   maxCost:
                     description: |-
                       MaxCost is the maximum cumulative cost in USD before wind-down,
@@ -530,7 +542,10 @@ spec:
                   connections (see AgentRunConditionACPReady). Succeeded is the
                   terminal outcome (see AgentRunConditionSucceeded): Unknown while
                   running, True on clean completion, False with a reason
-                  (Failed, LimitReached) otherwise.
+                  (Failed, LimitReached) otherwise. Verified reports whether the
+                  pushed tree was independently measured against the plan's own
+                  verification commands (see AgentRunConditionVerified); it is set
+                  once the run terminates and is orthogonal to Succeeded.
                 items:
                   description: Condition contains details for one aspect of the current
                     state of this API Resource.
@@ -643,9 +658,13 @@ spec:
                 description: |-
                   TerminationData is the raw JSON the harness wrote to the pod's
                   termination message (/dev/termination-log) on exit — typically a
-                  usage/cost report. The controller copies it verbatim and never
-                  interprets it; platform-specific UIs read the harness's schema
-                  (ADR 0011/0018). Absent if the harness wrote nothing parseable.
+                  usage/cost report, plus the independent verification record (#300).
+                  The controller copies it verbatim; platform-specific UIs read the
+                  harness's schema (ADR 0011/0018). The one key the controller reads
+                  is verification.status (plus verification.commit, named in that
+                  condition's message), to derive the Verified condition (#302);
+                  everything else, including the per-command verification evidence,
+                  stays uninterpreted. Absent if the harness wrote nothing parseable.
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
             type: object

@@ -580,6 +580,15 @@ spec:
                     execution:
                       description: Execution is the snapshotted stage execution override.
                       properties:
+                        askUser:
+                          description: |-
+                            AskUser gives the agent the ask_user tool: it may stop mid-turn and
+                            put a question to the viewers attached to the run (ADR 0017). An
+                            unanswered question fails the run — the harness never answers for
+                            the human — so set this only for a run somebody will be watching.
+                            Defaults to false: a run nobody opted into supervising cannot be
+                            failed by a question nobody saw.
+                          type: boolean
                         maxCost:
                           description: |-
                             MaxCost is the maximum cumulative cost in USD before wind-down,
