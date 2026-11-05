@@ -370,6 +370,7 @@
     - "{{ app_name }}-namespace"
     - "{{ app_name }}-external"
     - "{{ app_name }}-metrics"
+    - "{{ app_name }}-agentic-metrics"
     - "{{ app_name }}-egress"
     - "{{ app_name }}-deny-all"
   when: not (feature_isolate_namespace|bool)

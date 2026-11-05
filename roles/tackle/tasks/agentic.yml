@@ -24,6 +24,9 @@
   set_fact:
     agentic_state: "{{ 'present' if (agentic_enabled | bool and agentic_sandbox_crd_present | bool) else 'absent' }}"
 
+- name: Configure agentic controller metrics capture
+  import_tasks: agentic-metrics.yml
+
 - name: Create agentic controller Deployment
   k8s:
     state: "{{ agentic_state }}"

@@ -1,0 +1,22 @@
+# Synced to the operator by hack/sync-operator.sh; edit the source here.
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ agentic_component_name }}-metrics"
+  namespace: "{{ app_namespace }}"
+  labels:
+    app.kubernetes.io/name: "{{ agentic_component_name }}-metrics"
+    app.kubernetes.io/component: "{{ agentic_component_name }}"
+    app.kubernetes.io/part-of: "{{ app_name }}"
+  annotations:
+    service.beta.openshift.io/serving-cert-secret-name: "{{ agentic_component_name }}-metrics-tls"
+spec:
+  selector:
+    app.kubernetes.io/name: "{{ agentic_component_name }}"
+    app.kubernetes.io/component: "{{ agentic_component_name }}"
+    app.kubernetes.io/part-of: "{{ app_name }}"
+  ports:
+    - name: https
+      port: 8443
+      targetPort: https
+      protocol: TCP

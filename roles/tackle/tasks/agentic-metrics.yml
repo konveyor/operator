@@ -1,0 +1,47 @@
+---
+- name: Determine agentic metrics state
+  set_fact:
+    tackle_agentic_metrics_state: "{{ 'present' if agentic_state == 'present' and agentic_metrics_enabled | bool else 'absent' }}"
+
+- name: Configure agentic metrics Service and credentials
+  k8s:
+    state: "{{ tackle_agentic_metrics_state }}"
+    template: "agentic/{{ item }}.yaml.j2"
+    merge_type: merge
+  loop:
+    - service-metrics
+    - configmap-metrics-ca
+    - secret-metrics-token
+
+# Gate on Prometheus Operator support rather than OpenShift so other Kubernetes
+# installations can opt in once their serving certificate and CA are supplied.
+- name: Check for the ServiceMonitor CRD
+  k8s_info:
+    api_version: apiextensions.k8s.io/v1
+    kind: CustomResourceDefinition
+    name: servicemonitors.monitoring.coreos.com
+  register: tackle_agentic_servicemonitor_crd
+
+- name: Read the agentic metrics CA
+  k8s_info:
+    api_version: v1
+    kind: ConfigMap
+    name: "{{ agentic_component_name }}-metrics-ca"
+    namespace: "{{ app_namespace }}"
+  register: tackle_agentic_metrics_ca
+  when:
+    - tackle_agentic_metrics_state == 'present'
+    - (tackle_agentic_servicemonitor_crd.resources | default([]) | length) > 0
+
+# OpenShift injects the CA asynchronously; other installations supply it.
+# Do not leave a monitor referencing a missing or empty CA certificate.
+- name: Configure agentic metrics ServiceMonitor
+  vars:
+    tackle_agentic_metrics_ca_data: "{{ (tackle_agentic_metrics_ca.resources | default([]) | first | default({})).get('data') or {} }}"
+  k8s:
+    state: >-
+      {{ 'present' if tackle_agentic_metrics_state == 'present' and
+         (tackle_agentic_metrics_ca_data.get('service-ca.crt', '') | trim | length) > 0 else 'absent' }}
+    template: agentic/servicemonitor-metrics.yaml.j2
+    merge_type: merge
+  when: (tackle_agentic_servicemonitor_crd.resources | default([]) | length) > 0
