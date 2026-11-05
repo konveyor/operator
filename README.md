@@ -173,10 +173,6 @@ Use the controller image supplied for the operator release. If you override
 build: older images may lack the diagnostics flags passed by this operator and
 fail to start with an unknown-flag error.
 
-Set `agentic_verification_image` in the Tackle CR spec to override the image used
-by Gateway connectivity verification Jobs, for example with a mirrored image.
-The default is an empty string, which uses the controller's built-in image default.
-
 Set the controller's CPU and memory requests and limits in the Tackle CR spec.
 The defaults are limits of `500m` CPU and `400Mi` memory, and requests of `10m`
 CPU and `64Mi` memory. For example, raise the memory limit to `512Mi`:
