@@ -1,0 +1,12 @@
+# Synced to the operator by hack/sync-operator.sh; edit the source here.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ agentic_component_name }}-metrics-ca"
+  namespace: "{{ app_namespace }}"
+  labels:
+    app.kubernetes.io/name: "{{ agentic_component_name }}-metrics"
+    app.kubernetes.io/component: "{{ agentic_component_name }}"
+    app.kubernetes.io/part-of: "{{ app_name }}"
+  annotations:
+    service.beta.openshift.io/inject-cabundle: "true"
