@@ -1,0 +1,51 @@
+name: setup-git-remote
+description: |
+  A git remote inside the cluster that accepts an anonymous push, and an
+  application pointing at it.
+
+  Since konveyor/agentic-controller#248 the harness proves it can push before
+  the stage runs, so an application on a public read-only repository fails
+  every run before the first model turn. A test that drives a run therefore
+  needs a remote it can write to, and in CI there is no credential to give it
+  one.
+
+  Separate from setup-agentic, and opted into rather than implied by it: this
+  repoints an application, which is the sort of thing that should never
+  happen to a caller that did not ask. Call it after setup-agentic, which is
+  where the application is expected to already exist.
+
+inputs:
+  namespace:
+    description: "Namespace Konveyor is installed in"
+    required: false
+    default: "konveyor-tackle"
+  application_name:
+    description: |
+      The application to attach the remote to. Created if it does not exist,
+      repointed if it does - install-konveyor's seed_application may have
+      made it against a public URL already.
+    required: false
+    default: "agentic-e2e"
+  source_repo:
+    description: |
+      Mirrored into the in-cluster remote, so the agent sees a real project
+      rather than an empty repository. Cloned by an init container, which
+      needs egress.
+    required: false
+    default: "https://github.com/konveyor/tackle-testapp-public.git"
+  source_branch:
+    description: "Branch the application names, and the one mirrored"
+    required: false
+    default: "main"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up the in-cluster git remote
+      env:
+        NAMESPACE: ${{ inputs.namespace }}
+        APP_NAME: ${{ inputs.application_name }}
+        SOURCE_REPO: ${{ inputs.source_repo }}
+        SOURCE_BRANCH: ${{ inputs.source_branch }}
+      run: ${{ github.action_path }}/../../../test/e2e/agentic/setup-git-remote.sh
+      shell: bash
