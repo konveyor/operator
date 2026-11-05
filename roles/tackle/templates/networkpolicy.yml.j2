@@ -64,12 +64,10 @@ spec:
       app.kubernetes.io/part-of: {{ app_name }}
   policyTypes:
     - Ingress
+  # Metrics uses authenticated HTTPS. Scrapers do not need
+  # distribution-specific namespace labels.
   ingress:
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              network.openshift.io/policy-group: monitoring
-      ports:
+    - ports:
         - port: 8443
           protocol: TCP
 ---

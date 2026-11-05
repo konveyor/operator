@@ -194,11 +194,11 @@ and trusted service CA; other Kubernetes installations must supply the
 `agentic-controller-metrics-tls` Secret and the matching CA in
 `agentic-controller-metrics-ca` (`service-ca.crt`).
 
-When namespace isolation is enabled, Prometheus in another namespace needs
-an ingress NetworkPolicy allowing access to the controller on port 8443, or its
-namespace must carry the `network.openshift.io/policy-group: monitoring` label
-selected by the installed metrics policy. Prometheus in the installation
-namespace is already allowed by the intra-namespace policy.
+When namespace isolation is enabled, the controller's metrics NetworkPolicy
+allows TCP port 8443 from any source, without requiring OpenShift namespace
+labels. Reading metrics still requires HTTPS and an authorized bearer token.
+This policy opens only the metrics port on the controller; profiling remains
+bound to loopback.
 
 On non-OpenShift installations, create the TLS Secret before starting the
 controller. If the controller started without the certificate files, restart it
