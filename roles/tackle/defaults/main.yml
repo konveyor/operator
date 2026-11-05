@@ -319,6 +319,8 @@ agentic_enabled: false
 agentic_steer_enabled: false
 agentic_component_name: "agentic-controller"
 agentic_fqin: "{{ lookup('env', 'RELATED_IMAGE_AGENTIC_CONTROLLER') }}"
+# Empty uses the controller's default Gateway verification image.
+agentic_verification_image: ""
 # Keep resource defaults in step with agentic-controller config/manager/manager.yaml.
 agentic_container_limits_cpu: "500m"
 agentic_container_limits_memory: "400Mi"
