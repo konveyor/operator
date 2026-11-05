@@ -1,0 +1,12 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: agentic-controller-metrics-reader
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: agentic-controller-metrics-reader
+subjects:
+  - kind: ServiceAccount
+    name: agentic-controller-metrics-reader
+    namespace: {{ .Release.Namespace }}

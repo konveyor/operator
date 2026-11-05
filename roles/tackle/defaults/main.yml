@@ -319,6 +319,16 @@ agentic_enabled: false
 agentic_steer_enabled: false
 agentic_component_name: "agentic-controller"
 agentic_fqin: "{{ lookup('env', 'RELATED_IMAGE_AGENTIC_CONTROLLER') }}"
+# Keep resource defaults in step with agentic-controller config/manager/manager.yaml.
+agentic_container_limits_cpu: "500m"
+agentic_container_limits_memory: "400Mi"
+agentic_container_requests_cpu: "10m"
+agentic_container_requests_memory: "64Mi"
+agentic_metrics_enabled: true
+agentic_metrics_bind_address: "{{ ':8443' if agentic_metrics_enabled | bool else '0' }}"
+agentic_memory_log_interval: "30s"
+# Profiles contain process memory; bind only to loopback when enabled.
+agentic_pprof_bind_address: "0"
 # agent runtime + skills images are opaque CR data (Agent.spec.image /
 # SkillCard.spec.image), not consumed by the controller Deployment. Declared
 # only so they land in the CSV relatedImages for disconnected mirroring.

@@ -5,11 +5,12 @@
 #
 # This is the operator's rendering of the controller Deployment: the container
 # spec mirrors config/manager/manager.yaml (command, args, env, ports, probes,
-# securityContext, resources), with operator-specific values templated in --
-# the image ({{ agentic_fqin }}, resolved to a digest at bundle time), the
-# name/namespace/labels, the ServiceAccount, a disabled metrics endpoint, and
-# the default-container annotation. Keep the container spec in step with
-# config/manager/manager.yaml when either changes;
+# securityContext, default resources). Operator-specific values include the
+# image ({{ agentic_fqin }}, resolved to a digest at bundle time), the
+# name/namespace/labels, ServiceAccount, metrics certificate mount, and
+# default-container annotation. Resource requests and limits are configurable
+# through the operator role defaults and Tackle CR. Keep the default container
+# spec in step with config/manager/manager.yaml when either changes;
 # internal/manifests/deployment_parity_test.go fails the build if they drift.
 apiVersion: apps/v1
 kind: Deployment
@@ -49,7 +50,10 @@ spec:
           args:
             - --leader-elect
             - --health-probe-bind-address=:8081
-            - --metrics-bind-address=0
+            - --metrics-bind-address={{ agentic_metrics_bind_address }}
+            - --metrics-cert-path=/etc/metrics-certs
+            - --pprof-bind-address={{ agentic_pprof_bind_address }}
+            - --memory-log-interval={{ agentic_memory_log_interval }}
           env:
             # The skill loader and the enumeration Job run this same image. The
             # controller cannot read its own image (it deliberately lacks
@@ -60,6 +64,9 @@ spec:
           ports:
             - containerPort: 8081
               name: health
+              protocol: TCP
+            - containerPort: 8443
+              name: https
               protocol: TCP
           securityContext:
             readOnlyRootFilesystem: true
@@ -79,11 +86,22 @@ spec:
               port: 8081
             initialDelaySeconds: 5
             periodSeconds: 10
+          volumeMounts:
+            - name: metrics-certs
+              mountPath: /etc/metrics-certs
+              readOnly: true
           resources:
             limits:
-              cpu: 500m
-              memory: 128Mi
+              cpu: "{{ agentic_container_limits_cpu }}"
+              memory: "{{ agentic_container_limits_memory }}"
             requests:
-              cpu: 10m
-              memory: 64Mi
+              cpu: "{{ agentic_container_requests_cpu }}"
+              memory: "{{ agentic_container_requests_memory }}"
+      volumes:
+        - name: metrics-certs
+          secret:
+            secretName: "{{ agentic_component_name }}-metrics-tls"
+            # On OpenShift with metrics enabled, kubelet holds the pod in
+            # ContainerCreating until service-ca creates this required Secret.
+            optional: {{ (not (openshift_cluster | bool and agentic_metrics_enabled | bool)) | lower }}
       terminationGracePeriodSeconds: 10
