@@ -61,6 +61,12 @@ spec:
             # equal to the image above (kustomize kept them in sync upstream).
             - name: SKILL_LOADER_IMAGE
               value: "{{ agentic_fqin }}"
+            # The Gateway verification Job runs the agent image, which is not
+            # the manager's own, so it cannot track the image above. Empty
+            # keeps the controller's built-in default; set the variable to
+            # reach a mirror or a private registry.
+            - name: VERIFICATION_IMAGE
+              value: "{{ agentic_verification_image | default('') }}"
           ports:
             - containerPort: 8081
               name: health
