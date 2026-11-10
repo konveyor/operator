@@ -7,8 +7,8 @@ how the workflow stages are wired - while the prompt content itself (the
 `SKILL.md` files the skillcards select) is governed in
 [konveyor/agentic-controller](https://github.com/konveyor/agentic-controller/blob/main/PROMPT_GOVERNANCE.md).
 
-Changes here are treated as governed configuration, per ISO/IEC 42001
-Control A.5.2:
+Changes here are treated as governed configuration - evidence for ISO/IEC
+42001 A.6.1.3 (change control and approvals for AI system design) and A.3.2:
 
 - **Review** - this path is assigned to owners in
   [`.github/CODEOWNERS`](../../../../../.github/CODEOWNERS); changes need an
