@@ -1,0 +1,4 @@
+# Curated agentic defaults - which agents, workflows and skillcards ship on
+# every instance. Changes need review from an owner; see the governance note
+# in roles/tackle/templates/agentic/defaults/GOVERNANCE.md.
+/roles/tackle/templates/agentic/    @djzager @fabianvf
