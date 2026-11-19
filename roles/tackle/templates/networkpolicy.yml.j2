@@ -114,6 +114,15 @@ spec:
       port: 6443
     - protocol: TCP
       port: 8443
+  # Git over SSH. An agentic run clones the application's source repository and
+  # pushes its result branch from the migration harness, which speaks the git
+  # protocol in-process rather than shelling out. A repository whose URL uses
+  # the SSH transport (ssh://git@host/org/repo or git@host:org/repo) is reached
+  # on port 22, which the web/API ports above do not cover, so without this the
+  # clone cannot connect and the run fails before the agent starts.
+  - ports:
+    - protocol: TCP
+      port: 22
   # Self-hosted Maven artifact repositories used by the analyzer to resolve an
   # application's dependencies. Sonatype Nexus defaults to 8081 and JFrog
   # Artifactory to 8081/8082, which fall outside the web/API ports above; allow
